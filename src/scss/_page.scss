@@ -1,0 +1,104 @@
+// Document page
+
+.page {
+}
+
+// Modes
+
+.page--design {
+  box-sizing: content-box; // Exclude border to computed width
+  border: 1px solid $border-color; // Do selection outline can bleed outside
+  margin: calc(1.5em / 2);
+}
+
+.page--interactive {
+  overflow-y: scroll;
+}
+
+// .page__title {
+//     position: absolute;
+//     top: -1.5rem;
+//     left: 0;
+//     color:  $gray-600;
+// }
+
+// Fake a browser window
+
+$ui-red: #f65b5a;
+$ui-yellow: #f8be38;
+$ui-green: #41cd43;
+
+$corner-fluid: 5px;
+$corner-device: 15px;
+
+.chrome {
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.11), 0 2px 4px rgba(0, 0, 0, 0.11),
+    0 4px 8px rgba(0, 0, 0, 0.11), 0 8px 16px rgba(0, 0, 0, 0.11),
+    0 16px 32px rgba(0, 0, 0, 0.11), 0 32px 64px rgba(0, 0, 0, 0.11);
+  // Checkboard
+  background-color: white;  
+  background-image: linear-gradient(45deg, $gray-200 25%, transparent 25%),
+    linear-gradient(-45deg, $gray-200 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, $gray-200 75%),
+    linear-gradient(-45deg, transparent 75%, $gray-200 75%);
+  background-size: 20px 20px;
+  background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+}
+
+// Device
+
+.chrome--device {
+  border: 12px solid $body-color;
+  border-radius: $corner-device;
+}
+
+.chrome--device .chrome__header {
+  display: none !important;
+}
+
+.chrome--device .page--interactive {
+  border-radius: $corner-device - 9px;
+}
+
+// Fluid/Desktop
+
+.chrome--fluid {
+  border-radius: $corner-fluid;
+  background: $gray-100;
+  width: 100%;
+}
+
+.chrome--fluid .chrome__header {
+  //display: block;
+}
+
+.chrome__header {
+  border-top-left-radius: 5px;
+  border-top-right-radius: 5px;
+  background: $gray-200;
+  border-top: 1px solid $gray-100;
+  border-bottom: 1px solid $gray-300;
+  padding: 0.8rem 0.75rem;
+}
+
+.chrome-button {
+  border-radius: 50%;
+  width: 0.75rem;
+  height: 0.75rem;
+  display: inline-block;
+}
+
+.chrome-button--red {
+  background: $ui-red;
+  border: 1px solid darken($ui-red, 15%);
+}
+
+.chrome-button--yellow {
+  background: $ui-yellow;
+  border: 1px solid darken($ui-yellow, 15%);
+}
+
+.chrome-button--green {
+  background: $ui-green;
+  border: 1px solid darken($ui-green, 15%);
+}

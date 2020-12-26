@@ -1,0 +1,121 @@
+// Page tree
+
+.tree {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  background-color: transparent;
+  transition: background-color .2s 0.1s ease-out;
+}
+
+.tree--dropping {
+  background-color: $primary-light;
+}
+
+.tree .tree {
+  // Indent second+ level 
+  padding-left: 0.75rem;
+}
+
+.tree__label {
+  padding: 0 0.25rem;
+  border-radius: 3px;
+  @extend .unselectable;
+  display: flex;
+  @include font-size($input-font-size-sm);
+  //transition: background-color 0.07s ease-out;
+}
+
+.tree__label span {
+  // Clickable label/collapse arrow area
+  padding: 0.25rem 0;
+}
+
+.tree__label:hover {
+  background: $gray-200;
+}
+
+// Can't drop item here 
+.dragging .tree__label--leaf {
+  color: rgba($body-color, 0.5) !important;
+}
+
+// User is going to drop an item
+.tree__label.tree__item--dropping {
+  background: $primary-light;
+}
+
+// Drop hints
+
+.tree__drop-hint {
+  position: absolute;
+  height: 8px;
+  right: 0;
+  left: 0;
+  z-index: 2;
+  // Allow to click the full .tree__label area while not dargging
+  pointer-events: none;
+}
+
+.dragging .tree__drop-hint {
+  // Receive pointer events only when dragging
+  pointer-events: all;
+}
+
+.tree .tree__drop-hint {
+  // Indent second+ level 
+  padding-left: 0.5rem;
+}
+
+.tree__drop-hint--after {
+  bottom: 0;
+}
+
+.tree__drop-hint--before {
+  top: -7px;
+  display: none;
+}
+
+.tree li:first-child .tree__drop-hint--before {
+  // First children only, since we user the after drop hint for the rest
+  display: block;
+}
+
+// Drop hint line
+
+.tree__drop-hint::before {
+  content: " ";
+  position: absolute;
+  top: 0;
+  right: -2px;
+  bottom: -2px;
+  left: -2px;
+  z-index: 2;
+  border-bottom: 3px solid transparent;
+  pointer-events: none;
+  transition: border-bottom-color 0.07s ease-out;
+}
+
+.tree__drop-hint.tree__item--dropping::before {
+  border-bottom-color: $primary;
+}
+
+// Drop hint dot
+
+.tree__drop-hint::after {
+  content: " ";
+  position: absolute;
+  bottom: -5px;
+  left: -8px;
+  width: 9px;
+  height: 9px;
+  z-index: 2;
+  border-radius: 50%;
+  background-color: transparent;
+  pointer-events: none;
+  transition: background-color 0.07s ease-out;
+}
+
+.tree__drop-hint.tree__item--dropping::after {
+  background-color: $primary;
+}

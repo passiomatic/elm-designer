@@ -1,0 +1,127 @@
+// Utility classes
+
+.unselectable {
+  cursor: default;
+  -webkit-user-select: none; /* Chrome all / Safari all */
+  -moz-user-select: none; /* Firefox all */
+  -ms-user-select: none; /* IE 10+ */
+  user-select: none; /* Likely future */
+}
+
+// Fonts
+
+.large {
+  font-size: 16px !important;
+}
+
+.xlarge {
+  font-size: 21px !important;
+}
+
+// Borders
+
+.border-dashed {
+  border-style: dashed !important;
+}
+
+.border-dotted {
+  border-style: dotted !important;
+}
+
+// Backgrounds
+
+.bg-gray-200 {
+  background: $gray-200;
+}
+
+// Misc
+
+.shadow-soft {
+  box-shadow: 0 1px 6px rgba($gray-500, 0.8);
+}
+
+.preformatted {
+  white-space: pre-wrap;
+}
+
+.rotate-90 {
+  transform: rotate(90deg);
+}
+
+.line-height-1 {
+  line-height: 1rem;
+}
+
+.text-black-25 {
+  color: rgba($black, 0.25);
+}
+
+.btn-muted {
+  color: $gray-300;
+}
+
+// Animation
+
+.anim-left {
+  animation: slide-left 0.5s ease-in infinite alternate;
+}
+
+.anim-right {
+  animation: slide-right 0.5s ease-in infinite alternate;
+}
+
+@keyframes slide-left {
+  from {
+    transform: translateX(0);
+  }
+
+  to {
+    transform: translateX(-5px);
+  }
+}
+
+@keyframes slide-right {
+  from {
+    transform: translateX(0);
+  }
+
+  to {
+    transform: translateX(5px);
+  }
+}
+
+// Scrolling
+
+.scroll-y {
+  overflow-y: auto;
+}
+
+.scroll-x {
+  overflow-x: scroll;
+}
+
+// Widths
+
+.w-33 {
+  width: 33%;
+}
+
+// Color picker
+
+input[type="color"].transparent {
+  position: relative;
+}
+
+input[type="color"].transparent:after {
+  content: "None";
+  position: absolute;
+  top: 1px;
+  left: 1px;
+  bottom: 1px;
+  right: 1px;
+  font-size: 12px;
+  text-align: center;
+  padding: 0.1875rem 0;
+  background: #fff;
+  //@extend .text-muted;
+}

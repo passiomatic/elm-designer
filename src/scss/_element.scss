@@ -1,0 +1,19 @@
+// ----------------------
+// Document contents
+// ----------------------
+
+.element {
+}
+
+// ----------------------
+// Selected (design mode only)
+
+.page--design .element--selected {
+  //@extend .unselectable;
+  outline: 3px double $primary;
+  //box-shadow: 0 0 0 1px $primary;
+}
+
+.page--design .element--dropped {
+  background: rgba($primary, 0.1);
+}
