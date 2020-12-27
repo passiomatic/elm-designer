@@ -1,6 +1,6 @@
 # Elm Designer—A code generator for Elm UI
 
-![Elm Designer interface](./screenshot.jpg)
+![Elm Designer interface](./assets/screenshot.jpg)
 
 ## Current status
 
@@ -50,4 +50,4 @@ This will build the app assets with Parcel in production mode, copy the files in
 [4]: https://www.electronjs.org
 [issue1]: https://github.com/passiomatic/elm-designer/issues/1 
 [issue2]: https://github.com/passiomatic/elm-designer/issues/2 
-[d]: 
+[d]: https://github.com/passiomatic/elm-designer/releases/tag/v0.1.0
