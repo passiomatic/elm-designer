@@ -668,7 +668,7 @@ emitFontFamily value attrs =
                                 (\name ->
                                     CodeGen.apply
                                         [ CodeGen.fqFun fontModule "typeface"
-                                        , CodeGen.string value_.name
+                                        , CodeGen.string name
                                         ]
                                 )
                                 fontStack
