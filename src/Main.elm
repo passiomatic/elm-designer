@@ -15,15 +15,16 @@ import Html.Events.Extra.Mouse
 import Html5.DragDrop as DragDrop
 import Icons
 import Json.Decode as Decode exposing (Decoder, Value)
+import Library
 import Model exposing (..)
 import Ports
 import SelectList exposing (SelectList)
 import Set exposing (Set)
-import Style.Layout as Layout exposing (..)
 import Style.Border as Border exposing (..)
 import Style.Font as Font exposing (..)
-import Task
+import Style.Layout as Layout exposing (..)
 import Style.Theme as Theme exposing (Theme)
+import Task
 import Time
 import Time.Extra as Time exposing (Interval(..))
 import Tree as T exposing (Tree)
@@ -58,6 +59,7 @@ init flags =
     , Cmd.batch
         [ Ports.loadDocument ()
         , Ports.setFontLinks links
+        , Ports.setupAppMenu Library.menuItems
         ]
     )
 
@@ -106,7 +108,7 @@ update msg model =
             , Ports.showPageContextMenu (Document.nodeId id)
             )
 
-        PageAddClicked ->
+        PageAddClicked _ ->
             let
                 ( newSeeds, page ) =
                     Document.emptyPageNode model.seeds (SelectList.length model.pages + 1)
@@ -143,12 +145,34 @@ update msg model =
             , Cmd.none
             )
 
+        InsertNodeClicked label ->
+            case Library.findTemplate label of
+                Just template ->
+                    let
+                        ( newSeeds, newNode ) =
+                            Document.fromTemplate template model.seeds
+
+                        newPage =
+                            selectedPage model.pages
+                                |> Document.insertNode newNode
+                    in
+                    ( { model
+                        | pages = SelectList.replaceSelected newPage model.pages
+                        , saveState = Changed model.currentTime
+                        , seeds = newSeeds
+                      }
+                    , Cmd.none
+                    )
+
+                Nothing ->
+                    ( model, Cmd.none )
+
         ClipboardCopyClicked ->
             let
                 code =
-                    currentPage model.pages
+                    selectedPage model.pages
                         |> Zipper.tree
-                        |> CodeGen.emit Theme.defaultTheme model.viewport 
+                        |> CodeGen.emit Theme.defaultTheme model.viewport
             in
             ( model
             , Ports.copyToClipboard code
@@ -172,7 +196,7 @@ update msg model =
                             ( model, Cmd.none )
 
                 Err reason ->
-                    -- let 
+                    -- let
                     --     _ = Debug.log "Error loading document:" (Decode.errorToString reason)
                     -- in
                     ( { model
@@ -420,7 +444,7 @@ update msg model =
                         Just ( dragId, dropId, _ ) ->
                             let
                                 currentZipper =
-                                    currentPage model.pages
+                                    selectedPage model.pages
 
                                 ( newSeeds_, maybeZipper, maybeNode ) =
                                     -- Figure out *what* user just dropped: template or node?
@@ -463,7 +487,7 @@ update msg model =
                                             ( newSeeds_, Document.insertNodeAfter siblingId node zipper )
 
                                         ( _, _ ) ->
-                                            ( model.seeds, currentPage model.pages )
+                                            ( model.seeds, selectedPage model.pages )
 
                                 InsertBefore siblingId ->
                                     let
@@ -476,7 +500,7 @@ update msg model =
                                             ( newSeeds_, Document.insertNodeBefore siblingId node zipper )
 
                                         ( _, _ ) ->
-                                            ( model.seeds, currentPage model.pages )
+                                            ( model.seeds, selectedPage model.pages )
 
                                 AppendTo parentId ->
                                     let
@@ -494,11 +518,11 @@ update msg model =
                                             )
 
                                         ( _, _ ) ->
-                                            ( model.seeds, currentPage model.pages )
+                                            ( model.seeds, selectedPage model.pages )
 
                         Nothing ->
                             -- Failed drag and drop operation
-                            ( model.seeds, currentPage model.pages )
+                            ( model.seeds, selectedPage model.pages )
             in
             ( { model
                 | dragDrop = newDragDrop
@@ -634,8 +658,8 @@ update msg model =
             ( model, Cmd.none )
 
 
-currentPage : SelectList (Zipper Node) -> Zipper Node
-currentPage pages =
+selectedPage : SelectList (Zipper Node) -> Zipper Node
+selectedPage pages =
     SelectList.selected pages
 
 
@@ -700,10 +724,10 @@ subscriptions ({ mode } as model) =
          , BE.onKeyUp (Decode.map (KeyChanged False) keysDecoder)
          , BE.onMouseDown (Decode.map (MouseButtonChanged True) mouseDecoder)
          , BE.onMouseUp (Decode.map (MouseButtonChanged False) mouseDecoder)
-
-         --, Dropdown.subscriptions model.dropdownState DropdownMsg
          , Ports.onDocumentLoad DocumentLoaded
+         , Ports.onPageAdd PageAddClicked
          , Ports.onPageDelete PageDeleteClicked
+         , Ports.onInsertNode InsertNodeClicked
          , Time.every 1000 Ticked
 
          --, E.onResize Resized

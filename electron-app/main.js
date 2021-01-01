@@ -2,6 +2,8 @@
 const { screen, app, ipcMain, BrowserWindow, Menu, dialog, shell } = require('electron')
 const appMenu = require('./menus');
 
+const isMac = process.platform === 'darwin'
+
 let mainWindow
 
 app.on('ready', createWindow)
@@ -12,17 +14,17 @@ function createWindow() {
   mainWindow = new BrowserWindow({
     width: width,
     height: height,
-    //center: true,
     webPreferences: {
-      nodeIntegration: true
+      nodeIntegration: true,
+      enableRemoteModule: true
     }
   })
 
   mainWindow.loadURL(`file://${__dirname}/app.html`)
 
   // Application menu
-  const menu = appMenu(app, shell);
-  Menu.setApplicationMenu(Menu.buildFromTemplate(menu));
+  // const menu = appMenu(app, shell, isMac, [])
+  // Menu.setApplicationMenu(Menu.buildFromTemplate(menu))
 
   // Open dev tools by default so we can see any console errors
   //mainWindow.webContents.openDevTools()
@@ -33,50 +35,36 @@ function createWindow() {
 
 }
 
-/* Context menus */
+/* Setup app menu with passed 'Insert' menu items */
 
-function createPageContextMenu(pageId) {
-  return [
-    {
-      label: 'Delete Page',
-      click: function (item, focusedWindow) {
-        mainWindow.webContents.send("command", "PageDelete", pageId)
-      }
-    },
-    // {
-    //   label: 'Duplicate Page',
-    //   accelerator: 'CmdOrCtrl+D',
-    //   click: function (item, focusedWindow) {
-    //     mainWindow.webContents.send("command", "DuplicatePage", pageId)
-    //   }
-    // }
-  ]
-}
-
-ipcMain.on('show-page-context-menu', (event, pageId) => {
-  //console.log(pageId)
-  showContextMenu(createPageContextMenu(pageId))
+ipcMain.on('setup-app-menu', (event, insertItems) => {
+  var prevGroup = ""
+  var menuItems = insertItems.reduce((menu, item) => {
+    if (item.group != prevGroup) {
+      menu.push({
+        type: 'separator'
+      })
+      prevGroup = item.group
+    }
+    // Populate callbacks
+    item.click = function (item, focusedWindow) {
+      mainWindow.webContents.send("command", "InsertNode", item.label)
+    }
+    menu.push(item)
+    return menu
+  }, [])
+  const menu = appMenu(app, shell, isMac, menuItems);
+  Menu.setApplicationMenu(Menu.buildFromTemplate(menu));
 })
-
-function showContextMenu(menu) {
-  const focusedWindow = BrowserWindow.getFocusedWindow();
-
-  if (!focusedWindow || focusedWindow === null) {
-    return;
-  }
-
-  Menu.buildFromTemplate(menu).popup({ window: focusedWindow });
-
-}
 
 /* Mac specific things */
 
 // When you close all the windows on a non-mac OS it quits the app
 app.on('window-all-closed', () => {
-  if (process.platform !== 'darwin') { app.quit() }
+  if (isMac) { app.quit() }
 })
 
-// Ff there is no mainWindow it creates one (like when you click the dock icon)
+// If there is no mainWindow it creates one (like when you click the dock icon)
 app.on('activate', () => {
   if (mainWindow === null) { createWindow() }
 })

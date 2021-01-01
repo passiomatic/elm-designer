@@ -76,9 +76,10 @@ type Msg
     | ViewportChanged Viewport
     | WrapRowItemsChanged Bool
     | ClipboardCopyClicked
-    | PageAddClicked
+    | PageAddClicked ()
     | PageContextMenuClicked NodeId
     | PageDeleteClicked String
+    | InsertNodeClicked String
     | DropDownChanged WidgetState
       --| LoadDocument
     | DocumentLoaded String

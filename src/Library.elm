@@ -1,4 +1,11 @@
-module Library exposing (LibraryItem, templates)
+module Library exposing
+    ( LibraryItem
+    , MenuItem
+    , findTemplate
+    , groups
+    , items
+    , menuItems
+    )
 
 {-
    All available elements in the app.
@@ -9,11 +16,13 @@ module Library exposing (LibraryItem, templates)
    See this Ellie: https://ellie-app.com/bQwRCwVkDvsa1
 -}
 
+import Dict
 import Document exposing (..)
 import Element as E exposing (Color)
 import Fonts
 import Html as H exposing (Html)
 import Icons
+import List.Extra
 import Palette
 import Style.Font as Font exposing (..)
 import Style.Layout as Layout exposing (..)
@@ -24,254 +33,388 @@ import Tree as T exposing (Tree)
 type alias LibraryItem msg =
     { root : Tree Template
     , icon : Html msg
+    , group : String
     , description : String
+    , accelerator : String
     }
 
 
-templates : List ( String, List (LibraryItem msg) )
-templates =
-    let
-        theme =
-            Theme.defaultTheme
-    in
-    [ ( "Essentials"
-      , [ LibraryItem (heading1 theme) Icons.type_ ""
-        , LibraryItem (heading2 theme) Icons.type_ ""
-        , LibraryItem (heading3 theme) Icons.type_ ""
-        , LibraryItem (textSnippet theme) Icons.type_ "Non-wrapping chunk of text"
-        , LibraryItem (paragraph theme) Icons.paragraph "Wrapping chunk of text"
-        , LibraryItem (textColumn theme) Icons.layout "Column made of paragraphs"
-        , LibraryItem (wrappedRow theme) Icons.layout ""
-        , LibraryItem (column theme) Icons.layout ""
-        ]
-      )
-    , ( "Form Elements"
-      , [ LibraryItem (button theme) (Icons.coloredSquare theme.primaryColor theme.primaryColor) ""
-        , LibraryItem (buttonLight theme) (Icons.coloredSquare Palette.darkCharcoal Palette.white) ""
-        , LibraryItem (buttonDark theme) (Icons.coloredSquare Palette.darkCharcoal Palette.darkCharcoal) ""
-        , LibraryItem (textField theme) Icons.edit ""
-        , LibraryItem (textFieldMultiline theme) Icons.edit "Text field which resizes based on its contents"
-        , LibraryItem (checkbox theme) Icons.checkSquare ""
-        , LibraryItem (radio theme) Icons.checkCircle ""
-        , LibraryItem (option theme) Icons.checkCircle ""
-        ]
-      )
+type alias MenuItem =
+    { label : String
+    , group : String
+    , accelerator : String
+    }
+
+
+basicsLabel =
+    "Basics"
+
+
+layoutLabel =
+    "Layout"
+
+
+formElementsLabel =
+    "Form Elements"
+
+
+items : List (LibraryItem msg)
+items =
+    [ heading1
+    , heading2
+    , heading3
+    , textSnippet
+    , paragraph
+    , wrappedRow
+    , column
+    , textColumn
+    , button
+    , buttonLight
+    , buttonDark
+    , textField
+    , textFieldMultiline
+    , checkbox
+    , radio
+    , option
     ]
+        |> List.map (\item -> item Theme.defaultTheme)
+
+
+groups : List ( LibraryItem msg, List (LibraryItem msg) )
+groups =
+    List.Extra.gatherEqualsBy .group items
+
+
+menuItems : List MenuItem
+menuItems =
+    items
+        |> List.map
+            (\item ->
+                { label = itemLabel item
+                , group = item.group
+                , accelerator = item.accelerator
+                }
+            )
+
+
+findTemplate : String -> Maybe (Tree Template)
+findTemplate name =
+    Dict.get name items_
+        |> Maybe.map .root
+
+
+items_ =
+    items
+        |> List.map
+            (\item ->
+                ( itemLabel item
+                , item
+                )
+            )
+        |> Dict.fromList
+
+
+itemLabel =
+    .root >> T.label >> .name
 
 
 
--- ESSENTIALS
+-- BASICS
 
 
-heading1 : Theme -> Tree Template
+heading1 : Theme -> LibraryItem msg
 heading1 theme =
-    T.singleton
-        { baseTemplate
-            | type_ = HeadingNode { level = 1, text = "" }
-            , name = "Heading 1"
-            , width = Fill
-            , spacing = theme.headingSpacing
-            , fontWeight = theme.headingFontWeight
-            , fontSize = Local theme.heading1Size
-            , fontColor = Local theme.headingColor
-        }
+    { icon = Icons.type_
+    , group = basicsLabel
+    , description = ""
+    , accelerator = ""
+    , root =
+        T.singleton
+            { baseTemplate
+                | type_ = HeadingNode { level = 1, text = "" }
+                , name = "Heading 1"
+                , width = Fill
+                , spacing = theme.headingSpacing
+                , fontWeight = theme.headingFontWeight
+                , fontSize = Local theme.heading1Size
+                , fontColor = Local theme.headingColor
+            }
+    }
 
 
-heading2 : Theme -> Tree Template
+heading2 : Theme -> LibraryItem msg
 heading2 theme =
-    T.singleton
-        { baseTemplate
-            | type_ = HeadingNode { level = 2, text = "" }
-            , name = "Heading 2"
-            , width = Fill
-            , spacing = theme.headingSpacing
-            , fontWeight = theme.headingFontWeight
-            , fontSize = Local theme.heading2Size
-            , fontColor = Local theme.headingColor
-        }
+    { icon = Icons.type_
+    , group = basicsLabel
+    , description = ""
+    , accelerator = ""
+    , root =
+        T.singleton
+            { baseTemplate
+                | type_ = HeadingNode { level = 2, text = "" }
+                , name = "Heading 2"
+                , width = Fill
+                , spacing = theme.headingSpacing
+                , fontWeight = theme.headingFontWeight
+                , fontSize = Local theme.heading2Size
+                , fontColor = Local theme.headingColor
+            }
+    }
 
 
-heading3 : Theme -> Tree Template
+heading3 : Theme -> LibraryItem msg
 heading3 theme =
-    T.singleton
-        { baseTemplate
-            | type_ = HeadingNode { level = 3, text = "" }
-            , name = "Heading 3"
-            , width = Fill
-            , spacing = theme.headingSpacing
-            , fontWeight = theme.headingFontWeight
-            , fontSize = Local theme.heading3Size
-            , fontColor = Local theme.headingColor
-        }
+    { icon = Icons.type_
+    , group = basicsLabel
+    , description = ""
+    , accelerator = ""
+    , root =
+        T.singleton
+            { baseTemplate
+                | type_ = HeadingNode { level = 3, text = "" }
+                , name = "Heading 3"
+                , width = Fill
+                , spacing = theme.headingSpacing
+                , fontWeight = theme.headingFontWeight
+                , fontSize = Local theme.heading3Size
+                , fontColor = Local theme.headingColor
+            }
+    }
 
 
-paragraph : Theme -> Tree Template
+paragraph : Theme -> LibraryItem msg
 paragraph theme =
-    T.singleton
-        { baseTemplate
-            | name = "Paragraph"
-            , width = Fill
-            , spacing = theme.paragraphSpacing
-            , fontWeight = theme.textFontWeight
-            , type_ = ParagraphNode { text = "" }
-        }
+    { icon = Icons.paragraph
+    , group = basicsLabel
+    , description = "Wrapping chunk of text"
+    , accelerator = ""
+    , root =
+        T.singleton
+            { baseTemplate
+                | name = "Paragraph"
+                , width = Fill
+                , spacing = theme.paragraphSpacing
+                , fontWeight = theme.textFontWeight
+                , type_ = ParagraphNode { text = "" }
+            }
+    }
 
 
-textSnippet : Theme -> Tree Template
+textSnippet : Theme -> LibraryItem msg
 textSnippet theme =
-    T.singleton
-        { baseTemplate
-            | name = "Text Snippet"
-            , fontWeight = theme.textFontWeight
-            , type_ = TextNode { text = "" }
-        }
+    { icon = Icons.type_
+    , group = basicsLabel
+    , description = "Non-wrapping chunk of text"
+    , accelerator = ""
+    , root =
+        T.singleton
+            { baseTemplate
+                | name = "Text Snippet"
+                , fontWeight = theme.textFontWeight
+                , type_ = TextNode { text = "" }
+            }
+    }
 
 
 
 -- LAYOUT
 
 
-wrappedRow : Theme -> Tree Template
+wrappedRow : Theme -> LibraryItem msg
 wrappedRow theme =
-    T.singleton
-        { baseTemplate
-            | name = "Row"
-            , type_ = RowNode { wrapped = True }
-            , width = Fill
-        }
+    { icon = Icons.layout
+    , group = layoutLabel
+    , description = ""
+    , accelerator = ""
+    , root =
+        T.singleton
+            { baseTemplate
+                | name = "Row"
+                , type_ = RowNode { wrapped = True }
+                , width = Fill
+            }
+    }
 
 
-column : Theme -> Tree Template
+column : Theme -> LibraryItem msg
 column theme =
-    T.singleton
-        { baseTemplate
-            | name = "Column"
-            , type_ = ColumnNode
-            , width = Fill
-        }
+    { icon = Icons.layout
+    , group = layoutLabel
+    , description = ""
+    , accelerator = ""
+    , root =
+        T.singleton
+            { baseTemplate
+                | name = "Column"
+                , type_ = ColumnNode
+                , width = Fill
+            }
+    }
 
 
-textColumn : Theme -> Tree Template
+textColumn : Theme -> LibraryItem msg
 textColumn theme =
-    T.singleton
-        { baseTemplate
-            | name = "Text Column"
-            , type_ = TextColumnNode
-            , width = Fill
-        }
+    { icon = Icons.layout
+    , group = layoutLabel
+    , description = "Column made of paragraphs"
+    , accelerator = ""
+    , root =
+        T.singleton
+            { baseTemplate
+                | name = "Text Column"
+                , type_ = TextColumnNode
+                , width = Fill
+            }
+    }
 
 
 
 -- FORM ELEMENTS
 
 
-textField : Theme -> Tree Template
+textField : Theme -> LibraryItem msg
 textField theme =
-    T.singleton
-        { baseTemplate
-            | name = "Text Field"
-            , padding = Layout.padding (Theme.small theme)
-            , spacing = Layout.spacingXY 0 (Theme.xsmall theme)
-            , type_ =
-                TextFieldNode
-                    { text = "Label"
-                    , position = LabelAbove
-                    }
-            , width = Fill
-            , borderWidth = theme.borderWidth
-            , borderColor = theme.borderColor
-            , borderCorner = theme.borderCorner
-        }
+    { icon = Icons.edit
+    , group = formElementsLabel
+    , description = ""
+    , accelerator = ""
+    , root =
+        T.singleton
+            { baseTemplate
+                | name = "Text Field"
+                , padding = Layout.padding (Theme.small theme)
+                , spacing = Layout.spacingXY 0 (Theme.xsmall theme)
+                , type_ =
+                    TextFieldNode
+                        { text = "Label"
+                        , position = LabelAbove
+                        }
+                , width = Fill
+                , borderWidth = theme.borderWidth
+                , borderColor = theme.borderColor
+                , borderCorner = theme.borderCorner
+            }
+    }
 
 
-textFieldMultiline : Theme -> Tree Template
+textFieldMultiline : Theme -> LibraryItem msg
 textFieldMultiline theme =
-    T.singleton
-        { baseTemplate
-            | name = "Multiline Field"
-            , padding = Layout.padding (Theme.small theme)
-            , spacing = Layout.spacingXY 0 (Theme.xsmall theme)
-            , type_ =
-                TextFieldMultilineNode
-                    { text = "Label"
-                    , position = LabelAbove
-                    }
-            , width = Fill
-            , borderWidth = theme.borderWidth
-            , borderColor = theme.borderColor
-            , borderCorner = theme.borderCorner
-        }
+    { icon = Icons.edit
+    , group = formElementsLabel
+    , description = "Text field which resizes based on its contents"
+    , accelerator = ""
+    , root =
+        T.singleton
+            { baseTemplate
+                | name = "Multiline Field"
+                , padding = Layout.padding (Theme.small theme)
+                , spacing = Layout.spacingXY 0 (Theme.xsmall theme)
+                , type_ =
+                    TextFieldMultilineNode
+                        { text = "Label"
+                        , position = LabelAbove
+                        }
+                , width = Fill
+                , borderWidth = theme.borderWidth
+                , borderColor = theme.borderColor
+                , borderCorner = theme.borderCorner
+            }
+    }
 
 
-button : Theme -> Tree Template
+button : Theme -> LibraryItem msg
 button theme =
     buttonHelper theme "Primary Button" theme.primaryColor theme.primaryColor
 
 
-buttonLight : Theme -> Tree Template
+buttonLight : Theme -> LibraryItem msg
 buttonLight theme =
     buttonHelper theme "Light Button" theme.borderColor Palette.white
 
 
-buttonDark : Theme -> Tree Template
+buttonDark : Theme -> LibraryItem msg
 buttonDark theme =
     buttonHelper theme "Dark Button" Palette.darkCharcoal Palette.darkCharcoal
 
 
-buttonHelper : Theme -> String -> Color -> Color -> Tree Template
+buttonHelper : Theme -> String -> Color -> Color -> LibraryItem msg
 buttonHelper theme name border background =
-    T.singleton
-        { baseTemplate
-            | name = name
-            , padding = Layout.paddingXY (Theme.regular theme) (Theme.small theme)
-            , borderWidth = theme.borderWidth
-            , borderColor = border
-            , borderCorner = theme.borderCorner
-            , backgroundColor = Just background
-            , fontColor = Local (contrastColor background theme.textColor Palette.white)
-            , textAlignment = TextCenter
-            , type_ = ButtonNode { text = "Button Label" }
-        }
+    { icon = Icons.coloredSquare border background
+    , group = formElementsLabel
+    , description = ""
+    , accelerator = ""
+    , root =
+        T.singleton
+            { baseTemplate
+                | name = name
+                , padding = Layout.paddingXY (Theme.regular theme) (Theme.small theme)
+                , borderWidth = theme.borderWidth
+                , borderColor = border
+                , borderCorner = theme.borderCorner
+                , backgroundColor = Just background
+                , fontColor = Local (contrastColor background theme.textColor Palette.white)
+                , textAlignment = TextCenter
+                , type_ = ButtonNode { text = "Button Label" }
+            }
+    }
 
 
-checkbox : Theme -> Tree Template
+checkbox : Theme -> LibraryItem msg
 checkbox theme =
-    T.singleton
-        { baseTemplate
-            | name = "Checkbox"
-            , spacing = Layout.spacingXY (Theme.xsmall theme) 0
-            , type_ = CheckboxNode { text = "Checkbox Label", position = LabelRight }
-        }
+    { icon = Icons.checkSquare
+    , group = formElementsLabel
+    , description = ""
+    , accelerator = ""
+    , root =
+        T.singleton
+            { baseTemplate
+                | name = "Checkbox"
+                , spacing = Layout.spacingXY (Theme.xsmall theme) 0
+                , type_ = CheckboxNode { text = "Checkbox Label", position = LabelRight }
+            }
+    }
 
 
-radio : Theme -> Tree Template
+radio : Theme -> LibraryItem msg
 radio theme =
-    T.tree
-        { baseTemplate
-            | name = "Radio Selection"
-            , spacing = Layout.spacingXY 0 (Theme.xsmall theme)
-            , type_ = RadioNode { text = "Radio Selection", position = LabelRight }
-        }
-        [ T.singleton
+    { icon = Icons.checkCircle
+    , group = formElementsLabel
+    , description = ""
+    , accelerator = ""
+    , root =
+        T.tree
             { baseTemplate
-                | name = "Option 1"
-                , type_ = OptionNode { text = "Option 1" }
+                | name = "Radio Selection"
+                , spacing = Layout.spacingXY 0 (Theme.xsmall theme)
+                , type_ = RadioNode { text = "Radio Selection", position = LabelRight }
             }
-        , T.singleton
-            { baseTemplate
-                | name = "Option 2"
-                , type_ = OptionNode { text = "Option 2" }
-            }
-        ]
+            [ T.singleton
+                { baseTemplate
+                    | name = "Option 1"
+                    , type_ = OptionNode { text = "Option 1" }
+                }
+            , T.singleton
+                { baseTemplate
+                    | name = "Option 2"
+                    , type_ = OptionNode { text = "Option 2" }
+                }
+            ]
+    }
 
 
-option : Theme -> Tree Template
+option : Theme -> LibraryItem msg
 option theme =
-    T.singleton
-        { baseTemplate
-            | name = "Radio Option"
-            , type_ = OptionNode { text = "Option" }
-        }
+    { icon = Icons.checkCircle
+    , group = formElementsLabel
+    , description = ""
+    , accelerator = ""
+    , root =
+        T.singleton
+            { baseTemplate
+                | name = "Radio Option"
+                , type_ = OptionNode { text = "Option" }
+            }
+    }
 
 
 baseTemplate =

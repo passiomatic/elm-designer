@@ -1,6 +1,5 @@
-module.exports = function(app, shell) {
-
-    const template = [
+module.exports = function(app, shell, isMac, insertMenuItems) {
+  const template = [
       {
         label: 'Edit',
         submenu: [
@@ -38,6 +37,21 @@ module.exports = function(app, shell) {
             role: 'selectall'
           },
         ]
+      }, 
+      {
+        label: 'Insert',
+        //id: "INSERT",
+        submenu:[
+          {
+            label: 'New Page',
+            accelerator: 'CmdOrCtrl+Shift+Alt+N',
+            click: function(item, focusedWindow) {
+              if (focusedWindow)
+                focusedWindow.webContents.send("command", "PageAdd", null)
+            }            
+
+          },
+        ].concat(insertMenuItems) 
       },
       {
         label: 'View',
@@ -53,7 +67,7 @@ module.exports = function(app, shell) {
           {
             label: 'Toggle Full Screen',
             accelerator: (function() {
-              if (process.platform === 'darwin')
+              if (isMac)
                 return 'Ctrl+Command+F';
               else
                 return 'F11';
@@ -66,7 +80,7 @@ module.exports = function(app, shell) {
           {
             label: 'Toggle Developer Tools',
             accelerator: (function() {
-              if (process.platform === 'darwin')
+              if (isMac)
                 return 'Alt+Command+I';
               else
                 return 'Ctrl+Shift+I';
@@ -106,7 +120,7 @@ module.exports = function(app, shell) {
       },
     ];
   
-    if (process.platform === 'darwin') {
+    if (isMac) {
       const { name } = app;
       template.unshift({
         label: name,
@@ -163,6 +177,5 @@ module.exports = function(app, shell) {
         );
       }
     }
-  
     return template;
   }

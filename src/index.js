@@ -3,6 +3,11 @@ import { Elm } from "./Main.elm"
 // https://github.com/electron/electron/issues/2288#issuecomment-611231970
 const isElectron = /electron/i.test(navigator.userAgent)
 
+let remote = null
+if (isElectron) {
+  remote = window.require('electron').remote
+}
+
 function getIpc() {
   if (isElectron) {
     return window.require("electron").ipcRenderer
@@ -110,13 +115,51 @@ app.ports.setFontLinks.subscribe(function (links) {
   })
 });
 
-// Wire up context menus
+// Wire up menus
+
+/* App and context menus */
+
+function pageContextMenuTemplate(pageId) {
+  return [
+    {
+      label: 'Delete Page',
+      click: function (item, focusedWindow) {
+        app.ports.onPageDelete.send(pageId)
+
+      }
+    },
+    // {
+    //   label: 'Duplicate Page',
+    //   accelerator: 'CmdOrCtrl+D',
+    //   click: function (item, focusedWindow) {
+    //     app.ports.onPageDuplicate.send(pageId)
+    //   }
+    // }
+  ]
+}
 
 app.ports.showPageContextMenu.subscribe(function (pageId) {
-  ipc.send('show-page-context-menu', pageId)
+  showContextMenu(pageContextMenuTemplate(pageId))
 });
 
-// Forward app menu commands to Elm
+function showContextMenu(menu) {
+  const focusedWindow = remote.getCurrentWindow()
+
+  if (!focusedWindow || focusedWindow === null) {
+    return;
+  }
+
+  if(remote) {
+    remote.Menu.buildFromTemplate(menu).popup({ window: focusedWindow })
+  }
+}
+
+app.ports.setupAppMenu.subscribe(function (items) {
+  ipc.send('setup-app-menu', items)
+});
+
+
+// Forward all app menu commands to Elm
 
 window.onload = () => {
   ipc.on('command', (event, message, value) => {

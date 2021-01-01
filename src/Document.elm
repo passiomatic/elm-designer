@@ -12,7 +12,7 @@ module Document exposing
     , RowData
     , Template
     , TextData
-    , Viewport(..)
+    , Viewport(..), insertNode
     , appendNode
     , applyAlignX
     , applyAlignY
@@ -633,18 +633,27 @@ removeNode zipper =
     Zipper.removeTree zipper
 
 
+{-| A combined append/insert.
+-}
+insertNode : Tree Node -> Zipper Node -> Zipper Node
+insertNode newTree zipper =
+    let
+        selectedNode =
+            Zipper.label zipper
+    in
+    if isContainer selectedNode then
+        -- If the selected node is a container
+        --   append the new one as last children...
+        appendNode newTree zipper
 
--- prependNode : Tree Node -> Zipper Node -> Zipper Node
--- prependNode newTree zipper =
---     Zipper.mapTree
---         (\tree ->
---             let
---                 newChildren =
---                     newTree :: T.children tree
---             in
---             T.replaceChildren newChildren tree
---         )
---         zipper
+    else
+        -- ...otherwise insert as sibling
+        let
+            parentZipper =
+                Zipper.parent zipper
+                    |> Maybe.withDefault (Zipper.root zipper)
+        in
+        insertNodeAfter selectedNode.id newTree parentZipper
 
 
 appendNode : Tree Node -> Zipper Node -> Zipper Node

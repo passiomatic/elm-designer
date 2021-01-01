@@ -488,7 +488,7 @@ pageListView model =
         [ H.section [ A.class "section" ]
             (H.h2 [ A.class "section__title d-flex align-items-center justify-content-between mb-2" ]
                 [ H.text "Pages"
-                , H.button [ A.title "Add page", A.class "btn btn-link p-0 line-height-1 text-dark", E.onClick PageAddClicked ] [ Icons.plusCircleSmall ]
+                , H.button [ A.title "Add page", A.class "btn btn-link p-0 line-height-1 text-dark", E.onClick <| PageAddClicked () ] [ Icons.plusCircleSmall ]
                 ]
                 :: SelectList.indexedMap
                     (\index zipper ->
@@ -523,14 +523,14 @@ pageListView model =
 libraryView : Model -> Html Msg
 libraryView _ =
     H.div [ A.class "bpl-3 bpt-3 scroll-y", A.style "height" "350px", A.style "min-height" "350px" ]
-        (Library.templates
+        (Library.groups
             |> List.map
-                (\( section, templates ) ->
+                (\( head, rest ) ->
                     H.section [ A.class "section mb-3" ]
                         [ H.h2 [ A.class "section__title mb-2" ]
-                            [ H.text section ]
+                            [ H.text head.group ]
                         , H.div [ A.class "d-flex flex-wrap" ]
-                            (List.map templateView templates)
+                            (List.map templateView (head :: rest))
                         ]
                 )
         )
