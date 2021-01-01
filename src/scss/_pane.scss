@@ -36,13 +36,14 @@
   transition: box-shadow 0.2s ease-out;
   cursor: move;
   cursor: grab; // Safari  
-  padding: .5rem;
   border: 1px solid $border-color;
-  background: #fff;
   width: 49%;  
   margin-right: 1%;
   max-width: 8rem;
   @include font-size($input-font-size-sm);
+  // Force styles to apply to dragged nodes as well
+  background: #fff !important;
+  color: $body-color !important; 
 }
 
 .template:hover {

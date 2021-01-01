@@ -521,7 +521,7 @@ update msg model =
                                             ( model.seeds, selectedPage model.pages )
 
                         Nothing ->
-                            -- Failed drag and drop operation
+                            -- Unfinished/failed drag and drop operation
                             ( model.seeds, selectedPage model.pages )
             in
             ( { model
@@ -532,9 +532,8 @@ update msg model =
                 -- TODO avoid changing status of falied D&D operations
                 , saveState = Changed model.currentTime
               }
-              -- Send 'dragstart' event to JS
             , DragDrop.getDragstartEvent msg_
-                |> Maybe.map (.event >> Ports.startDrag)
+                |> Maybe.map (.event >> Ports.setDragImage)
                 |> Maybe.withDefault Cmd.none
             )
 

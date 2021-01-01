@@ -90,18 +90,31 @@ app.ports.selectText.subscribe(function (id) {
   );
 });
 
-// Set a drag image, see https://kryogenix.org/code/browser/custom-drag-image.html
-
-app.ports.startDrag.subscribe(function (event) {
+// Set a drag image, see:
+//
+// * https://kryogenix.org/code/browser/custom-drag-image.html
+// * https://transitory.technology/set-drag-image/
+//
+app.ports.setDragImage.subscribe(function (event) {
+  
   var node = event.target.cloneNode(true);
+
   // Add a "template" class for nodes already in the page
   node.classList.add("template")
   node.title=""
   node.style.position = "absolute"
-  node.style.top = "-999px"
+  node.style.top = "-999px"  
   document.body.appendChild(node)
-  event.dataTransfer.setDragImage(node, 0, 0)
+
+  var clientRect = event.target.getBoundingClientRect()
+  var offsetX = event.clientX - clientRect.left
+  var offsetY = event.clientY - clientRect.top
+  event.dataTransfer.setDragImage(node, offsetX, offsetY)
 });
+
+// app.ports.setDragCursor.subscribe(function (event, cursor) {
+//   event.dataTransfer.dropEffect = cursor
+// });
 
 // Set <head> links
 

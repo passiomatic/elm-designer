@@ -385,9 +385,10 @@ treeItemView model node children =
             if Document.isPageNode node then
                 H.ol
                     (A.classList
-                        [ ( "tree rounded h-100", True )
+                        [ ( "tree rounded", True )
                         , ( "tree--dropping", isDroppingInto node.id model.dragDrop )
                         ]
+                        :: A.style "min-height" "100%"
                         :: makeDroppableIf (canDropInto model.dragDrop node) (AppendTo node.id) []
                     )
                     children
@@ -543,7 +544,7 @@ templateView item =
             T.label item.root
     in
     H.div
-        (A.class "template d-flex mb-1"
+        (A.class "template bp-2 d-flex mb-1"
             :: A.title item.description
             :: DragDrop.draggable DragDropMsg (Insert item.root)
         )

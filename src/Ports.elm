@@ -10,7 +10,7 @@ port module Ports exposing
     , setFontLinks
     , setupAppMenu
     , showPageContextMenu
-    , startDrag
+    , setDragImage
     )
 
 import Json.Decode as Decode exposing (Decoder, Value)
@@ -37,7 +37,7 @@ port selectText : String -> Cmd msg
 port setFontLinks : List String -> Cmd msg
 
 
-port startDrag : Value -> Cmd msg
+port setDragImage : Value -> Cmd msg
 
 
 port showPageContextMenu : String -> Cmd msg
