@@ -18,6 +18,7 @@ import Json.Decode as Decode exposing (Decoder, Value)
 import Library
 import Model exposing (..)
 import Ports
+import Random exposing (Seed)
 import SelectList exposing (SelectList)
 import Set exposing (Set)
 import Style.Border as Border exposing (..)
@@ -29,6 +30,7 @@ import Time
 import Time.Extra as Time exposing (Interval(..))
 import Tree as T exposing (Tree)
 import Tree.Zipper as Zipper exposing (Zipper)
+import UUID exposing (Seeds)
 import Views.Common exposing (fieldId)
 import Views.Editor as Editor
 
@@ -443,93 +445,24 @@ update msg model =
                     case dragDropResult of
                         Just ( dragId, dropId, _ ) ->
                             let
-                                currentZipper =
-                                    selectedPage model.pages
-
-                                ( newSeeds_, maybeZipper, maybeNode ) =
-                                    -- Figure out *what* user just dropped: template or node?
-                                    case dragId of
-                                        Move node ->
-                                            case Document.selectNodeWith node.id currentZipper of
-                                                Just zipper ->
-                                                    if model.isAltDown then
-                                                        -- Duplicate
-                                                        let
-                                                            ( s, n ) =
-                                                                Document.duplicateNode zipper model.seeds
-                                                        in
-                                                        ( s, Just currentZipper, Just n )
-
-                                                    else
-                                                        -- Move
-                                                        ( model.seeds, Document.removeNode zipper, Just (Zipper.tree zipper) )
-
-                                                Nothing ->
-                                                    ( model.seeds, Just currentZipper, Nothing )
-
-                                        Insert template ->
-                                            let
-                                                ( s, n ) =
-                                                    Document.fromTemplate template model.seeds
-                                            in
-                                            ( s, Just currentZipper, Just n )
+                                ( newSeeds_, maybeNode, newZipper ) =
+                                    getDroppedNode model dragId
                             in
-                            -- Figure out *where* user just dropped the node
-                            case dropId of
-                                InsertAfter siblingId ->
-                                    let
-                                        maybeZipper_ =
-                                            Maybe.andThen (Document.selectParentOf siblingId) maybeZipper
-                                    in
-                                    case ( maybeZipper_, maybeNode ) of
-                                        ( Just zipper, Just node ) ->
-                                            -- Insert new element just after the sibling
-                                            ( newSeeds_, Document.insertNodeAfter siblingId node zipper )
+                            case maybeNode of
+                                Just node ->
+                                    ( newSeeds_, addDroppedNode model dropId node newZipper )
 
-                                        ( _, _ ) ->
-                                            ( model.seeds, selectedPage model.pages )
-
-                                InsertBefore siblingId ->
-                                    let
-                                        maybeZipper_ =
-                                            Maybe.andThen (Document.selectParentOf siblingId) maybeZipper
-                                    in
-                                    case ( maybeZipper_, maybeNode ) of
-                                        ( Just zipper, Just node ) ->
-                                            -- Insert new element just before the sibling
-                                            ( newSeeds_, Document.insertNodeBefore siblingId node zipper )
-
-                                        ( _, _ ) ->
-                                            ( model.seeds, selectedPage model.pages )
-
-                                AppendTo parentId ->
-                                    let
-                                        maybeZipper_ =
-                                            Maybe.andThen (Document.selectNodeWith parentId) maybeZipper
-                                    in
-                                    case ( maybeZipper_, maybeNode ) of
-                                        ( Just zipper, Just node ) ->
-                                            -- Add new element as last child
-                                            ( newSeeds_
-                                            , Document.appendNode node zipper
-                                                |> Document.selectNodeWith (T.label node).id
-                                                -- Handle degenerate case
-                                                |> Maybe.withDefault (Zipper.root zipper)
-                                            )
-
-                                        ( _, _ ) ->
-                                            ( model.seeds, selectedPage model.pages )
+                                Nothing ->
+                                    ( model.seeds, selectedPage model.pages )
 
                         Nothing ->
-                            -- Unfinished/failed drag and drop operation
+                            -- Still going/failed drag and drop operation
                             ( model.seeds, selectedPage model.pages )
             in
             ( { model
                 | dragDrop = newDragDrop
                 , pages = SelectList.replaceSelected newPages model.pages
                 , seeds = newSeeds
-
-                -- TODO avoid changing status of falied D&D operations
                 , saveState = Changed model.currentTime
               }
             , DragDrop.getDragstartEvent msg_
@@ -554,25 +487,9 @@ update msg model =
                 -- Delete node
                 -- ############
                 ( False, "Backspace", NotEdited ) ->
-                    let
-                        -- TODO remove node from model.collapsedTreeItems
-                        newPages =
-                            SelectList.updateSelected
-                                (\page_ ->
-                                    case Document.removeNode page_ of
-                                        Just newZipper ->
-                                            newZipper
-
-                                        Nothing ->
-                                            -- If we delete a PageNode the tree is left empty
-                                            --   hence we ignore the request and we focus on
-                                            --   the tree root, the PageNode itself.
-                                            Zipper.root page_
-                                )
-                                model.pages
-                    in
+                    -- TODO remove node from model.collapsedTreeItems
                     ( { model
-                        | pages = newPages
+                        | pages = SelectList.updateSelected Document.removeNode model.pages
                         , saveState = Changed model.currentTime
                       }
                     , Cmd.none
@@ -655,6 +572,67 @@ update msg model =
         --     )
         _ ->
             ( model, Cmd.none )
+
+
+{-| Figure out _what_ user just dropped: template or node?
+-}
+getDroppedNode : Model -> DragId -> ( Seeds, Maybe (Tree Node), Zipper Node )
+getDroppedNode model dragId =
+    let
+        currentZipper =
+            selectedPage model.pages
+    in
+    case dragId of
+        Move node ->
+            case Document.selectNodeWith node.id currentZipper of
+                Just zipper ->
+                    if model.isAltDown then
+                        -- Duplicate node
+                        let
+                            ( newSeeds, newNode ) =
+                                Document.duplicateNode zipper model.seeds
+                        in
+                        ( newSeeds, Just newNode, zipper )
+
+                    else
+                        -- Move node
+                        let
+                            newZipper = 
+                                Document.removeNode zipper
+                        in
+                        ( model.seeds, Just (Zipper.tree zipper), newZipper )
+
+                Nothing ->
+                    ( model.seeds, Nothing, currentZipper )
+
+        Insert template ->
+            let
+                ( newSeeds, newNode ) =
+                    Document.fromTemplate template model.seeds
+            in
+            ( newSeeds, Just newNode, currentZipper )
+
+
+{-| Figure out _where_ user just dropped the node.
+-}
+addDroppedNode model dropId node zipper =
+    case dropId of
+        -- Insert new element just before the sibling
+        InsertBefore siblingId ->
+            Document.insertNodeBefore siblingId node zipper
+
+        -- Insert new element just after the sibling
+        InsertAfter siblingId ->
+            Document.insertNodeAfter siblingId node zipper
+
+        -- Add new element as last child
+        AppendTo parentId ->
+            case Document.selectNodeWith parentId zipper of
+                Just zipper_ ->
+                    Document.appendNode node zipper_
+
+                Nothing ->
+                    zipper
 
 
 selectedPage : SelectList (Zipper Node) -> Zipper Node

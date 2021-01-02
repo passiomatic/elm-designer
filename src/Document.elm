@@ -12,7 +12,7 @@ module Document exposing
     , RowData
     , Template
     , TextData
-    , Viewport(..), insertNode
+    , Viewport(..)
     , appendNode
     , applyAlignX
     , applyAlignY
@@ -43,6 +43,7 @@ module Document exposing
     , findDeviceInfo
     , fromTemplate
     , generateId
+    , insertNode
     , insertNodeAfter
     , insertNodeBefore
     , isContainer
@@ -442,7 +443,7 @@ viewports =
 -- NODE QUERY
 
 
-{-| Find a node with the given id and if successuful move zipper focus to it.
+{-| Find the node with the given id and if successuful move zipper focus to it.
 -}
 selectNodeWith : NodeId -> Zipper Node -> Maybe (Zipper Node)
 selectNodeWith id zipper =
@@ -628,9 +629,10 @@ duplicateNode zipper seeds =
             seeds
 
 
-removeNode : Zipper Node -> Maybe (Zipper Node)
+removeNode : Zipper Node -> Zipper Node
 removeNode zipper =
     Zipper.removeTree zipper
+        |> Maybe.withDefault (Zipper.root zipper)
 
 
 {-| A combined append/insert.
@@ -656,84 +658,36 @@ insertNode newTree zipper =
         insertNodeAfter selectedNode.id newTree parentZipper
 
 
+{-| Append the given node as children of focussed node and then move focus to it.
+-}
 appendNode : Tree Node -> Zipper Node -> Zipper Node
 appendNode newTree zipper =
     Zipper.mapTree
-        (\tree ->
-            let
-                newChildren =
-                    T.children tree ++ [ newTree ]
-            in
-            T.replaceChildren newChildren tree
-        )
+        (T.appendChild newTree)
         zipper
-        |> selectNodeWith (T.label newTree).id
+        |> Zipper.lastChild
         -- Handle degenerate case
         |> Maybe.withDefault (Zipper.root zipper)
 
 
+{-| Insert the given node after its sibling, or zipper root as fallback, and move focus to it.
+-}
 insertNodeAfter : NodeId -> Tree Node -> Zipper Node -> Zipper Node
 insertNodeAfter siblingId newTree zipper =
-    Zipper.mapTree
-        (\tree ->
-            let
-                children =
-                    T.children tree
-
-                notSibling t =
-                    (T.label t).id /= siblingId
-
-                before =
-                    List.Extra.takeWhile notSibling children
-
-                after =
-                    List.Extra.dropWhile notSibling children
-
-                newChildren =
-                    case after of
-                        first :: rest ->
-                            before ++ (first :: newTree :: rest)
-
-                        [] ->
-                            before ++ [ newTree ]
-            in
-            T.replaceChildren newChildren tree
-        )
-        zipper
-        |> selectNodeWith (T.label newTree).id
+    selectNodeWith siblingId zipper
+        |> Maybe.map (Zipper.append newTree)
+        |> Maybe.andThen Zipper.nextSibling
         -- Handle degenerate case
         |> Maybe.withDefault (Zipper.root zipper)
 
 
+{-| Insert the given node before its sibling, or zipper root as fallback, and move focus to it.
+-}
 insertNodeBefore : NodeId -> Tree Node -> Zipper Node -> Zipper Node
 insertNodeBefore siblingId newTree zipper =
-    Zipper.mapTree
-        (\tree ->
-            let
-                children =
-                    T.children tree
-
-                notSibling t =
-                    (T.label t).id /= siblingId
-
-                before =
-                    List.Extra.takeWhile notSibling children
-
-                after =
-                    List.Extra.dropWhile notSibling children
-
-                newChildren =
-                    case after of
-                        first :: rest ->
-                            before ++ (newTree :: first :: rest)
-
-                        [] ->
-                            before ++ [ newTree ]
-            in
-            T.replaceChildren newChildren tree
-        )
-        zipper
-        |> selectNodeWith (T.label newTree).id
+    selectNodeWith siblingId zipper
+        |> Maybe.map (Zipper.prepend newTree)
+        |> Maybe.andThen Zipper.previousSibling
         -- Handle degenerate case
         |> Maybe.withDefault (Zipper.root zipper)
 
