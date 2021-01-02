@@ -301,7 +301,10 @@ treeView model =
                 |> Zipper.toTree
     in
     H.div [ A.class "bp-3 scroll-y border-bottom flex-grow-1" ]
-        [ T.restructure identity (treeItemView model) tree ]
+        [ H.div [ A.class "mb-2" ]
+            [ H.text "Page Elements" ]
+        , T.restructure identity (treeItemView model) tree
+        ]
 
 
 treeItemView : Model -> Node -> List (Html Msg) -> Html Msg
@@ -485,55 +488,57 @@ isCollapsed model node =
 
 pageListView : Model -> Html Msg
 pageListView model =
-    H.div [ A.class "bp-3 scroll-y border-bottom", A.style "height" "130px" ]
-        [ H.section [ A.class "section" ]
-            (H.h2 [ A.class "section__title d-flex align-items-center justify-content-between mb-2" ]
-                [ H.text "Pages"
-                , H.button [ A.title "Add page", A.class "btn btn-link p-0 line-height-1 text-dark", E.onClick <| PageAddClicked () ] [ Icons.plusCircleSmall ]
-                ]
-                :: SelectList.indexedMap
-                    (\index zipper ->
-                        let
-                            pageNode =
-                                Zipper.root zipper
-                                    |> Zipper.label
+    H.div [ A.class "bp-3 scroll-y border-bottom", A.style "height" "150px" ]
+        (H.div [ A.class "d-flex align-items-center justify-content-between mb-2" ]
+            [ H.div []
+                [ H.text "Pages" ]
+            , H.button [ A.title "Add page", A.class "btn btn-link p-0 line-height-1 text-dark", E.onClick <| PageAddClicked () ] [ Icons.plusCircleSmall ]
+            ]
+            :: SelectList.indexedMap
+                (\index zipper ->
+                    let
+                        pageNode =
+                            Zipper.root zipper
+                                |> Zipper.label
 
-                            currentNode =
-                                Zipper.label zipper
+                        currentNode =
+                            Zipper.label zipper
 
-                            classes =
-                                A.classList
-                                    [ ( "page-item", True )
-                                    , ( "bg-primary text-white", index == 0 && currentNode == pageNode )
-                                    , ( "bg-gray-200", index == 0 && currentNode /= pageNode )
-                                    ]
-                        in
-                        H.div
-                            [ classes
-                            , E.onClick (PageSelected index)
-                            , contextMenuHandler (PageContextMenuClicked pageNode.id)
-                            ]
-                            [ H.text pageNode.name
-                            ]
-                    )
-                    model.pages
-            )
-        ]
+                        classes =
+                            A.classList
+                                [ ( "page-item", True )
+                                , ( "bg-primary text-white", index == 0 && currentNode == pageNode )
+                                , ( "bg-gray-200", index == 0 && currentNode /= pageNode )
+                                ]
+                    in
+                    H.div
+                        [ classes
+                        , E.onClick (PageSelected index)
+                        , contextMenuHandler (PageContextMenuClicked pageNode.id)
+                        ]
+                        [ H.text pageNode.name
+                        ]
+                )
+                model.pages
+        )
 
 
 libraryView : Model -> Html Msg
 libraryView _ =
     H.div [ A.class "bpl-3 bpt-3 scroll-y", A.style "height" "350px", A.style "min-height" "350px" ]
-        (Library.groups
-            |> List.map
-                (\( head, rest ) ->
-                    H.section [ A.class "section mb-3" ]
-                        [ H.h2 [ A.class "section__title mb-2" ]
-                            [ H.text head.group ]
-                        , H.div [ A.class "d-flex flex-wrap" ]
-                            (List.map templateView (head :: rest))
-                        ]
-                )
+        (H.div []
+            [ H.text "Library" ]
+            :: (Library.groups
+                    |> List.map
+                        (\( head, rest ) ->
+                            H.section [ A.class "section mt-3" ]
+                                [ H.h2 [ A.class "section__title mb-2" ]
+                                    [ H.text head.group ]
+                                , H.div [ A.class "d-flex flex-wrap" ]
+                                    (List.map templateView (head :: rest))
+                                ]
+                        )
+               )
         )
 
 
