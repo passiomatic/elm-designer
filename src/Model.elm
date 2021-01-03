@@ -118,6 +118,8 @@ type Field
     | BorderBottomRightCornerField
     | BorderBottomLeftCornerField
     | LabelField
+    | OffsetXField
+    | OffsetYField
 
 
 type WidgetState

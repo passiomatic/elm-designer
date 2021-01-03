@@ -564,6 +564,7 @@ applyAllStyles node attrs =
         |> applyWidth node.width
         |> applyHeight node.height
         |> applySpacing node.spacing
+        |> applyTransformation node.transformation
         |> applyFontSize node.fontSize
         |> applyFontFamily node.fontFamily
         |> applyFontColor node.fontColor
@@ -583,6 +584,7 @@ applyChildStyles node attrs =
         |> applyBorderColor node.borderColor
         |> applyPadding node.padding
         |> applySpacing node.spacing
+        |> applyTransformation node.transformation
         |> applyFontSize node.fontSize
         |> applyFontFamily node.fontFamily
         |> applyFontColor node.fontColor
@@ -595,6 +597,45 @@ applyChildStyles node attrs =
 
 -- applyExplain attrs =
 --     E.explain Debug.todo :: attrs
+
+
+applyTransformation : Transformation -> List (E.Attribute Msg) -> List (E.Attribute Msg)
+applyTransformation value attrs =
+    -- TODO scale
+    attrs
+        |> applyOffsetX value
+        |> applyOffsetY value
+        |> applyRotation value
+
+
+applyOffsetX { offsetX } attrs =
+    if offsetX > 0 then
+        E.moveRight offsetX :: attrs
+
+    else if offsetX < 0 then
+        E.moveLeft (abs offsetX) :: attrs
+
+    else
+        attrs
+
+
+applyOffsetY { offsetY } attrs =
+    if offsetY > 0 then
+        E.moveDown offsetY :: attrs
+
+    else if offsetY < 0 then
+        E.moveUp (abs offsetY) :: attrs
+
+    else
+        attrs
+
+
+applyRotation { rotation } attrs =
+    if rotation > 0 then
+        E.rotate (degrees rotation) :: attrs
+
+    else
+        attrs
 
 
 applySpacing : Spacing -> List (E.Attribute Msg) -> List (E.Attribute Msg)

@@ -75,7 +75,7 @@ resolveStyleViews model zipper =
                         [ wrapRowOptionView data.wrapped
                         ]
                     , sectionView "Layout"
-                        [ alignmentView model node
+                        [ positionView model node
                         , lengthView model node
                         , spacingXView model node
                         , paddingView model node
@@ -89,7 +89,7 @@ resolveStyleViews model zipper =
 
                 ColumnNode ->
                     [ sectionView "Layout"
-                        [ alignmentView model node
+                        [ positionView model node
                         , lengthView model node
                         , spacingYView model node
                         , paddingView model node
@@ -106,7 +106,7 @@ resolveStyleViews model zipper =
                         [ fontView model zipper
                         ]
                     , sectionView "Layout"
-                        [ alignmentView model node
+                        [ positionView model node
                         , lengthView model node
                         , spacingXView model node
                         , spacingYView model node
@@ -126,7 +126,7 @@ resolveStyleViews model zipper =
                         , textAlignmentView model node.textAlignment
                         ]
                     , sectionView "Layout"
-                        [ alignmentView model node
+                        [ positionView model node
                         , lengthView model node
                         , paddingView model node
                         ]
@@ -140,7 +140,7 @@ resolveStyleViews model zipper =
                         , spacingYView model node
                         ]
                     , sectionView "Layout"
-                        [ alignmentView model node
+                        [ positionView model node
                         , lengthView model node
                         , paddingView model node
                         ]
@@ -158,7 +158,7 @@ resolveStyleViews model zipper =
                         , spacingXView model node
                         ]
                     , sectionView "Layout"
-                        [ alignmentView model node
+                        [ positionView model node
                         , lengthView model node
                         , paddingView model node
                         ]
@@ -175,7 +175,7 @@ resolveStyleViews model zipper =
                         [ labelView button model node
                         ]
                     , sectionView "Layout"
-                        [ alignmentView model node
+                        [ positionView model node
                         , lengthView model node
                         , paddingView model node
                         ]
@@ -192,7 +192,7 @@ resolveStyleViews model zipper =
                         [ labelView label model node
                         ]
                     , sectionView "Layout"
-                        [ alignmentView model node
+                        [ positionView model node
                         , lengthView model node
                         , paddingView model node
                         ]
@@ -208,7 +208,7 @@ resolveStyleViews model zipper =
                         [ labelView option model node
                         ]
                     , sectionView "Layout"
-                        [ alignmentView model node
+                        [ positionView model node
                         , lengthView model node
                         , paddingView model node
                         ]
@@ -226,7 +226,7 @@ resolveStyleViews model zipper =
 
 commonViews zipper model node =
     [ sectionView "Layout"
-        [ alignmentView model node
+        [ positionView model node
         , lengthView model node
         , paddingView model node
         ]
@@ -440,7 +440,7 @@ paddingView model { padding } =
         [ H.label [ A.class "col-sm-3 col-form-label-sm m-0 text-nowrap" ]
             [ H.text "Padding" ]
         , H.div [ A.class "col-sm-9" ]
-            [ H.div [ A.class "d-flex justify-content-center mb-2" ]
+            [ H.div [ A.class "d-flex justify-content-center mb-1" ]
                 [ H.div [ A.class "w-25" ]
                     [ H.input
                         [ A.id (fieldId PaddingTopField)
@@ -454,7 +454,7 @@ paddingView model { padding } =
                         []
                     ]
                 ]
-            , H.div [ A.class "d-flex align-items-center mb-2" ]
+            , H.div [ A.class "d-flex align-items-center mb-1" ]
                 [ H.div [ A.class "w-25" ]
                     [ H.input
                         [ A.id (fieldId PaddingLeftField)
@@ -761,7 +761,7 @@ bordersView model { borderColor, borderWidth, borderCorner } =
             [ H.label [ A.class "col-sm-3 col-form-label-sm m-0 text-nowrap" ]
                 [ H.text "Size" ]
             , H.div [ A.class "col-sm-9" ]
-                [ H.div [ A.class "d-flex justify-content-between mb-2" ]
+                [ H.div [ A.class "d-flex justify-content-between mb-1" ]
                     [ H.div [ A.class "w-25 mr-1" ]
                         [ H.div [ A.class "input-group input-group-sm" ]
                             [ H.div [ A.class "input-group-prepend" ]
@@ -809,7 +809,7 @@ bordersView model { borderColor, borderWidth, borderCorner } =
                             ]
                         ]
                     ]
-                , H.div [ A.class "d-flex justify-content-between align-items-center mb-2" ]
+                , H.div [ A.class "d-flex justify-content-between align-items-center mb-1" ]
                     [ H.div [ A.class "w-25" ]
                         [ H.input
                             [ A.id (fieldId BorderLeftWidthField)
@@ -1227,6 +1227,60 @@ heightView _ { height } =
         ]
 
 
+positionView : Model -> Node -> Html Msg
+positionView model ({ transformation } as node) =
+    let
+        offsetX =
+            case model.inspector of
+                EditingField OffsetXField _ new ->
+                    new
+
+                _ ->
+                    String.fromFloat transformation.offsetX
+
+        offsetY =
+            case model.inspector of
+                EditingField OffsetYField _ new ->
+                    new
+
+                _ ->
+                    String.fromFloat transformation.offsetY
+    in
+    H.div [ A.class "form-group row align-items-center mb-3" ]
+        [ H.label [ A.class "col-sm-3 col-form-label-sm" ]
+            [ H.text "Position" ]
+        , H.div [ A.class "col-sm-9" ]
+            [ H.div [ A.class "d-flex align-items-center mb-1" ]
+                [ alignmentView model node
+                , H.div [ A.class "w-33" ]
+                    [ H.input
+                        [ A.id (fieldId OffsetXField)
+                        , A.class "form-control form-control-sm text-center bpx-1 ml-1"
+                        , A.type_ "number"
+                        , A.value offsetX
+                        , A.title "Move right/left"
+                        , E.onFocus (FieldEditingStarted OffsetXField offsetX)
+                        , E.onBlur FieldEditingFinished
+                        , E.onInput FieldChanged
+                        ]
+                        []
+                    ]
+                ]
+            , H.input
+                [ A.id (fieldId OffsetYField)
+                , A.class "form-control form-control-sm text-center mx-auto bpx-1 w-33"
+                , A.type_ "number"
+                , A.value offsetY
+                , A.title "Move bottom/top"
+                , E.onFocus (FieldEditingStarted OffsetYField offsetY)
+                , E.onBlur FieldEditingFinished
+                , E.onInput FieldChanged
+                ]
+                []
+            ]
+        ]
+
+
 alignmentView : Model -> Node -> Html Msg
 alignmentView _ { alignmentX, alignmentY } =
     let
@@ -1242,61 +1296,55 @@ alignmentView _ { alignmentX, alignmentY } =
         nextAlignBottom =
             nextAlignEndState alignmentY
     in
-    H.div [ A.class "form-group row align-items-center mb-3" ]
-        [ H.label [ A.class "col-sm-3 col-form-label-sm" ]
-            [ H.text "Alignment" ]
-        , H.div [ A.class "col-sm-9" ]
-            [ H.div [ A.class "bg-white border rounded mx-auto", A.style "width" "64px" ]
-                -- Top align
-                [ H.div [ A.class "d-flex justify-content-center" ]
-                    [ H.button
-                        [ A.classList
-                            [ ( "bp-0 border-0 bg-white line-height-1 text-black-25", True )
-                            , ( "text-primary", alignmentY == Start || alignmentY == Center )
-                            ]
-                        , E.onClick (AlignmentYChanged nextAlignTop)
-                        , A.title "Pin top"
-                        ]
-                        [ Icons.pipe ]
+    H.div [ A.class "bg-white border rounded ml-auto w-33" ]
+        -- Top align
+        [ H.div [ A.class "d-flex justify-content-center" ]
+            [ H.button
+                [ A.classList
+                    [ ( "bp-0 border-0 bg-white line-height-1 text-black-25", True )
+                    , ( "text-primary", alignmentY == Start || alignmentY == Center )
                     ]
-                , H.div [ A.class "d-flex align-items-center justify-content-between" ]
-                    -- Left align
-                    [ H.button
-                        [ A.classList
-                            [ ( "rotate-90 bp-0 border-0 bg-white line-height-1 text-black-25", True )
-                            , ( "text-primary", alignmentX == Start || alignmentX == Center )
-                            ]
-                        , E.onClick (AlignmentXChanged nextAlignLeft)
-                        , A.title "Pin left"
-                        ]
-                        [ Icons.pipe ]
-                    , H.div [ A.class "bg-light border rounded", A.style "width" "1.5rem", A.style "height" "1.5rem" ] []
-
-                    -- Right align
-                    , H.button
-                        [ A.classList
-                            [ ( "rotate-90 bp-0 border-0 bg-white line-height-1 text-black-25", True )
-                            , ( "text-primary", alignmentX == End || alignmentX == Center )
-                            ]
-                        , E.onClick (AlignmentXChanged nextAlignRight)
-                        , A.title "Pin right"
-                        ]
-                        [ Icons.pipe ]
-                    ]
-
-                -- Bottom align
-                , H.div [ A.class "d-flex justify-content-center" ]
-                    [ H.button
-                        [ A.classList
-                            [ ( "bp-0 border-0 bg-white line-height-1 text-black-25", True )
-                            , ( "text-primary", alignmentY == End || alignmentY == Center )
-                            ]
-                        , E.onClick (AlignmentYChanged nextAlignBottom)
-                        , A.title "Pin bottom"
-                        ]
-                        [ Icons.pipe ]
-                    ]
+                , E.onClick (AlignmentYChanged nextAlignTop)
+                , A.title "Align top"
                 ]
+                [ Icons.pipe ]
+            ]
+        , H.div [ A.class "d-flex align-items-center justify-content-between" ]
+            -- Left align
+            [ H.button
+                [ A.classList
+                    [ ( "rotate-90 bp-0 border-0 bg-white line-height-1 text-black-25", True )
+                    , ( "text-primary", alignmentX == Start || alignmentX == Center )
+                    ]
+                , E.onClick (AlignmentXChanged nextAlignLeft)
+                , A.title "Align left"
+                ]
+                [ Icons.pipe ]
+            , H.div [ A.class "bg-light border rounded", A.style "width" "1.5rem", A.style "height" "1.5rem" ] []
+
+            -- Right align
+            , H.button
+                [ A.classList
+                    [ ( "rotate-90 bp-0 border-0 bg-white line-height-1 text-black-25", True )
+                    , ( "text-primary", alignmentX == End || alignmentX == Center )
+                    ]
+                , E.onClick (AlignmentXChanged nextAlignRight)
+                , A.title "Align right"
+                ]
+                [ Icons.pipe ]
+            ]
+
+        -- Bottom align
+        , H.div [ A.class "d-flex justify-content-center" ]
+            [ H.button
+                [ A.classList
+                    [ ( "bp-0 border-0 bg-white line-height-1 text-black-25", True )
+                    , ( "text-primary", alignmentY == End || alignmentY == Center )
+                    ]
+                , E.onClick (AlignmentYChanged nextAlignBottom)
+                , A.title "Align bottom"
+                ]
+                [ Icons.pipe ]
             ]
         ]
 

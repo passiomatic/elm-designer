@@ -12,7 +12,7 @@ module Document exposing
     , RowData
     , Template
     , TextData
-    , Viewport(..)
+    , Viewport(..), applyOffset
     , appendNode
     , applyAlignX
     , applyAlignY
@@ -67,6 +67,7 @@ import Element exposing (Color, Orientation(..))
 import Fonts
 import Icons
 import List.Extra
+import Maybe
 import Palette exposing (orange)
 import SelectList exposing (SelectList)
 import Set exposing (Set)
@@ -114,7 +115,7 @@ type alias Node =
     , name : String
     , width : Length
     , height : Length
-    , adjustment : Adjustment
+    , transformation : Transformation
     , padding : Padding
     , spacing : Spacing
     , fontFamily : Local FontFamily
@@ -141,7 +142,7 @@ type alias Template =
     { name : String
     , width : Length
     , height : Length
-    , adjustment : Adjustment
+    , transformation : Transformation
     , padding : Padding
     , spacing : Spacing
     , fontFamily : Local FontFamily
@@ -182,6 +183,7 @@ baseTemplate =
     { name = ""
     , width = Auto
     , height = Auto
+    , transformation = Layout.transformation
     , padding = Layout.padding 0
     , spacing = Layout.spacing 0
     , fontFamily = Inherit
@@ -197,7 +199,6 @@ baseTemplate =
     , background = Background.None
     , alignmentX = None
     , alignmentY = None
-    , adjustment = Layout.adjustment
     , type_ = PageNode
     }
 
@@ -330,6 +331,7 @@ fromTemplate template seeds =
                     , name = template_.name
                     , width = template_.width
                     , height = template_.height
+                    , transformation = template_.transformation
                     , padding = template_.padding
                     , spacing = template_.spacing
                     , fontFamily = template_.fontFamily
@@ -345,7 +347,6 @@ fromTemplate template seeds =
                     , background = template_.background
                     , alignmentX = template_.alignmentX
                     , alignmentY = template_.alignmentY
-                    , adjustment = template_.adjustment
                     , type_ = template_.type_
                     }
             in
@@ -366,6 +367,7 @@ pageNode theme seeds children index =
             , name = "Page " ++ String.fromInt index
             , width = Fill
             , height = Fill
+            , transformation = baseTemplate.transformation
             , padding = baseTemplate.padding
             , spacing = baseTemplate.spacing
             , fontFamily = Local theme.textFontFamily
@@ -381,7 +383,6 @@ pageNode theme seeds children index =
             , background = baseTemplate.background
             , alignmentX = baseTemplate.alignmentX
             , alignmentY = baseTemplate.alignmentY
-            , adjustment = baseTemplate.adjustment
             , type_ = baseTemplate.type_
             }
     in
@@ -845,6 +846,17 @@ applyAlignX value zipper =
 applyAlignY : Alignment -> Zipper Node -> Zipper Node
 applyAlignY value zipper =
     Zipper.mapLabel (\node -> { node | alignmentY = value }) zipper
+
+
+applyOffset : (Float -> Transformation -> Transformation) -> String -> Zipper Node -> Zipper Node
+applyOffset setter value zipper =
+    let
+        value_ =
+            String.toFloat value
+                |> Maybe.map (clamp -999 999)
+                |> Maybe.withDefault 0
+    in
+    Zipper.mapLabel (\node -> setTransformation (setter value_ node.transformation) node) zipper
 
 
 applyFontSize : String -> Zipper Node -> Zipper Node

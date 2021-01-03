@@ -82,6 +82,12 @@ fieldId field =
         LabelField ->
             "label"
 
+        OffsetXField ->
+            "offset-x"
+
+        OffsetYField ->
+            "offset-y"
+
 
 none =
     H.div [] []

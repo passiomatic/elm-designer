@@ -321,6 +321,15 @@ update msg model =
                     applyChangeAndFinish model Document.applyLabel newValue
 
                 -- ###########
+                -- Transformation
+                -- ###########
+                EditingField OffsetXField oldValue newValue ->
+                    applyChangeAndFinish model (Document.applyOffset Layout.setOffsetX) newValue
+
+                EditingField OffsetYField oldValue newValue ->
+                    applyChangeAndFinish model (Document.applyOffset Layout.setOffsetY) newValue
+
+                -- ###########
                 -- Font size
                 -- ###########
                 EditingField FontSizeField oldValue newValue ->
@@ -597,7 +606,7 @@ getDroppedNode model dragId =
                     else
                         -- Move node
                         let
-                            newZipper = 
+                            newZipper =
                                 Document.removeNode zipper
                         in
                         ( model.seeds, Just (Zipper.tree zipper), newZipper )

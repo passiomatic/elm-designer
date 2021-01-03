@@ -100,7 +100,8 @@ nodeCodec =
         |> Codec.field "name" .name Codec.string
         |> Codec.field "width" .width lengthCodec
         |> Codec.field "height" .height lengthCodec
-        |> Codec.field "adjustment" .adjustment adjustmentCodec
+        -- TODO: rename in "transformation" with next schema change
+        |> Codec.field "adjustment" .transformation transformationCodec
         |> Codec.field "padding" .padding paddingCodec
         |> Codec.field "spacing" .spacing spacingCodec
         |> Codec.field "fontFamily" .fontFamily (localCodec fontFamilyCodec)
@@ -200,9 +201,9 @@ paddingCodec =
         |> Codec.buildObject
 
 
-adjustmentCodec : Codec Adjustment
-adjustmentCodec =
-    Codec.object Adjustment
+transformationCodec : Codec Transformation
+transformationCodec =
+    Codec.object Transformation
         |> Codec.field "offsetX" .offsetX Codec.float
         |> Codec.field "offsetY" .offsetY Codec.float
         |> Codec.field "rotation" .rotation Codec.float

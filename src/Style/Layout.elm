@@ -1,13 +1,14 @@
 module Style.Layout exposing
-    ( Adjustment
-    , Alignment(..)
+    ( Alignment(..)
     , Length(..)
     , Padding
     , Spacing(..)
-    , adjustment
+    , Transformation, setTransformation
     , padding
     , paddingXY
     , setLock
+    , setOffsetX
+    , setOffsetY
     , setPadding
     , setPaddingBottom
     , setPaddingLeft
@@ -18,6 +19,7 @@ module Style.Layout exposing
     , setSpacingY
     , spacing
     , spacingXY
+    , transformation
     )
 
 {-| These types mirrors the Elm UI ones as much as possible.
@@ -133,7 +135,7 @@ setPaddingLeft value padding_ =
 -- ADJUSTMENT
 
 
-type alias Adjustment =
+type alias Transformation =
     { offsetX : Float
     , offsetY : Float
     , rotation : Float
@@ -141,8 +143,25 @@ type alias Adjustment =
     }
 
 
-adjustment =
-    Adjustment 0 0 0 1.0
+{-| Create an "untransformed" style.
+-}
+transformation =
+    Transformation 0 0 0 1.0
+
+
+setTransformation : Transformation -> { a | transformation : Transformation } -> { a | transformation : Transformation }
+setTransformation value node =
+    { node | transformation = value }
+
+
+setOffsetX : Float -> Transformation -> Transformation
+setOffsetX value transformation_ =
+    { transformation_ | offsetX = value }
+
+
+setOffsetY : Float -> Transformation -> Transformation
+setOffsetY value transformation_ =
+    { transformation_ | offsetY = value }
 
 
 
