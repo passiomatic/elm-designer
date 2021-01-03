@@ -12,7 +12,7 @@ module Document exposing
     , RowData
     , Template
     , TextData
-    , Viewport(..), applyOffset
+    , Viewport(..)
     , appendNode
     , applyAlignX
     , applyAlignY
@@ -28,6 +28,7 @@ module Document exposing
     , applyFontWeight
     , applyHeight
     , applyLabel
+    , applyOffset
     , applyPadding
     , applyPaddingLock
     , applySpacing
@@ -919,8 +920,8 @@ applyBorderWidth setter value zipper =
     let
         value_ =
             String.toInt value
+                |> Maybe.map (clamp 0 999)
                 |> Maybe.withDefault 0
-                |> clamp 0 999
     in
     Zipper.mapLabel (\node -> setBorderWidth (setter value_ node.borderWidth) node) zipper
 
@@ -930,8 +931,8 @@ applyBorderCorner setter value zipper =
     let
         value_ =
             String.toInt value
+                |> Maybe.map (clamp 0 999)
                 |> Maybe.withDefault 0
-                |> clamp 0 999
     in
     Zipper.mapLabel (\node -> Border.setBorderCorner (setter value_ node.borderCorner) node) zipper
 
