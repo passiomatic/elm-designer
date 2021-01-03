@@ -348,7 +348,7 @@ update msg model =
                     applyChangeAndFinish model Document.applyBackgroundColor newValue
 
                 EditingField BackgroundImageField oldValue newValue ->
-                    applyChangeAndFinish model Document.applyBackground newValue
+                    applyChangeAndFinish model Document.applyBackgroundUrl newValue
 
                 -- ###########
                 -- Borders
@@ -425,8 +425,9 @@ update msg model =
         BackgroundColorChanged value ->
             applyChangeAndFinish model Document.applyBackgroundColor value
 
-        -- BackgroundSizingChanged value ->
-        --     applyChange model Document.applyBackgroundImage value
+        BackgroundSizingChanged value ->
+            applyChangeAndFinish model Document.applyBackgroud value
+
         BorderColorChanged value ->
             applyChangeAndFinish model Document.applyBorderColor value
 

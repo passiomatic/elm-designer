@@ -16,8 +16,9 @@ module Document exposing
     , appendNode
     , applyAlignX
     , applyAlignY
-    , applyBackground
+    , applyBackgroud
     , applyBackgroundColor
+    , applyBackgroundUrl
     , applyBorderColor
     , applyBorderCorner
     , applyBorderLock
@@ -892,18 +893,22 @@ applyBackgroundColor value zipper =
     Zipper.mapLabel (Background.setBackgroundColor value_) zipper
 
 
-applyBackground : String -> Zipper Node -> Zipper Node
-applyBackground value zipper =
+applyBackgroundUrl : String -> Zipper Node -> Zipper Node
+applyBackgroundUrl value zipper =
     let
         value_ =
             if String.trim value /= "" then
-                -- TODO Pick actual value for from Cropped/Tiled/etc. buttons
                 Background.Cropped value
 
             else
                 Background.None
     in
     Zipper.mapLabel (Background.setBackground value_) zipper
+
+
+applyBackgroud : Background -> Zipper Node -> Zipper Node
+applyBackgroud value zipper =
+    Zipper.mapLabel (Background.setBackground value) zipper
 
 
 applyBorderColor : String -> Zipper Node -> Zipper Node
