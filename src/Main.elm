@@ -33,6 +33,7 @@ import Tree.Zipper as Zipper exposing (Zipper)
 import UUID exposing (Seeds)
 import Views.Common exposing (fieldId)
 import Views.Editor as Editor
+import UndoList
 
 
 saveInterval =
@@ -506,7 +507,7 @@ update msg model =
                 ( False, "Backspace", NotEdited ) ->
                     -- TODO remove node from model.collapsedTreeItems
                     ( { model
-                        | pages = { pages | present = SelectList.updateSelected Document.removeNode model.pages.present}
+                        | pages = UndoList.new (SelectList.updateSelected Document.removeNode model.pages.present) pages
                         , saveState = Changed model.currentTime
                       }
                     , Cmd.none
@@ -543,7 +544,8 @@ update msg model =
 
             else
                 ( model, Cmd.none )
-
+        UnDo ->
+            ( { model | pages = UndoList.undo pages}, Cmd.none)
         -- MouseMoved mouse ->
         --     if model.isMouseButtonDown && model.mode == PanMode then
         --         -- Pan away
