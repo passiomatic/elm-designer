@@ -35,6 +35,7 @@ import Style.Theme as Theme exposing (Theme)
 import Time exposing (Posix)
 import Tree exposing (Tree)
 import Tree.Zipper as Zipper exposing (Zipper)
+import UndoList
 import UUID exposing (Seeds)
 
 
@@ -150,7 +151,7 @@ type alias Model =
     , mouseY : Int
     , isMouseButtonDown : Bool
     , isAltDown : Bool
-    , pages : SelectList (Zipper Node)
+    , pages : UndoList.UndoList (SelectList (Zipper Node))
     , viewport : Viewport
     , inspector : Inspector
     , dragDrop : DragDrop.Model DragId DropId
@@ -183,7 +184,7 @@ type alias Context =
 
 context : Model -> Context
 context model =
-    { currentNode = SelectList.selected model.pages
+    { currentNode = SelectList.selected model.pages.present
     , dragDrop = model.dragDrop
     , inspector = model.inspector
     , mode = model.mode
@@ -248,7 +249,7 @@ initialModel { width, height, seed1, seed2, seed3, seed4 } =
     , mouseY = 0
     , isMouseButtonDown = False
     , isAltDown = False
-    , pages = SelectList.singleton (Zipper.fromTree emptyDocument)
+    , pages = UndoList.fresh <| SelectList.singleton <| Zipper.fromTree emptyDocument
     , viewport = Fluid
     , inspector = NotEdited
     , dragDrop = DragDrop.init
