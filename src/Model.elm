@@ -28,15 +28,15 @@ import Random
 import Result exposing (Result(..))
 import SelectList exposing (SelectList)
 import Set exposing (Set)
-import Style.Layout as Layout exposing (..)
 import Style.Background as Background exposing (Background)
 import Style.Font as Font exposing (..)
+import Style.Layout as Layout exposing (..)
 import Style.Theme as Theme exposing (Theme)
 import Time exposing (Posix)
 import Tree exposing (Tree)
 import Tree.Zipper as Zipper exposing (Zipper)
-import UndoList
 import UUID exposing (Seeds)
+import UndoList
 
 
 workspaceWidth =

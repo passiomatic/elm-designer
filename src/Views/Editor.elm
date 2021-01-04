@@ -154,7 +154,7 @@ headerView model =
 viewportsView : Model -> Html Msg
 viewportsView model =
     H.div [ A.class "d-flex align-items-center" ]
-        [ H.div [E.onClick UnDo, A.class "align-self-left" ] [H.text "UnDo"]
+        [ H.div [ E.onClick UnDo, A.class "align-self-left" ] [ H.text "UnDo" ]
         , H.text "Device"
         , H.select [ onViewportSelect ViewportChanged, A.class "custom-select custom-select-sm ml-1" ]
             (List.map

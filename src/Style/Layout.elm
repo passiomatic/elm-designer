@@ -3,7 +3,7 @@ module Style.Layout exposing
     , Length(..)
     , Padding
     , Spacing(..)
-    , Transformation, setTransformation
+    , Transformation
     , padding
     , paddingXY
     , setLock
@@ -17,6 +17,7 @@ module Style.Layout exposing
     , setSpacing
     , setSpacingX
     , setSpacingY
+    , setTransformation
     , spacing
     , spacingXY
     , transformation

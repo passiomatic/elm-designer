@@ -7,10 +7,10 @@ port module Ports exposing
     , onPageDelete
     , saveDocument
     , selectText
+    , setDragImage
     , setFontLinks
     , setupAppMenu
     , showPageContextMenu
-    , setDragImage
     )
 
 import Json.Decode as Decode exposing (Decoder, Value)

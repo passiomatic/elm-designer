@@ -31,9 +31,9 @@ import Time.Extra as Time exposing (Interval(..))
 import Tree as T exposing (Tree)
 import Tree.Zipper as Zipper exposing (Zipper)
 import UUID exposing (Seeds)
+import UndoList
 import Views.Common exposing (fieldId)
 import Views.Editor as Editor
-import UndoList
 
 
 saveInterval =
@@ -125,7 +125,6 @@ update msg model =
                     model.pages.present
                         |> SelectList.selectLast
                         |> SelectList.insertBefore (Zipper.fromTree page)
-
             in
             ( { model
                 | seeds = newSeeds
@@ -137,7 +136,6 @@ update msg model =
 
         PageDeleteClicked id ->
             let
-
                 isPage : Zipper Node -> Bool
                 isPage zipper =
                     Document.nodeId (Zipper.toTree zipper |> T.label).id == id
@@ -167,7 +165,7 @@ update msg model =
                                 |> Document.insertNode newNode
                     in
                     ( { model
-                        | pages = { pages | present = SelectList.replaceSelected newPage model.pages.present } 
+                        | pages = { pages | present = SelectList.replaceSelected newPage model.pages.present }
                         , saveState = Changed model.currentTime
                         , seeds = newSeeds
                       }
@@ -195,7 +193,7 @@ update msg model =
                         head :: rest ->
                             -- Select the first page of the list
                             ( { model
-                                | pages = { pages | present = SelectList.fromLists [] head rest}
+                                | pages = { pages | present = SelectList.fromLists [] head rest }
                                 , viewport = document.viewport
                                 , saveState = Original
                               }
@@ -252,7 +250,7 @@ update msg model =
                             SelectList.selectHead pages.present
             in
             ( { model
-                | pages = { pages | present = newPages}
+                | pages = { pages | present = newPages }
 
                 -- Quit editing when user selects a new page
                 , inspector = NotEdited
@@ -272,7 +270,7 @@ update msg model =
                         model.pages.present
             in
             ( { model
-                | pages = { pages | present = newPages}
+                | pages = { pages | present = newPages }
 
                 -- Quit editing when user selects a new node
                 , inspector = NotEdited
@@ -479,7 +477,7 @@ update msg model =
             in
             ( { model
                 | dragDrop = newDragDrop
-                , pages = { pages | present = SelectList.replaceSelected newPages model.pages.present}
+                , pages = { pages | present = SelectList.replaceSelected newPages model.pages.present }
                 , seeds = newSeeds
                 , saveState = Changed model.currentTime
               }
@@ -544,8 +542,10 @@ update msg model =
 
             else
                 ( model, Cmd.none )
+
         UnDo ->
-            ( { model | pages = UndoList.undo pages}, Cmd.none)
+            ( { model | pages = UndoList.undo pages }, Cmd.none )
+
         -- MouseMoved mouse ->
         --     if model.isMouseButtonDown && model.mode == PanMode then
         --         -- Pan away
