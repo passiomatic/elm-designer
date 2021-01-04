@@ -21,6 +21,7 @@ References:
 --import Element.Font as Font exposing (Font)
 
 import Dict exposing (Dict)
+import Element.Font exposing (extraBold)
 import SelectList exposing (SelectList)
 import Style.Font
     exposing
@@ -44,18 +45,22 @@ families : List FontFamily
 families =
     [ defaultFamily
     , FontFamily "Helvetica" (Native helveticaFontStack) nativeWeights
-    , FontFamily "Times New Roman" (Native timesNewRomanFontStack) nativeWeights
     , FontFamily "Georgia" (Native georgiaFontStack) nativeWeights
+    , FontFamily "Times New Roman" (Native timesNewRomanFontStack) nativeWeights
 
     -- Sans serif
-    , FontFamily "Work Sans" (External workSansUrl) workSansWeights
-    , FontFamily "Rubik" (External rubikUrl) rubikWeights
+    , FontFamily "Alegreya Sans" (External alegreyaSansUrl) alegreyaSansWeights
+    , FontFamily "IBM Plex Sans" (External plexSansUrl) plexSansWeights
     , FontFamily "Roboto" (External robotoUrl) robotoWeights
+    , FontFamily "Rubik" (External rubikUrl) rubikWeights
+    , FontFamily "Work Sans" (External workSansUrl) workSansWeights
 
     -- Serif
+    , FontFamily "Alegreya" (External alegreyaUrl) alegreyaWeights
     , FontFamily "Cormorant" (External cormorantUrl) cormorantWeights
     , FontFamily "Eczar" (External eczarUrl) eczarWeights
-    , FontFamily "Alegreya" (External alegreyaUrl) alegreyaWeights
+    , FontFamily "Libre Baskerville" (External libreBaskervilleUrl) libreBaskervilleWeights
+    , FontFamily "Lora" (External loraUrl) loraWeights
     ]
 
 
@@ -185,6 +190,50 @@ robotoWeights =
     ]
 
 
+plexSansUrl =
+    baseUrl ++ "IBM+Plex+Sans:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;1,100;1,200;1,300;1,400;1,500;1,600;1,700&display=swap"
+
+
+plexSansWeights =
+    [ Hairline
+    , HairlineItalic
+    , ExtraLight
+    , ExtraLightItalic
+    , Light
+    , LightItalic
+    , Regular
+    , Italic
+    , Medium
+    , MediumItalic
+    , SemiBold
+    , SemiBoldItalic
+    , Bold
+    , BoldItalic
+    ]
+
+
+alegreyaSansUrl =
+    baseUrl ++ "Alegreya+Sans:ital,wght@0,100;0,300;0,400;0,500;0,700;0,800;0,900;1,100;1,300;1,400;1,500;1,700;1,800;1,900&display=swap"
+
+
+alegreyaSansWeights =
+    [ Hairline
+    , HairlineItalic
+    , Light
+    , LightItalic
+    , Regular
+    , Italic
+    , Medium
+    , MediumItalic
+    , Bold
+    , BoldItalic
+    , ExtraBold
+    , ExtraBoldItalic
+    , Heavy
+    , HeavyItalic
+    ]
+
+
 eczarUrl =
     baseUrl ++ "Eczar:wght@400;500;600;700;800&display=swap"
 
@@ -213,6 +262,33 @@ alegreyaWeights =
     , ExtraBoldItalic
     , Heavy
     , HeavyItalic
+    ]
+
+
+loraUrl =
+    baseUrl ++ "Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600;1,700&display=swap"
+
+
+loraWeights =
+    [ Regular
+    , Italic
+    , Medium
+    , MediumItalic
+    , SemiBold
+    , SemiBoldItalic
+    , Bold
+    , BoldItalic
+    ]
+
+
+libreBaskervilleUrl =
+    baseUrl ++ "Libre+Baskerville:ital,wght@0,400;0,700;1,400&display=swap"
+
+
+libreBaskervilleWeights =
+    [ Regular
+    , Italic
+    , Bold
     ]
 
 
