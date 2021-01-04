@@ -128,7 +128,7 @@ update msg model =
             in
             ( { model
                 | seeds = newSeeds
-                , pages = { pages | present = newPages }
+                , pages = UndoList.new newPages model.pages
                 , saveState = Changed model.currentTime
               }
             , Cmd.none
@@ -147,7 +147,7 @@ update msg model =
                         |> SelectList.attempt SelectList.delete
             in
             ( { model
-                | pages = { pages | present = newPages }
+                | pages = UndoList.new newPages model.pages
                 , saveState = Changed model.currentTime
               }
             , Cmd.none
@@ -163,9 +163,12 @@ update msg model =
                         newPage =
                             selectedPage model.pages.present
                                 |> Document.insertNode newNode
+
+                        newPages =
+                            SelectList.replaceSelected newPage model.pages.present
                     in
                     ( { model
-                        | pages = { pages | present = SelectList.replaceSelected newPage model.pages.present }
+                        | pages = UndoList.new newPages model.pages
                         , saveState = Changed model.currentTime
                         , seeds = newSeeds
                       }
@@ -270,7 +273,7 @@ update msg model =
                         model.pages.present
             in
             ( { model
-                | pages = { pages | present = newPages }
+                | pages = UndoList.new newPages model.pages
 
                 -- Quit editing when user selects a new node
                 , inspector = NotEdited
@@ -457,7 +460,7 @@ update msg model =
                 ( newDragDrop, dragDropResult ) =
                     DragDrop.update msg_ model.dragDrop
 
-                ( newSeeds, newPages ) =
+                ( newSeeds, newPages, newUndo ) =
                     case dragDropResult of
                         Just ( dragId, dropId, _ ) ->
                             let
@@ -466,18 +469,26 @@ update msg model =
                             in
                             case maybeNode of
                                 Just node ->
-                                    ( newSeeds_, addDroppedNode model dropId node newZipper )
+                                    ( newSeeds_, addDroppedNode model dropId node newZipper, True )
 
                                 Nothing ->
-                                    ( model.seeds, selectedPage model.pages.present )
+                                    ( model.seeds, selectedPage model.pages.present, False )
 
                         Nothing ->
                             -- Still going/failed drag and drop operation
-                            ( model.seeds, selectedPage model.pages.present )
+                            ( model.seeds, selectedPage model.pages.present, False )
+
+                newPages_ =
+                    SelectList.replaceSelected newPages model.pages.present
             in
             ( { model
                 | dragDrop = newDragDrop
-                , pages = { pages | present = SelectList.replaceSelected newPages model.pages.present }
+                , pages =
+                    if newUndo then
+                        UndoList.new newPages_ model.pages
+
+                    else
+                        { pages | present = newPages_ }
                 , seeds = newSeeds
                 , saveState = Changed model.currentTime
               }
@@ -545,6 +556,8 @@ update msg model =
 
         UnDo ->
             ( { model | pages = UndoList.undo pages }, Cmd.none )
+        ReDo ->
+            ( { model | pages = UndoList.redo pages }, Cmd.none )
 
         -- MouseMoved mouse ->
         --     if model.isMouseButtonDown && model.mode == PanMode then
@@ -662,11 +675,11 @@ selectedPage pages =
 applyChange : Model -> (a -> Zipper Node -> Zipper Node) -> a -> ( Model, Cmd Msg )
 applyChange ({ pages, currentTime } as model) updater newValue =
     let
-        currentPages =
+        newPages =
             SelectList.updateSelected (updater newValue) model.pages.present
     in
     ( { model
-        | pages = { pages | present = currentPages }
+        | pages = UndoList.new newPages model.pages
         , saveState = Changed model.currentTime
       }
     , Cmd.none
@@ -676,11 +689,11 @@ applyChange ({ pages, currentTime } as model) updater newValue =
 applyChangeAndFinish : Model -> (a -> Zipper Node -> Zipper Node) -> a -> ( Model, Cmd Msg )
 applyChangeAndFinish ({ pages, currentTime } as model) updater newValue =
     let
-        currentPages =
+        newPages =
             SelectList.updateSelected (updater newValue) model.pages.present
     in
     ( { model
-        | pages = { pages | present = currentPages }
+        | pages = UndoList.new newPages model.pages
         , dropDownState = Hidden
         , inspector = NotEdited
         , saveState = Changed currentTime
