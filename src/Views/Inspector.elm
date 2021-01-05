@@ -1663,19 +1663,27 @@ fontFamilyView fontFamily resolvedFontFamily inherit =
                         [ H.text (inheritedLabel resolvedFontFamily.name) ]
                     )
     in
-    -- TODO group native/external fonts
-    --[ H.optgroup [ A.attribute "label" group ]
     Keyed.node "select"
         [ onFontFamilySelect FontFamilyChanged, A.class "custom-select custom-select-sm" ]
         (inheritOption
-            :: List.map
-                (\family ->
-                    ( family.name
-                    , H.option (setSelected family.name [ fontFamilyValue (Local family) ])
-                        [ H.text family.name ]
-                    )
-                )
-                Fonts.families
+            :: (Fonts.families
+                    |> List.map
+                        (\( group, families ) ->
+                            ( group
+                            , Keyed.node "optgroup"
+                                [ A.attribute "label" group ]
+                                (List.map
+                                    (\family ->
+                                        ( family.name
+                                        , H.option (setSelected family.name [ fontFamilyValue (Local family) ])
+                                            [ H.text family.name ]
+                                        )
+                                    )
+                                    families
+                                )
+                            )
+                        )
+               )
         )
 
 

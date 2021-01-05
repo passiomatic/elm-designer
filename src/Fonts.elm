@@ -22,6 +22,7 @@ References:
 
 import Dict exposing (Dict)
 import Element.Font exposing (extraBold)
+import List.Extra
 import SelectList exposing (SelectList)
 import Style.Font
     exposing
@@ -35,33 +36,40 @@ baseUrl =
     "https://fonts.googleapis.com/css2?family="
 
 
+families : List ( String, List FontFamily )
+families =
+    [ ( "Native"
+      , [ defaultFamily
+        , FontFamily "Helvetica" (Native helveticaFontStack) nativeWeights
+        , FontFamily "Georgia" (Native georgiaFontStack) nativeWeights
+        , FontFamily "Times New Roman" (Native timesNewRomanFontStack) nativeWeights
+        ]
+      )
+    , ( "Sans Serif/Google Fonts"
+      , [ FontFamily "Alegreya Sans" (External alegreyaSansUrl) alegreyaSansWeights
+        , FontFamily "IBM Plex Sans" (External plexSansUrl) plexSansWeights
+        , FontFamily "Roboto" (External robotoUrl) robotoWeights
+        , FontFamily "Rubik" (External rubikUrl) rubikWeights
+        , FontFamily "Work Sans" (External workSansUrl) workSansWeights
+        ]
+      )
+    , ( "Serif/Google Fonts"
+      , [ FontFamily "Alegreya" (External alegreyaUrl) alegreyaWeights
+        , FontFamily "Cormorant" (External cormorantUrl) cormorantWeights
+        , FontFamily "Eczar" (External eczarUrl) eczarWeights
+        , FontFamily "Libre Baskerville" (External libreBaskervilleUrl) libreBaskervilleWeights
+        , FontFamily "Lora" (External loraUrl) loraWeights
+        ]
+      )
+    ]
+
+
 families_ =
     families
+        |> List.map (\( _, f ) -> f)
+        |> List.concat
         |> List.map (\family -> ( family.name, family ))
         |> Dict.fromList
-
-
-families : List FontFamily
-families =
-    [ defaultFamily
-    , FontFamily "Helvetica" (Native helveticaFontStack) nativeWeights
-    , FontFamily "Georgia" (Native georgiaFontStack) nativeWeights
-    , FontFamily "Times New Roman" (Native timesNewRomanFontStack) nativeWeights
-
-    -- Sans serif
-    , FontFamily "Alegreya Sans" (External alegreyaSansUrl) alegreyaSansWeights
-    , FontFamily "IBM Plex Sans" (External plexSansUrl) plexSansWeights
-    , FontFamily "Roboto" (External robotoUrl) robotoWeights
-    , FontFamily "Rubik" (External rubikUrl) rubikWeights
-    , FontFamily "Work Sans" (External workSansUrl) workSansWeights
-
-    -- Serif
-    , FontFamily "Alegreya" (External alegreyaUrl) alegreyaWeights
-    , FontFamily "Cormorant" (External cormorantUrl) cormorantWeights
-    , FontFamily "Eczar" (External eczarUrl) eczarWeights
-    , FontFamily "Libre Baskerville" (External libreBaskervilleUrl) libreBaskervilleWeights
-    , FontFamily "Lora" (External loraUrl) loraWeights
-    ]
 
 
 findFamily : String -> FontFamily
