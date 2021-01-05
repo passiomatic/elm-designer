@@ -554,9 +554,10 @@ update msg model =
             else
                 ( model, Cmd.none )
 
-        UnDo ->
+        UnDo _ ->
             ( { model | pages = UndoList.undo pages }, Cmd.none )
-        ReDo ->
+
+        ReDo _ ->
             ( { model | pages = UndoList.redo pages }, Cmd.none )
 
         -- MouseMoved mouse ->
@@ -737,6 +738,8 @@ subscriptions ({ mode } as model) =
          , Ports.onPageAdd PageAddClicked
          , Ports.onPageDelete PageDeleteClicked
          , Ports.onInsertNode InsertNodeClicked
+         , Ports.onUnDo UnDo
+         , Ports.onReDo ReDo
          , Time.every 1000 Ticked
 
          --, E.onResize Resized

@@ -89,8 +89,8 @@ type Msg
     | NoOp
     | DragDropMsg (DragDrop.Msg DragId DropId)
     | TabMsg Tab.State
-    | UnDo
-    | ReDo
+    | UnDo ()
+    | ReDo ()
 
 
 {-| All editable text fields in the app.
