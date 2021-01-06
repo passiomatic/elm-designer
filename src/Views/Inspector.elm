@@ -53,7 +53,7 @@ resolveStyleViews model zipper =
             Zipper.label zipper
 
         title =
-            H.div [ A.class "bpx-3 bpt-3" ]
+            H.div [ A.class "bpx-3 bpt-3 font-weight-500" ]
                 [ H.text (Document.nodeType node.type_) ]
     in
     title

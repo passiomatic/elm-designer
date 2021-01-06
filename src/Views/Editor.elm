@@ -268,8 +268,8 @@ codeView model =
                 |> Zipper.tree
     in
     [ H.section [ A.class "section bp-3 d-flex flex-column h-100" ]
-        [ H.div [ A.class "mb-2" ]
-            [ H.text ("Code for " ++ (T.label node |> .name) ++ ":")
+        [ H.div [ A.class "mb-2 font-weight-500" ]
+            [ H.text ("Generated code for " ++ (T.label node |> .name)  )
             ]
         , H.div [ A.class "scroll-y flex-fill bg-white bp-1 border" ]
             [ H.pre [ A.class "preformatted" ]
@@ -301,9 +301,7 @@ treeView model =
                 |> Zipper.toTree
     in
     H.div [ A.class "bp-3 scroll-y border-bottom flex-grow-1" ]
-        [ H.div [ A.class "mb-2" ]
-            [ H.text "Page Elements" ]
-        , T.restructure identity (treeItemView model) tree
+        [ T.restructure identity (treeItemView model) tree
         ]
 
 
@@ -386,15 +384,18 @@ treeItemView model node children =
         _ ->
             -- Tree node
             if Document.isPageNode node then
-                H.ol
-                    (A.classList
-                        [ ( "tree rounded", True )
-                        , ( "tree--dropping", isDroppingInto node.id model.dragDrop )
-                        ]
-                        :: A.style "min-height" "100%"
-                        :: makeDroppableIf (canDropInto model.dragDrop node) (AppendTo node.id) []
-                    )
-                    children
+                H.div [ A.class "d-flex flex-column h-100" ]
+                    [ H.div [ A.class "mb-2 font-weight-500" ]
+                        [ H.text "Page Elements" ]
+                    , H.ol
+                        (A.classList
+                            [ ( "tree rounded flex-grow-1", True )
+                            , ( "tree--dropping", isDroppingInto node.id model.dragDrop )
+                            ]
+                            :: makeDroppableIf (canDropInto model.dragDrop node) (AppendTo node.id) []
+                        )
+                        children
+                    ]
 
             else
                 H.li
@@ -488,9 +489,9 @@ isCollapsed model node =
 
 pageListView : Model -> Html Msg
 pageListView model =
-    H.div [ A.class "bp-3 scroll-y border-bottom", A.style "height" "150px" ]
+    H.div [ A.class "bp-3 scroll-y border-bottom", A.style "min-height" "112px", A.style "max-height" "112px"  ]
         (H.div [ A.class "d-flex align-items-center justify-content-between mb-2" ]
-            [ H.div []
+            [ H.div [ A.class "font-weight-500" ]
                 [ H.text "Pages" ]
             , H.button [ A.title "Add page", A.class "btn btn-link p-0 line-height-1 text-dark", E.onClick <| PageAddClicked () ] [ Icons.plusCircleSmall ]
             ]
@@ -526,7 +527,7 @@ pageListView model =
 libraryView : Model -> Html Msg
 libraryView _ =
     H.div [ A.class "bpl-3 bpt-3 scroll-y", A.style "height" "350px", A.style "min-height" "350px" ]
-        (H.div []
+        (H.div [ A.class "font-weight-500" ]
             [ H.text "Library" ]
             :: (Library.groups
                     |> List.map
