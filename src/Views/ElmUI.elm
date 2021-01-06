@@ -980,6 +980,10 @@ placeholderText label =
         , Font.center
         , E.centerX
         , E.padding 8
+        , E.width E.fill
+        , Border.width 1
+        , Border.dotted
+        , Border.color Palette.lightCharcoal
         ]
         (E.text label)
 

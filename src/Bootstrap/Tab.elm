@@ -6,7 +6,9 @@ module Bootstrap.Tab exposing
     , activeTab
     )
 
-{-| Use tabs to create tabbable regions. Tabs uses view state, so there is a little bit of wiring needed to use them.
+{-| This is adatded from Elm Bootstrap tabs, see: https://github.com/rundis/elm-bootstrap
+
+    Use tabs to create tabbable regions. Tabs uses view state, so there is a little bit of wiring needed to use them.
 
     -- example with animation, you can drop the subscription part when not using animations
     type alias Model =

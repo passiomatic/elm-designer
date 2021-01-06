@@ -53,7 +53,7 @@ resolveStyleViews model zipper =
             Zipper.label zipper
 
         title =
-            H.div [ A.class "bpx-3 bpt-3" ]
+            H.div [ A.class "bpx-3 bpt-3 font-weight-500" ]
                 [ H.text (Document.nodeType node.type_) ]
     in
     title
@@ -444,7 +444,8 @@ paddingView model { padding } =
                 [ H.div [ A.class "w-25" ]
                     [ H.input
                         [ A.id (fieldId PaddingTopField)
-                        , A.type_ "text"
+                        , A.type_ "number"
+                        , A.min "0"
                         , A.value paddingTop
                         , A.class "form-control form-control-sm text-center"
                         , E.onFocus (FieldEditingStarted PaddingTopField paddingTop)
@@ -458,7 +459,8 @@ paddingView model { padding } =
                 [ H.div [ A.class "w-25" ]
                     [ H.input
                         [ A.id (fieldId PaddingLeftField)
-                        , A.type_ "text"
+                        , A.type_ "number"
+                        , A.min "0"
                         , A.value paddingLeft
                         , A.class "form-control form-control-sm text-center"
                         , E.onFocus (FieldEditingStarted PaddingLeftField paddingLeft)
@@ -489,7 +491,8 @@ paddingView model { padding } =
                 , H.div [ A.class "w-25" ]
                     [ H.input
                         [ A.id (fieldId PaddingRightField)
-                        , A.type_ "text"
+                        , A.type_ "number"
+                        , A.min "0"
                         , A.value paddingRight
                         , A.class "form-control form-control-sm text-center"
                         , E.onFocus (FieldEditingStarted PaddingRightField paddingRight)
@@ -503,7 +506,8 @@ paddingView model { padding } =
                 [ H.div [ A.class "w-25" ]
                     [ H.input
                         [ A.id (fieldId PaddingBottomField)
-                        , A.type_ "text"
+                        , A.type_ "number"
+                        , A.min "0"
                         , A.value paddingBottom
                         , A.class "form-control form-control-sm text-center"
                         , E.onFocus (FieldEditingStarted PaddingBottomField paddingBottom)
@@ -515,58 +519,6 @@ paddingView model { padding } =
                 ]
             ]
         ]
-
-
-
--- adjustView : Model -> Node -> Html Msg
--- adjustView model { adjustment } =
---     let
---         adjustmentTop =
---             case model.inspector of
---                 EditingField PaddingTopField _ new ->
---                     new
---                 _ ->
---                     String.fromFloat adjustment.offsetY
---         adjustmentRight =
---             case model.inspector of
---                 EditingField PaddingRightField _ new ->
---                     new
---                 _ ->
---                     String.fromFloat adjustment.offsetX
---     in
---     H.section [ A.class "section bp-3  border-bottom" ]
---         [ H.h2 [ A.class "section__title mb-2" ]
---             [ H.text "Adjust" ]
---         , H.div [ A.class "d-flex justify-content-center mb-2" ]
---             [ H.div [ A.class "w-25" ]
---                 [ H.input
---                     [ A.id (fieldId PaddingTopField)
---                     , A.type_ "text"
---                     , A.value adjustmentTop
---                     , A.class "form-control form-control-sm text-center"
---                     , E.onFocus (FieldEditingStarted PaddingTopField adjustmentTop)
---                     , E.onBlur FieldEditingFinished
---                     , E.onInput FieldChanged
---                     ]
---                     []
---                 ]
---             ]
---         , H.div [ A.class "d-flex align-items-center mb-2" ]
---             [ H.div [ A.class "w-25" ]
---                 [ H.input
---                     [ A.id (fieldId PaddingRightField)
---                     , A.type_ "text"
---                     , A.value adjustmentRight
---                     --, A.placeholder "?"
---                     , A.class "form-control form-control-sm text-center"
---                     , E.onFocus (FieldEditingStarted PaddingRightField adjustmentRight)
---                     , E.onBlur FieldEditingFinished
---                     , E.onInput FieldChanged
---                     ]
---                     []
---                 ]
---             ]
---         ]
 
 
 spacingXView : Model -> Node -> Html Msg
@@ -591,7 +543,8 @@ spacingXView model { spacing } =
         , H.div [ A.class "col-sm-9" ]
             [ H.input
                 [ A.class "form-control form-control-sm"
-                , A.type_ "text"
+                , A.type_ "number"
+                , A.min "0"
                 , A.value x
 
                 --, A.title "Space between row items"
@@ -626,7 +579,8 @@ spacingYView model { spacing } =
         , H.div [ A.class "col-sm-9" ]
             [ H.input
                 [ A.class "form-control form-control-sm"
-                , A.type_ "text"
+                , A.type_ "number"
+                , A.min "0"
                 , A.value y
 
                 --, A.title "Space between column items"
@@ -769,7 +723,8 @@ bordersView model { borderColor, borderWidth, borderCorner } =
                                 ]
                             , H.input
                                 [ A.id (fieldId BorderTopLeftCornerField)
-                                , A.type_ "text"
+                                , A.type_ "number"
+                                , A.min "0"                                
                                 , A.value topLeftCorner
                                 , A.class "form-control form-control-sm text-center"
                                 , E.onFocus (FieldEditingStarted BorderTopLeftCornerField topLeftCorner)
@@ -782,7 +737,8 @@ bordersView model { borderColor, borderWidth, borderCorner } =
                     , H.div [ A.class "w-25 mr-1" ]
                         [ H.input
                             [ A.id (fieldId BorderTopWidthField)
-                            , A.type_ "text"
+                            , A.type_ "number"
+                            , A.min "0"
                             , A.value topWidth
                             , A.class "form-control form-control-sm text-center"
                             , E.onFocus (FieldEditingStarted BorderTopWidthField topWidth)
@@ -795,7 +751,8 @@ bordersView model { borderColor, borderWidth, borderCorner } =
                         [ H.div [ A.class "input-group input-group-sm" ]
                             [ H.input
                                 [ A.id (fieldId BorderTopRightCornerField)
-                                , A.type_ "text"
+                                , A.type_ "number"
+                                , A.min "0"
                                 , A.value topRightCorner
                                 , A.class "form-control form-control-sm text-center"
                                 , E.onFocus (FieldEditingStarted BorderTopRightCornerField topRightCorner)
@@ -813,7 +770,8 @@ bordersView model { borderColor, borderWidth, borderCorner } =
                     [ H.div [ A.class "w-25" ]
                         [ H.input
                             [ A.id (fieldId BorderLeftWidthField)
-                            , A.type_ "text"
+                            , A.type_ "number"
+                            , A.min "0"
                             , A.value leftWidth
                             , A.class "form-control form-control-sm text-center"
                             , E.onFocus (FieldEditingStarted BorderLeftWidthField leftWidth)
@@ -842,7 +800,8 @@ bordersView model { borderColor, borderWidth, borderCorner } =
                     , H.div [ A.class "w-25" ]
                         [ H.input
                             [ A.id (fieldId BorderRightWidthField)
-                            , A.type_ "text"
+                            , A.type_ "number"
+                            , A.min "0"
                             , A.value rightWidth
 
                             --, A.placeholder ""
@@ -862,7 +821,8 @@ bordersView model { borderColor, borderWidth, borderCorner } =
                                 ]
                             , H.input
                                 [ A.id (fieldId BorderBottomLeftCornerField)
-                                , A.type_ "text"
+                                , A.type_ "number"
+                                , A.min "0"
                                 , A.value bottomLeftCorner
 
                                 --, A.placeholder ""
@@ -877,7 +837,8 @@ bordersView model { borderColor, borderWidth, borderCorner } =
                     , H.div [ A.class "w-25 mr-1" ]
                         [ H.input
                             [ A.id (fieldId BorderBottomWidthField)
-                            , A.type_ "text"
+                            , A.type_ "number"
+                            , A.min "0"
                             , A.value bottomWidth
 
                             --, A.placeholder ""
@@ -892,7 +853,8 @@ bordersView model { borderColor, borderWidth, borderCorner } =
                         [ H.div [ A.class "input-group input-group-sm" ]
                             [ H.input
                                 [ A.id (fieldId BorderBottomRightCornerField)
-                                , A.type_ "text"
+                                , A.type_ "number"
+                                , A.min "0"
                                 , A.value bottomRightCorner
 
                                 --, A.placeholder ""
@@ -1252,10 +1214,10 @@ positionView model ({ transformation } as node) =
         , H.div [ A.class "col-sm-9" ]
             [ H.div [ A.class "d-flex align-items-center mb-1" ]
                 [ alignmentView model node
-                , H.div [ A.class "w-33" ]
+                , H.div [ A.class "w-33 ml-1" ]
                     [ H.input
                         [ A.id (fieldId OffsetXField)
-                        , A.class "form-control form-control-sm text-center bpx-1 ml-1"
+                        , A.class "form-control form-control-sm text-center mx-auto"
                         , A.type_ "number"
                         , A.value offsetX
                         , A.title "Move right/left"
@@ -1266,17 +1228,19 @@ positionView model ({ transformation } as node) =
                         []
                     ]
                 ]
-            , H.input
-                [ A.id (fieldId OffsetYField)
-                , A.class "form-control form-control-sm text-center mx-auto bpx-1 w-33"
-                , A.type_ "number"
-                , A.value offsetY
-                , A.title "Move bottom/top"
-                , E.onFocus (FieldEditingStarted OffsetYField offsetY)
-                , E.onBlur FieldEditingFinished
-                , E.onInput FieldChanged
+            , H.div [ A.class "mr-1" ]
+                [ H.input
+                    [ A.id (fieldId OffsetYField)
+                    , A.class "form-control form-control-sm text-center mx-auto w-33"
+                    , A.type_ "number"
+                    , A.value offsetY
+                    , A.title "Move bottom/top"
+                    , E.onFocus (FieldEditingStarted OffsetYField offsetY)
+                    , E.onBlur FieldEditingFinished
+                    , E.onInput FieldChanged
+                    ]
+                    []
                 ]
-                []
             ]
         ]
 
@@ -1471,7 +1435,8 @@ fontView model zipper =
                 [ H.input
                     [ A.id (fieldId FontSizeField)
                     , A.class "form-control form-control-sm"
-                    , A.type_ "text"
+                    , A.type_ "number"
+                    , A.min (String.fromInt Font.minFontSizeAllowed)
                     , A.value fontSize_
                     , E.onFocus (FieldEditingStarted FontSizeField fontSize_)
                     , E.onBlur FieldEditingFinished
@@ -1619,7 +1584,8 @@ liheHeightView model spacing =
             [ H.div [ A.class "form-group m-0" ]
                 [ H.input
                     [ A.class "form-control form-control-sm"
-                    , A.type_ "text"
+                    , A.type_ "number"
+                    , A.min "0"
                     , A.value spacing_
                     , E.onFocus (FieldEditingStarted SpacingYField spacing_)
                     , E.onBlur FieldEditingFinished
@@ -1663,19 +1629,27 @@ fontFamilyView fontFamily resolvedFontFamily inherit =
                         [ H.text (inheritedLabel resolvedFontFamily.name) ]
                     )
     in
-    -- TODO group native/external fonts
-    --[ H.optgroup [ A.attribute "label" group ]
     Keyed.node "select"
         [ onFontFamilySelect FontFamilyChanged, A.class "custom-select custom-select-sm" ]
         (inheritOption
-            :: List.map
-                (\family ->
-                    ( family.name
-                    , H.option (setSelected family.name [ fontFamilyValue (Local family) ])
-                        [ H.text family.name ]
-                    )
-                )
-                Fonts.families
+            :: (Fonts.families
+                    |> List.map
+                        (\( group, families ) ->
+                            ( group
+                            , Keyed.node "optgroup"
+                                [ A.attribute "label" group ]
+                                (List.map
+                                    (\family ->
+                                        ( family.name
+                                        , H.option (setSelected family.name [ fontFamilyValue (Local family) ])
+                                            [ H.text family.name ]
+                                        )
+                                    )
+                                    families
+                                )
+                            )
+                        )
+               )
         )
 
 
