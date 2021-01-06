@@ -88,10 +88,6 @@ schemaVersion =
     1
 
 
-minFontSizeAllowed =
-    10
-
-
 {-| A serialized document.
 -}
 type alias Document =
@@ -867,7 +863,7 @@ applyFontSize value zipper =
         value_ =
             case String.toInt value of
                 Just v ->
-                    Local (clamp minFontSizeAllowed 999 v)
+                    Local (clamp Font.minFontSizeAllowed 999 v)
 
                 Nothing ->
                     Inherit

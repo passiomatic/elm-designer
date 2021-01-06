@@ -4,6 +4,7 @@ module Style.Font exposing
     , FontWeight(..)
     , Local(..)
     , TextAlignment(..)
+    , minFontSizeAllowed
     , setFontColor
     , setFontFamily
     , setFontSize
@@ -16,6 +17,10 @@ module Style.Font exposing
 -}
 
 import Element exposing (Color)
+
+
+minFontSizeAllowed =
+    10
 
 
 {-| A style value, specified locally or inherited from parent element.
