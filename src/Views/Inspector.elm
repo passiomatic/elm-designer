@@ -23,6 +23,7 @@ import Model exposing (..)
 import Palette
 import SelectList exposing (SelectList)
 import Style.Background as Background exposing (Background)
+import Style.Border as Border exposing (BorderStyle(..))
 import Style.Font as Font exposing (..)
 import Style.Layout as Layout exposing (..)
 import Style.Theme as Theme
@@ -593,6 +594,7 @@ spacingYView model { spacing } =
         ]
 
 
+addDropdown : Field -> WidgetState -> List (Html Msg) -> Html Msg -> Html Msg
 addDropdown fieldId_ state items parent =
     let
         visible =
@@ -640,7 +642,7 @@ addDropdown fieldId_ state items parent =
 
 
 bordersView : Model -> Node -> Html Msg
-bordersView model { borderColor, borderWidth, borderCorner } =
+bordersView model { borderColor, borderWidth, borderCorner, borderStyle } =
     let
         -- Corners
         topLeftCorner =
@@ -724,7 +726,7 @@ bordersView model { borderColor, borderWidth, borderCorner } =
                             , H.input
                                 [ A.id (fieldId BorderTopLeftCornerField)
                                 , A.type_ "number"
-                                , A.min "0"                                
+                                , A.min "0"
                                 , A.value topLeftCorner
                                 , A.class "form-control form-control-sm text-center"
                                 , E.onFocus (FieldEditingStarted BorderTopLeftCornerField topLeftCorner)
@@ -873,6 +875,13 @@ bordersView model { borderColor, borderWidth, borderCorner } =
                 ]
             ]
         , colorView model (Just borderColor) BorderColorField BorderColorChanged
+        , H.div [ A.class "form-group row align-items-center mb-2" ]
+            [ H.label [ A.class "col-sm-3 col-form-label-sm m-0" ]
+                [ H.text "Style" ]
+            , H.div [ A.class "form-group w-75" ]
+                [ borderStyleView borderStyle
+                ]
+            ]
         ]
 
 
@@ -1539,11 +1548,13 @@ fontView_ zipper model ({ fontSize, fontWeight, fontFamily, fontColor, textAlign
     See https://www.kevinpowell.co/article/typographic-scale/
 
 -}
+fontSizes : List String
 fontSizes =
     [ 11, 12, 14, 16, 18, 24, 30, 36, 48, 60, 72 ]
         |> List.map String.fromInt
 
 
+fontSizeItems : Node -> List (Html Msg)
 fontSizeItems node =
     (if canInherit node then
         H.div [ E.onClick (FontSizeChanged "inherit"), A.class "dropdown-item" ]
@@ -1658,6 +1669,7 @@ fontFamilyValue value =
     A.value (Codecs.encodeFontFamily value)
 
 
+onFontFamilySelect : (Local FontFamily -> msg) -> Attribute msg
 onFontFamilySelect msg =
     E.on "input" (Codecs.fontFamilyDecoder msg)
 
@@ -1685,15 +1697,53 @@ fontWeightView fontFamily fontWeight =
         )
 
 
+borderStyleView : BorderStyle -> Html Msg
+borderStyleView borderStyle =
+    let
+        setSelected other attrs =
+            A.selected (borderStyle == other) :: attrs
+    in
+    Keyed.node "select"
+        [ onBorderStyleSelect BorderStyleChanged, A.class "custom-select custom-select-sm" ]
+        (List.map
+            (\borderStyle_ ->
+                let
+                    name =
+                        Border.borderStyleName borderStyle_
+                in
+                ( name
+                , H.option (setSelected borderStyle [ borderStyleValue borderStyle_ ])
+                    [ H.text name ]
+                )
+            )
+            [ Solid
+            , Dashed
+            , Dotted
+            ]
+        )
+
+
 fontWeightValue : FontWeight -> Attribute msg
 fontWeightValue value =
     A.value (Codecs.encodeFontWeight value)
 
 
+borderStyleValue : BorderStyle -> Attribute msg
+borderStyleValue value =
+    A.value (Codecs.encodeBorderStyle value)
+
+
+onFontWeightSelect : (FontWeight -> msg) -> Attribute msg
 onFontWeightSelect msg =
     E.on "input" (Codecs.fontWeightDecoder msg)
 
 
+onBorderStyleSelect : (BorderStyle -> msg) -> Attribute msg
+onBorderStyleSelect msg =
+    E.on "input" (Codecs.borderStyleDecoder msg)
+
+
+canInherit : Node -> Bool
 canInherit node =
     not (Document.isPageNode node)
 

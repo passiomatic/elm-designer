@@ -426,7 +426,7 @@ update msg model =
             applyChangeAndFinish model Document.applyBackgroundColor value
 
         BackgroundSizingChanged value ->
-            applyChangeAndFinish model Document.applyBackgroud value
+            applyChangeAndFinish model Document.applyBackground value
 
         BorderColorChanged value ->
             applyChangeAndFinish model Document.applyBorderColor value

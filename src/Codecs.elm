@@ -1,5 +1,7 @@
 module Codecs exposing
-    ( encodeFontFamily
+    ( borderStyleDecoder
+    , encodeBorderStyle
+    , encodeFontFamily
     , encodeFontWeight
     , encodeViewport
     , fontFamilyDecoder
@@ -360,6 +362,18 @@ fontWeightDecoder : (FontWeight -> msg) -> Decoder msg
 fontWeightDecoder tagger =
     E.targetValue
         |> D.andThen (fromResult << Codec.decodeString fontWeightCodec)
+        |> D.map tagger
+
+
+encodeBorderStyle : BorderStyle -> String
+encodeBorderStyle value =
+    Codec.encodeToString 0 borderStyleCodec value
+
+
+borderStyleDecoder : (BorderStyle -> msg) -> Decoder msg
+borderStyleDecoder tagger =
+    E.targetValue
+        |> D.andThen (fromResult << Codec.decodeString borderStyleCodec)
         |> D.map tagger
 
 

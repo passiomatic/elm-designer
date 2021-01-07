@@ -3,6 +3,7 @@ module Style.Border exposing
     , BorderStyle(..)
     , BorderWidth
     , borderCorner
+    , borderStyleName
     , borderWidth
     , setBorderBottomLeftCorner
     , setBorderBottomRightCorner
@@ -11,6 +12,7 @@ module Style.Border exposing
     , setBorderCorner
     , setBorderLeftWidth
     , setBorderRightWidth
+    , setBorderStyle
     , setBorderTopLeftCorner
     , setBorderTopRightCorner
     , setBorderTopWidth
@@ -32,6 +34,7 @@ type alias BorderWidth =
     }
 
 
+borderWidth : Int -> BorderWidth
 borderWidth value =
     BorderWidth True value value value value
 
@@ -141,3 +144,21 @@ setBorderBottomLeftCorner value borderCorner_ =
 
     else
         { borderCorner_ | bottomLeft = value }
+
+
+setBorderStyle : BorderStyle -> { a | borderStyle : BorderStyle } -> { a | borderStyle : BorderStyle }
+setBorderStyle value node =
+    { node | borderStyle = value }
+
+
+borderStyleName : BorderStyle -> String
+borderStyleName borderStyle =
+    case borderStyle of
+        Solid ->
+            "Solid"
+
+        Dashed ->
+            "Dashed"
+
+        Dotted ->
+            "Dotted"

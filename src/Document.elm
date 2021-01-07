@@ -16,12 +16,13 @@ module Document exposing
     , appendNode
     , applyAlignX
     , applyAlignY
-    , applyBackgroud
+    , applyBackground
     , applyBackgroundColor
     , applyBackgroundUrl
     , applyBorderColor
     , applyBorderCorner
     , applyBorderLock
+    , applyBorderStyle
     , applyBorderWidth
     , applyFontColor
     , applyFontFamily
@@ -902,8 +903,8 @@ applyBackgroundUrl value zipper =
     Zipper.mapLabel (Background.setBackground value_) zipper
 
 
-applyBackgroud : Background -> Zipper Node -> Zipper Node
-applyBackgroud value zipper =
+applyBackground : Background -> Zipper Node -> Zipper Node
+applyBackground value zipper =
     Zipper.mapLabel (Background.setBackground value) zipper
 
 
@@ -950,3 +951,8 @@ applyFontColor value zipper =
 applyFontWeight : FontWeight -> Zipper Node -> Zipper Node
 applyFontWeight value zipper =
     Zipper.mapLabel (Font.setFontWeight value) zipper
+
+
+applyBorderStyle : BorderStyle -> Zipper Node -> Zipper Node
+applyBorderStyle value zipper =
+    Zipper.mapLabel (Border.setBorderStyle value) zipper

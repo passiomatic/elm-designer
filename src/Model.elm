@@ -32,6 +32,7 @@ import Style.Layout as Layout exposing (..)
 import Style.Background as Background exposing (Background)
 import Style.Font as Font exposing (..)
 import Style.Theme as Theme exposing (Theme)
+import Style.Border exposing (BorderStyle(..))
 import Time exposing (Posix)
 import Tree exposing (Tree)
 import Tree.Zipper as Zipper exposing (Zipper)
@@ -64,6 +65,7 @@ type Msg
     | TextAlignChanged TextAlignment
     | FontFamilyChanged (Local FontFamily)
     | FontWeightChanged FontWeight
+    | BorderStyleChanged BorderStyle
     | FontSizeChanged String
     | FontColorChanged String
     | BackgroundColorChanged String
