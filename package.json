@@ -16,14 +16,14 @@
   "dependencies": {
     "parcel-bundler": "1.12.4"
   },
-  "main": "electron-app/main.js",
+  "main": "./dist/main.js",
   "build": {
     "appId": "com.passiomatic.ElmDesigner",
     "buildVersion": "0.1.0 build A",
     "directories" : {
       "output": "build"
     }, 
-    "icon": "./electron.iconset/app.icns",
+    "icon": "./dist/app.icns",
     "mac": {
       "category": "public.app-category.developer-tools",
       "hardenedRuntime": true,
