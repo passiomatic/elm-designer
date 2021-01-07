@@ -7,11 +7,11 @@
   "repository": "https://github.com/passiomatic/elm-designer",
   "devDependencies": {
     "cssnano": "4.1.10",
+    "electron": "11.1.1",
     "electron-notarize": "1.0.0",
     "elm-hot": "1.1.5",
     "node-elm-compiler": "5.0.5",
-    "sass": "1.26.10",
-    "electron": "11.0.4"
+    "sass": "1.26.10"
   },
   "dependencies": {
     "parcel-bundler": "1.12.4"
@@ -20,9 +20,9 @@
   "build": {
     "appId": "com.passiomatic.ElmDesigner",
     "buildVersion": "0.1.0 build A",
-    "directories" : {
+    "directories": {
       "output": "build"
-    }, 
+    },
     "icon": "./dist/app.icns",
     "mac": {
       "category": "public.app-category.developer-tools",
@@ -41,5 +41,8 @@
       ]
     },
     "afterSign": "./notarize.js"
+  },
+  "scripts": {
+    "electron": "electron ./dist/main.js"
   }
 }

@@ -34,9 +34,9 @@ Elm Designer uses [Parcel][2] to compile Elm and SASS source files. Please read 
 
 You can run [Electron][4] as a command-line app and then point it to the `main.js` entry point.
 
-So, first install Electron globally on your machine:
+So, first install Electron and all its dependencies locally:
 
-    npm i electron@11.0.4 -g
+    npm ci
 
 Then run:
 

@@ -15,7 +15,7 @@ clean:
 	rm -fR build
 
 run: clean build
-	electron ./dist/main.js
+	npm run electron
 
 package-mac: clean build icon
 	electron-builder -m
