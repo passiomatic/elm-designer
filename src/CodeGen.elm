@@ -543,7 +543,8 @@ emitHeading node { text, level } =
 emitAllStyles : Node -> List Expression -> List Expression
 emitAllStyles node attrs =
     attrs
-        |> emitBorder node.borderColor node.borderStyle node.borderWidth node.borderCorner
+        |> emitBorder node.borderColor node.borderStyle node.borderWidth
+        |> emitCorner node.borderCorner
         |> emitPadding node.padding
         |> emitWidth node.width
         |> emitHeight node.height
@@ -585,35 +586,36 @@ emitPadding value attrs =
             :: attrs
 
 
-emitBorder : Color -> BorderStyle -> BorderWidth -> BorderCorner -> List Expression -> List Expression
-emitBorder borderColor borderStyle borderWidth borderCorner attrs =
-    CodeGen.apply
-        (if borderWidth.top == 0 && borderWidth.right == 0 && borderWidth.bottom == 0 && borderWidth.left == 0 then
-            attrs
+emitBorder : Color -> BorderStyle -> BorderWidth -> List Expression -> List Expression
+emitBorder borderColor borderStyle borderWidth attrs =
+    if borderWidth.top == 0 && borderWidth.right == 0 && borderWidth.bottom == 0 && borderWidth.left == 0 then
+        attrs
 
-         else
-            CodeGen.apply
-                [ CodeGen.fqFun borderModule "color"
-                , CodeGen.parens <| emitColor borderColor
-                ]
-                :: (case borderStyle of
-                        Solid ->
-                            CodeGen.fqFun borderModule "solid"
+    else
+        CodeGen.apply
+            [ CodeGen.fqFun borderModule "color"
+            , CodeGen.parens
+                (emitColor borderColor)
+            ]
+            :: (case borderStyle of
+                    Solid ->
+                        CodeGen.fqFun borderModule "solid"
 
-                        Dashed ->
-                            CodeGen.fqFun borderModule "dashed"
+                    Dashed ->
+                        CodeGen.fqFun borderModule "dashed"
 
-                        Dotted ->
-                            CodeGen.fqFun borderModule "dotted"
-                   )
-                :: CodeGen.apply
-                    (if borderWidth.top == borderWidth.bottom && borderWidth.right == borderWidth.left then
+                    Dotted ->
+                        CodeGen.fqFun borderModule "dotted"
+               )
+            :: (if borderWidth.top == borderWidth.bottom && borderWidth.right == borderWidth.left then
+                    CodeGen.apply
                         [ CodeGen.fqFun borderModule "widthXY"
                         , CodeGen.int borderWidth.right
                         , CodeGen.int borderWidth.top
                         ]
 
-                     else
+                else
+                    CodeGen.apply
                         [ CodeGen.fqFun borderModule "widthEach"
                         , CodeGen.record
                             [ ( "top", CodeGen.int borderWidth.top )
@@ -622,27 +624,33 @@ emitBorder borderColor borderStyle borderWidth borderCorner attrs =
                             , ( "left", CodeGen.int borderWidth.left )
                             ]
                         ]
-                    )
-                :: attrs
-        )
-        :: (if borderCorner.topLeft == 0 && borderCorner.topRight == 0 && borderCorner.bottomLeft == 0 && borderCorner.bottomRight == 0 then
-                []
+               )
+            :: attrs
 
-            else if borderCorner.locked then
-                [ CodeGen.fqFun borderModule "rounded"
-                , CodeGen.int borderCorner.topLeft
-                ]
 
-            else
-                [ CodeGen.fqFun borderModule "roundEach"
-                , CodeGen.record
-                    [ ( "topLeft", CodeGen.int borderCorner.topLeft )
-                    , ( "topRight", CodeGen.int borderCorner.topRight )
-                    , ( "bottomLeft", CodeGen.int borderCorner.bottomLeft )
-                    , ( "bottomRight", CodeGen.int borderCorner.bottomRight )
-                    ]
+emitCorner : BorderCorner -> List Expression -> List Expression
+emitCorner borderCorner attrs =
+    if borderCorner.topLeft == 0 && borderCorner.topRight == 0 && borderCorner.bottomLeft == 0 && borderCorner.bottomRight == 0 then
+        attrs
+
+    else if borderCorner.locked then
+        CodeGen.apply
+            [ CodeGen.fqFun borderModule "rounded"
+            , CodeGen.int borderCorner.topLeft
+            ]
+            :: attrs
+
+    else
+        CodeGen.apply
+            [ CodeGen.fqFun borderModule "roundEach"
+            , CodeGen.record
+                [ ( "topLeft", CodeGen.int borderCorner.topLeft )
+                , ( "topRight", CodeGen.int borderCorner.topRight )
+                , ( "bottomLeft", CodeGen.int borderCorner.bottomLeft )
+                , ( "bottomRight", CodeGen.int borderCorner.bottomRight )
                 ]
-           )
+            ]
+            :: attrs
 
 
 emitBackgroundColor : Maybe Color -> List Expression -> List Expression
