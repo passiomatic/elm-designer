@@ -20,7 +20,7 @@ Elm Designer is distributed as an Electron app. Right now there’s a [macOS bin
 
 - Color picker is quite limited at the moment since Elm Designer is using HTML 5 `input type=color`. Specifically you can't reset a color or specify `inherit`. See [#1][issue1]
 - When switching fonts the weight of the new font should match, or be closer as possible, to the old one. See [#2][issue2]
-- Non-fluid pages larger than current workspace dimensions push right panel out of app window
+- ~~Non-fluid pages larger than current workspace dimensions push right panel out of app window~~
 
 ## Build Elm Designer from sources
 

@@ -8,7 +8,7 @@
 .page--design {
   box-sizing: content-box; // Exclude border to computed width
   border: 1px solid $border-color; // Do selection outline can bleed outside
-  margin: calc(1.5em / 2);
+  margin: 0 auto;
 }
 
 .page--interactive {
