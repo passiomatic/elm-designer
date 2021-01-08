@@ -20,6 +20,7 @@ Elm Designer is distributed as an Electron app. Right now there’s a [macOS bin
 
 - Color picker is quite limited at the moment since Elm Designer is using HTML 5 `input type=color`. Specifically you can't reset a color or specify `inherit`. See [#1][issue1]
 - When switching fonts the weight of the new font should match, or be closer as possible, to the old one. See [#2][issue2]
+- "Insert" menu allows to create non-renderable nodes. See [#20][issue20]
 - ~~Non-fluid pages larger than current workspace dimensions push right panel out of app window~~
 
 ## Build Elm Designer from sources
@@ -51,3 +52,4 @@ This will build the app assets with Parcel in production mode, copy the files in
 [issue1]: https://github.com/passiomatic/elm-designer/issues/1 
 [issue2]: https://github.com/passiomatic/elm-designer/issues/2 
 [d]: https://github.com/passiomatic/elm-designer/releases/tag/v0.1.0
+[issue20]: https://github.com/passiomatic/elm-designer/issues/20
