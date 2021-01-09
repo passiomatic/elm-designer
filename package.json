@@ -1,7 +1,7 @@
 {
   "name": "elm-designer",
   "productName": "Elm Designer",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "A code generator for Elm UI",
   "author": "Andrea Peltrin",
   "repository": "https://github.com/passiomatic/elm-designer",
@@ -19,7 +19,7 @@
   "main": "./dist/main.js",
   "build": {
     "appId": "com.passiomatic.ElmDesigner",
-    "buildVersion": "0.1.0 build A",
+    "buildVersion": "0.1.1 build A",
     "directories": {
       "output": "build"
     },
