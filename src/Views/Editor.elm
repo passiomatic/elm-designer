@@ -584,7 +584,7 @@ pageView model =
                     ( "chrome--custom", px w, px h )
 
                 Fluid ->
-                    ( "chrome--fluid", "calc(100% - 2px)", "auto" )
+                    ( "chrome--fluid", "calc(100% - 2px)", "calc(100% - 2px)" )
 
         content =
             ElmUI.render ctx tree
