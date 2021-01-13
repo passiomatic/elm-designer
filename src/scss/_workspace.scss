@@ -7,9 +7,10 @@
 }
 
 .workspace--design {
-  overflow-y: scroll;
+  overflow: scroll;
   // See https://github.com/PolymerElements/iron-list/issues/18#issuecomment-149725722
   transform: translateZ(0);
+  padding: .375rem;
 }
 
 .workspace--preview {

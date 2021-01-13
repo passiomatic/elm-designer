@@ -98,7 +98,7 @@ workspaceView model =
                     "workspace--preview"
     in
     H.div
-        [ A.class ("workspace flex-grow-1 unselectable d-flex justify-content-center " ++ class)
+        [ A.class ("workspace flex-grow-1 unselectable " ++ class)
 
         --, transformAttr
         --, originAttr
@@ -584,7 +584,7 @@ pageView model =
                     ( "chrome--custom", px w, px h )
 
                 Fluid ->
-                    ( "chrome--fluid", "100%", "auto" )
+                    ( "chrome--fluid", "calc(100% - 2px)", "auto" )
 
         content =
             ElmUI.render ctx tree
