@@ -42,7 +42,7 @@ render ctx tree =
                     el
 
                 RenderedOption _ ->
-                    -- We don't hae any radio option at top level
+                    -- We don't have any radio option at top level
                     E.none
     in
     T.restructure identity (renderNode ctx) tree
@@ -237,6 +237,7 @@ renderParagraph ctx node selected { text } =
 
 renderHeading : Context -> Node -> Bool -> HeadingData -> RenderedNode
 renderHeading ctx node selected heading =
+    -- Use a paragraph here since it allows to wrap text and to set a line height
     renderParagraphHelper ctx node selected heading.text
 
 
@@ -262,7 +263,6 @@ renderParagraphHelper ctx node selected text =
                 |> RenderedElement
 
         _ ->
-            -- Use a paragraph here since it allows to wrap text and to set a line height
             E.paragraph
                 (onDoubleClick (TextEditingStarted node.id)
                     :: onClick (NodeSelected node.id)
@@ -650,28 +650,85 @@ applySpacing value attrs =
 
 applyWidth : Length -> List (E.Attribute Msg) -> List (E.Attribute Msg)
 applyWidth value attrs =
-    case value of
-        Shrink ->
-            E.width E.shrink :: attrs
+    -- TODO mergewrge with applyHeight
+    case value.strategy of
+        Px value_ ->
+            (E.px value_
+                |> applyMinLength value.min
+                |> applyMaxLength value.max
+                |> E.width
+            )
+                :: attrs
 
-        Fill ->
-            E.width E.fill :: attrs
+        Content ->
+            (E.shrink
+                |> applyMinLength value.min
+                |> applyMaxLength value.max
+                |> E.width
+            )
+                :: attrs
 
-        _ ->
+        Fill portion ->
+            (E.fillPortion portion
+                |> applyMinLength value.min
+                |> applyMaxLength value.max
+                |> E.width
+            )
+                :: attrs
+
+        Unspecified ->
             attrs
 
 
 applyHeight : Length -> List (E.Attribute Msg) -> List (E.Attribute Msg)
 applyHeight value attrs =
-    case value of
-        Shrink ->
-            E.height E.shrink :: attrs
+    case value.strategy of
+        Px value_ ->
+            (E.px value_
+                |> applyMinLength value.min
+                |> applyMaxLength value.max
+                |> E.height
+            )
+                :: attrs
 
-        Fill ->
-            E.height E.fill :: attrs
+        Content ->
+            (E.shrink
+                |> applyMinLength value.min
+                |> applyMaxLength value.max
+                |> E.height
+            )
+                :: attrs
 
-        _ ->
+        Fill portion ->
+            (E.fillPortion portion
+                |> applyMinLength value.min
+                |> applyMaxLength value.max
+                |> E.height
+            )
+                :: attrs
+
+        Unspecified ->
             attrs
+
+
+applyMinLength : Maybe Int -> E.Length -> E.Length
+applyMinLength value length =
+    case value of
+        Just value_ ->
+            E.minimum value_ length
+
+        Nothing ->
+            length
+
+
+applyMaxLength : Maybe Int -> E.Length -> E.Length
+applyMaxLength value length =
+    case value of
+        Just value_ ->
+            E.maximum value_ length
+
+        Nothing ->
+            length
 
 
 applyAlignX : Alignment -> List (E.Attribute Msg) -> List (E.Attribute Msg)

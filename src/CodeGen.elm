@@ -546,8 +546,8 @@ emitAllStyles node attrs =
         |> emitBorder node.borderColor node.borderStyle node.borderWidth
         |> emitCorner node.borderCorner
         |> emitPadding node.padding
-        |> emitWidth node.width
-        |> emitHeight node.height
+        -- |> emitWidth node.width
+        -- |> emitHeight node.height
         |> emitSpacing node.spacing
         |> emitFontSize node.fontSize
         |> emitFontFamily node.fontFamily
@@ -814,38 +814,38 @@ emitSpacing value attrs =
                 CodeGen.apply [ CodeGen.fqFun elementModule "spacingXY", CodeGen.int x, CodeGen.int y ] :: attrs
 
 
-emitWidth : Length -> List Expression -> List Expression
-emitWidth value attrs =
-    let
-        widthFun =
-            CodeGen.fqFun elementModule "width"
-    in
-    case value of
-        Shrink ->
-            CodeGen.apply [ widthFun, CodeGen.fqFun elementModule "shrink" ] :: attrs
+-- emitWidth : Length -> List Expression -> List Expression
+-- emitWidth value attrs =
+--     let
+--         widthFun =
+--             CodeGen.fqFun elementModule "width"
+--     in
+--     case value of
+--         Shrink ->
+--             CodeGen.apply [ widthFun, CodeGen.fqFun elementModule "shrink" ] :: attrs
 
-        Fill ->
-            CodeGen.apply [ widthFun, CodeGen.fqFun elementModule "fill" ] :: attrs
+--         Fill ->
+--             CodeGen.apply [ widthFun, CodeGen.fqFun elementModule "fill" ] :: attrs
 
-        _ ->
-            attrs
+--         _ ->
+--             attrs
 
 
-emitHeight : Length -> List Expression -> List Expression
-emitHeight value attrs =
-    let
-        heightFun =
-            CodeGen.fqFun elementModule "height"
-    in
-    case value of
-        Shrink ->
-            CodeGen.apply [ heightFun, CodeGen.fqFun elementModule "shrink" ] :: attrs
+-- emitHeight : Length -> List Expression -> List Expression
+-- emitHeight value attrs =
+--     let
+--         heightFun =
+--             CodeGen.fqFun elementModule "height"
+--     in
+--     case value of
+--         Shrink ->
+--             CodeGen.apply [ heightFun, CodeGen.fqFun elementModule "shrink" ] :: attrs
 
-        Fill ->
-            CodeGen.apply [ heightFun, CodeGen.fqFun elementModule "fill" ] :: attrs
+--         Fill ->
+--             CodeGen.apply [ heightFun, CodeGen.fqFun elementModule "fill" ] :: attrs
 
-        _ ->
-            attrs
+--         _ ->
+--             attrs
 
 
 emitAlignX : Alignment -> List Expression -> List Expression

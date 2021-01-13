@@ -26,7 +26,7 @@ import Style.Background as Background exposing (Background)
 import Style.Font as Font exposing (..)
 import Style.Layout as Layout exposing (..)
 import Style.Theme as Theme
-import Svg.Attributes exposing (fontFamily)
+import Svg.Attributes exposing (fontFamily, maskContentUnits)
 import Tree as T exposing (Tree)
 import Tree.Zipper as Zipper exposing (Zipper)
 import Views.Common exposing (fieldId, none)
@@ -724,7 +724,7 @@ bordersView model { borderColor, borderWidth, borderCorner } =
                             , H.input
                                 [ A.id (fieldId BorderTopLeftCornerField)
                                 , A.type_ "number"
-                                , A.min "0"                                
+                                , A.min "0"
                                 , A.value topLeftCorner
                                 , A.class "form-control form-control-sm text-center"
                                 , E.onFocus (FieldEditingStarted BorderTopLeftCornerField topLeftCorner)
@@ -1116,77 +1116,302 @@ wrapRowOptionView wrapped =
 
 
 widthView : Model -> Node -> Html Msg
-widthView _ { width } =
-    H.div [ A.class "form-group row align-items-center mb-2" ]
-        [ H.label [ A.class "col-sm-3 col-form-label-sm m-0" ]
-            [ H.text "Width" ]
-        , H.div [ A.class "col-sm-9 btn-group", A.attribute "role" "group" ]
-            [ H.button
-                [ A.classList
-                    [ ( "btn btn-light btn-sm w-33", True )
-                    , ( "active", width == Auto )
+widthView model { width } =
+    let
+        min =
+            case model.inspector of
+                EditingField WidthMinField _ new ->
+                    new
+
+                _ ->
+                    Maybe.map String.fromInt width.min
+                        |> Maybe.withDefault ""
+
+        max =
+            case model.inspector of
+                EditingField WidthMaxField _ new ->
+                    new
+
+                _ ->
+                    Maybe.map String.fromInt width.max
+                        |> Maybe.withDefault ""
+    in
+    H.div []
+        [ H.div [ A.class "form-group row align-items-center" ]
+            [ H.label [ A.class "col-sm-3 col-form-label-sm m-0" ]
+                [ H.text "Width" ]
+            , H.div [ A.class "col-sm-9 btn-group", A.attribute "role" "group" ]
+                [ H.button
+                    [ A.classList
+                        [ ( "btn btn-light btn-sm", True )
+                        , ( "active", isContent width.strategy )
+                        ]
+                    , E.onClick (WidthChanged (Length Content width.min width.max))
+                    , A.type_ "button"
                     ]
-                , E.onClick (WidthChanged Auto)
-                , A.type_ "button"
+                    [ H.text "Fit" ]
+                , case width.strategy of
+                    Fill value ->
+                        H.button
+                            [ A.classList
+                                [ ( "btn btn-light btn-sm", True )
+                                , ( "active", True )
+                                ]
+                            , E.onClick (WidthChanged (Length (Fill value) width.min width.max))
+                            , A.type_ "button"
+                            ]
+                            [ H.text "Fill" ]
+
+                    _ ->
+                        H.button
+                            [ A.classList
+                                [ ( "btn btn-light btn-sm", True )
+                                ]
+                            , E.onClick (WidthChanged (Length (Fill 1) width.min width.max))
+                            , A.type_ "button"
+                            ]
+                            [ H.text "Fill" ]
+                , case width.strategy of
+                    Px value ->
+                        H.button
+                            [ A.classList
+                                [ ( "btn btn-light btn-sm", True )
+                                , ( "active", isPxOrUnspecified width.strategy )
+                                ]
+                            , E.onClick (WidthChanged (Length (Px value) width.min width.max))
+                            , A.type_ "button"
+                            ]
+                            [ H.text "Px" ]
+
+                    _ ->
+                        H.button
+                            [ A.classList
+                                [ ( "btn btn-light btn-sm", True )
+                                , ( "active", isPxOrUnspecified width.strategy )
+                                ]
+                            , E.onClick (WidthChanged (Length Unspecified width.min width.max))
+                            , A.type_ "button"
+                            ]
+                            [ H.text "Px" ]
                 ]
-                [ H.text "Auto" ]
-            , H.button
-                [ A.classList
-                    [ ( "btn btn-light btn-sm w-33", True )
-                    , ( "active", width == Fill )
-                    ]
-                , E.onClick (WidthChanged Fill)
-                , A.type_ "button"
-                ]
-                [ H.text "Fill" ]
-            , H.button
-                [ A.classList
-                    [ ( "btn btn-light btn-sm w-33", True )
-                    , ( "active", width == Shrink )
-                    ]
-                , E.onClick (WidthChanged Shrink)
-                , A.type_ "button"
-                ]
-                [ H.text "Shrink" ]
+            ]
+        , H.div [ A.class "form-group row align-items-center mb-2" ]
+            [ H.label [ A.class "col-sm-3 col-form-label-sm m-0" ]
+                [ H.text "" ]
+            , H.div [ A.class "col-sm-9 d-flex justify-content-end", A.style "gap" "0 .375rem" ]
+                (case width.strategy of
+                    Px value ->
+                        let
+                            value_ =
+                                case model.inspector of
+                                    EditingField WidthPxField _ new ->
+                                        new
+
+                                    _ ->
+                                        String.fromInt value
+                        in
+                        [ numericFieldView WidthPxField "Exact" value_
+                        , numericFieldView WidthMinField "Min." min
+                        , numericFieldView WidthMaxField "Max." max
+                        ]
+
+                    Unspecified ->
+                        let
+                            value_ =
+                                case model.inspector of
+                                    EditingField WidthPxField _ new ->
+                                        new
+
+                                    _ ->
+                                        ""
+                        in
+                        [ numericFieldView WidthPxField "Exact" value_
+                        , numericFieldView WidthMinField "Min." min
+                        , numericFieldView WidthMaxField "Max." max
+                        ]
+
+                    Content ->
+                        [ numericFieldView WidthMinField "Min." min
+                        , numericFieldView WidthMaxField "Max." max
+                        ]
+
+                    Fill value ->
+                        let
+                            value_ =
+                                case model.inspector of
+                                    EditingField WidthPortionField _ new ->
+                                        new
+
+                                    _ ->
+                                        String.fromInt value
+                        in
+                        [ numericFieldView WidthPortionField "Portion" value_
+                        , numericFieldView WidthMinField "Min." min
+                        , numericFieldView WidthMaxField "Max." max
+                        ]
+                )
             ]
         ]
 
 
 heightView : Model -> Node -> Html Msg
-heightView _ { height } =
-    H.div [ A.class "form-group row align-items-center mb-2" ]
-        [ H.label [ A.class "col-sm-3 col-form-label-sm m-0" ]
-            [ H.text "Height" ]
-        , H.div [ A.class "col-sm-9 btn-group", A.attribute "role" "group" ]
-            [ H.button
-                [ A.classList
-                    [ ( "btn btn-light btn-sm w-33", True )
-                    , ( "active", height == Auto )
+heightView model { height } =
+    let
+        min =
+            case model.inspector of
+                EditingField HeightMinField _ new ->
+                    new
+
+                _ ->
+                    Maybe.map String.fromInt height.min
+                        |> Maybe.withDefault ""
+
+        max =
+            case model.inspector of
+                EditingField HeightMaxField _ new ->
+                    new
+
+                _ ->
+                    Maybe.map String.fromInt height.max
+                        |> Maybe.withDefault ""
+    in
+    H.div []
+        [ H.div [ A.class "form-group row align-items-center" ]
+            [ H.label [ A.class "col-sm-3 col-form-label-sm m-0" ]
+                [ H.text "Height" ]
+            , H.div [ A.class "col-sm-9 btn-group", A.attribute "role" "group" ]
+                [ H.button
+                    [ A.classList
+                        [ ( "btn btn-light btn-sm", True )
+                        , ( "active", isContent height.strategy )
+                        ]
+                    , E.onClick (HeightChanged (Length Content height.min height.max))
+                    , A.type_ "button"
                     ]
-                , E.onClick (HeightChanged Auto)
-                , A.type_ "button"
+                    [ H.text "Fit" ]
+                , case height.strategy of
+                    Fill value ->
+                        H.button
+                            [ A.classList
+                                [ ( "btn btn-light btn-sm", True )
+                                , ( "active", True )
+                                ]
+                            , E.onClick (HeightChanged (Length (Fill value) height.min height.max))
+                            , A.type_ "button"
+                            ]
+                            [ H.text "Fill" ]
+
+                    _ ->
+                        H.button
+                            [ A.classList
+                                [ ( "btn btn-light btn-sm", True )
+                                ]
+                            , E.onClick (HeightChanged (Length (Fill 1) height.min height.max))
+                            , A.type_ "button"
+                            ]
+                            [ H.text "Fill" ]
+                , case height.strategy of
+                    Px value ->
+                        H.button
+                            [ A.classList
+                                [ ( "btn btn-light btn-sm", True )
+                                , ( "active", isPxOrUnspecified height.strategy )
+                                ]
+                            , E.onClick (HeightChanged (Length (Px value) height.min height.max))
+                            , A.type_ "button"
+                            ]
+                            [ H.text "Px" ]
+
+                    _ ->
+                        H.button
+                            [ A.classList
+                                [ ( "btn btn-light btn-sm", True )
+                                , ( "active", isPxOrUnspecified height.strategy )
+                                ]
+                            , E.onClick (HeightChanged (Length Unspecified height.min height.max))
+                            , A.type_ "button"
+                            ]
+                            [ H.text "Px" ]
                 ]
-                [ H.text "Auto" ]
-            , H.button
-                [ A.classList
-                    [ ( "btn btn-light btn-sm w-33", True )
-                    , ( "active", height == Fill )
-                    ]
-                , E.onClick (HeightChanged Fill)
-                , A.type_ "button"
-                ]
-                [ H.text "Fill" ]
-            , H.button
-                [ A.classList
-                    [ ( "btn btn-light btn-sm w-33", True )
-                    , ( "active", height == Shrink )
-                    ]
-                , E.onClick (HeightChanged Shrink)
-                , A.type_ "button"
-                ]
-                [ H.text "Shrink" ]
+            ]
+        , H.div [ A.class "form-group row align-items-center mb-2" ]
+            [ H.label [ A.class "col-sm-3 col-form-label-sm m-0" ]
+                [ H.text "" ]
+            , H.div [ A.class "col-sm-9 d-flex justify-content-end", A.style "gap" "0 .375rem" ]
+                (case height.strategy of
+                    Px value ->
+                        let
+                            value_ =
+                                case model.inspector of
+                                    EditingField HeightPxField _ new ->
+                                        new
+
+                                    _ ->
+                                        String.fromInt value
+                        in
+                        [ numericFieldView HeightPxField "Exact" value_
+                        , numericFieldView HeightMinField "Min." min
+                        , numericFieldView HeightMaxField "Max." max
+                        ]
+
+                    Unspecified ->
+                        let
+                            value_ =
+                                case model.inspector of
+                                    EditingField HeightPxField _ new ->
+                                        new
+
+                                    _ ->
+                                        ""
+                        in
+                        [ numericFieldView HeightPxField "Exact" value_
+                        , numericFieldView HeightMinField "Min." min
+                        , numericFieldView HeightMaxField "Max." max
+                        ]
+
+                    Content ->
+                        [ numericFieldView HeightMinField "Min." min
+                        , numericFieldView HeightMaxField "Max." max
+                        ]
+
+                    Fill value ->
+                        let
+                            value_ =
+                                case model.inspector of
+                                    EditingField HeightPortionField _ new ->
+                                        new
+
+                                    _ ->
+                                        String.fromInt value
+                        in
+                        [ numericFieldView HeightPortionField "Portion" value_
+                        , numericFieldView HeightMinField "Min." min
+                        , numericFieldView HeightMaxField "Max." max
+                        ]
+                )
             ]
         ]
+
+
+isContent value =
+    case value of
+        Content ->
+            True
+
+        _ ->
+            False
+
+
+isPxOrUnspecified value =
+    case value of
+        Px _ ->
+            True
+
+        Unspecified ->
+            True
+
+        _ ->
+            False
 
 
 positionView : Model -> Node -> Html Msg
@@ -1198,7 +1423,7 @@ positionView model ({ transformation } as node) =
                     new
 
                 _ ->
-                    String.fromFloat transformation.offsetX
+                    String.fromFloat untransformed.offsetX
 
         offsetY =
             case model.inspector of
@@ -1206,7 +1431,7 @@ positionView model ({ transformation } as node) =
                     new
 
                 _ ->
-                    String.fromFloat transformation.offsetY
+                    String.fromFloat untransformed.offsetY
     in
     H.div [ A.class "form-group row align-items-center mb-3" ]
         [ H.label [ A.class "col-sm-3 col-form-label-sm" ]
@@ -1701,3 +1926,23 @@ canInherit node =
 emptyView : Model -> a -> Html Msg
 emptyView _ _ =
     H.div [] []
+
+
+numericFieldView field label value =
+    H.div [ A.class "form-group w-33 mb-0" ]
+        [ -- H.label [ A.class "col-form-label-sm mb-0"]
+          -- [ H.text label
+          -- ]
+          H.input
+            [ A.id (fieldId field)
+            , A.class "form-control form-control-sm text-center"
+            , A.type_ "number"
+            , A.min "0"
+            , A.value value
+            , A.placeholder label
+            , E.onFocus (FieldEditingStarted field value)
+            , E.onBlur FieldEditingFinished
+            , E.onInput FieldChanged
+            ]
+            []
+        ]

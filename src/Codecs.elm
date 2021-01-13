@@ -156,37 +156,34 @@ localCodec codec =
 
 lengthCodec : Codec Length
 lengthCodec =
+    Codec.object Length
+        |> Codec.field "strategy" .strategy strategyCodec
+        |> Codec.field "min" .min (Codec.maybe Codec.int)
+        |> Codec.field "max" .max (Codec.maybe Codec.int)
+        |> Codec.buildObject
+
+
+strategyCodec : Codec Strategy
+strategyCodec =
     Codec.custom
-        (\length fill fillPortion shrink maximun minimun auto value_ ->
+        (\px content fill auto value_ ->
             case value_ of
-                Length value ->
-                    length value
+                Px value ->
+                    px value
 
-                Fill ->
-                    fill
+                Content ->
+                    content
 
-                FillPortion value ->
-                    fillPortion value
+                Fill value ->
+                    fill value
 
-                Shrink ->
-                    shrink
-
-                Maximum value ->
-                    maximun value
-
-                Minimun value ->
-                    minimun value
-
-                Auto ->
+                Unspecified ->
                     auto
         )
-        |> Codec.variant1 "Length" Length Codec.int
-        |> Codec.variant0 "Fill" Fill
-        |> Codec.variant1 "FillPortion" FillPortion Codec.int
-        |> Codec.variant0 "Shrink" Shrink
-        |> Codec.variant1 "Maximum" Maximum Codec.int
-        |> Codec.variant1 "Minimun" Minimun Codec.int
-        |> Codec.variant0 "Auto" Auto
+        |> Codec.variant1 "Px" Px Codec.int
+        |> Codec.variant0 "Content" Content
+        |> Codec.variant1 "Fill" Fill Codec.int
+        |> Codec.variant0 "Unspecified" Unspecified
         |> Codec.buildCustom
 
 

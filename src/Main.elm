@@ -16,6 +16,7 @@ import Html5.DragDrop as DragDrop
 import Icons
 import Json.Decode as Decode exposing (Decoder, Value)
 import Library
+import Maybe
 import Model exposing (..)
 import Ports
 import Random exposing (Seed)
@@ -321,6 +322,80 @@ update msg model =
                     applyChangeAndFinish model Document.applyLabel newValue
 
                 -- ###########
+                -- Width
+                -- ###########
+                EditingField WidthPxField oldValue newValue ->
+                    applyChangeAndFinish model
+                        (Document.applyWidthWith
+                            (\value length ->
+                                case value of
+                                    Just value_ ->
+                                        Layout.setStrategy (Layout.px value_) length
+
+                                    Nothing ->
+                                        Layout.setStrategy Unspecified length
+                            )
+                        )
+                        newValue
+
+                EditingField WidthPortionField oldValue newValue ->
+                    applyChangeAndFinish model
+                        (Document.applyWidthWith
+                            (\value length ->
+                                case value of
+                                    Just value_ ->
+                                        Layout.setStrategy (Layout.portion value_) length
+
+                                    Nothing ->
+                                        Layout.setStrategy (Layout.portion 1) length
+                            )
+                        )
+                        newValue
+
+                EditingField WidthMinField oldValue newValue ->
+                    applyChangeAndFinish model (Document.applyWidthWith Layout.setMinLength) newValue
+
+                EditingField WidthMaxField oldValue newValue ->
+                    applyChangeAndFinish model (Document.applyWidthWith Layout.setMaxLength) newValue
+
+                -- ###########
+                -- Height
+                -- ###########
+                EditingField HeightPxField oldValue newValue ->
+                    applyChangeAndFinish model
+                        (Document.applyHeightWith
+                            (\value length ->
+                                case value of
+                                    Just value_ ->
+                                        Layout.setStrategy (Layout.px value_) length
+
+                                    Nothing ->
+                                        Layout.setStrategy Unspecified length
+                            )
+                        )
+                        newValue                
+
+                EditingField HeightPortionField oldValue newValue ->
+                    applyChangeAndFinish model
+                        (Document.applyHeightWith
+                            (\value length ->
+                                case value of
+                                    Just value_ ->
+                                        Layout.setStrategy (Layout.portion value_) length
+
+                                    Nothing ->
+                                        Layout.setStrategy (Layout.portion 1) length
+                            )
+                        )
+                        newValue
+
+                EditingField HeightMinField oldValue newValue ->
+                    applyChangeAndFinish model (Document.applyHeightWith Layout.setMinLength) newValue
+
+                EditingField HeightMaxField oldValue newValue ->
+                    applyChangeAndFinish model (Document.applyHeightWith Layout.setMaxLength) newValue
+
+                -- ###########
                 -- Transformation
                 -- ###########
                 EditingField OffsetXField oldValue newValue ->
@@ -426,7 +501,7 @@ update msg model =
             applyChangeAndFinish model Document.applyBackgroundColor value
 
         BackgroundSizingChanged value ->
-            applyChangeAndFinish model Document.applyBackgroud value
+            applyChangeAndFinish model Document.applyBackground value
 
         BorderColorChanged value ->
             applyChangeAndFinish model Document.applyBorderColor value

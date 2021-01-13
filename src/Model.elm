@@ -96,10 +96,6 @@ type Field
     = FontSizeField
     | FontColorField
     | BackgroundColorField
-    | PositionTopField
-    | PositionRightField
-    | PositionBottomField
-    | PositionLeftField
     | PaddingTopField
     | PaddingRightField
     | PaddingBottomField
@@ -120,6 +116,14 @@ type Field
     | LabelField
     | OffsetXField
     | OffsetYField
+    | WidthMinField
+    | WidthMaxField
+    | WidthPxField
+    | WidthPortionField
+    | HeightMinField
+    | HeightMaxField
+    | HeightPxField
+    | HeightPortionField
 
 
 type WidgetState

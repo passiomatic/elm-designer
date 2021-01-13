@@ -16,18 +16,6 @@ fieldId field =
         BackgroundColorField ->
             "background-color-hex"
 
-        PositionTopField ->
-            "position-top"
-
-        PositionRightField ->
-            "position-right"
-
-        PositionBottomField ->
-            "position-bottom"
-
-        PositionLeftField ->
-            "position-left"
-
         PaddingTopField ->
             "padding-top"
 
@@ -88,6 +76,29 @@ fieldId field =
         OffsetYField ->
             "offset-y"
 
+        WidthMinField ->
+            "width-min"
+
+        WidthMaxField ->
+            "width-max"
+
+        WidthPxField ->
+            "width-px"
+
+        WidthPortionField ->
+            "width-portion"
+
+        HeightMinField ->
+            "height-min"
+
+        HeightMaxField ->
+            "height-max"
+
+        HeightPxField ->
+            "height-px"
+
+        HeightPortionField ->
+            "height-portion"
 
 none =
     H.div [] []

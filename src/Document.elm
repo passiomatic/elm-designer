@@ -16,7 +16,7 @@ module Document exposing
     , appendNode
     , applyAlignX
     , applyAlignY
-    , applyBackgroud
+    , applyBackground
     , applyBackgroundColor
     , applyBackgroundUrl
     , applyBorderColor
@@ -28,6 +28,7 @@ module Document exposing
     , applyFontSize
     , applyFontWeight
     , applyHeight
+    , applyHeightWith
     , applyLabel
     , applyOffset
     , applyPadding
@@ -36,6 +37,7 @@ module Document exposing
     , applyText
     , applyTextAlign
     , applyWidth
+    , applyWidthWith
     , applyWrapRowItems
     , baseTemplate
     , canDropInto
@@ -85,7 +87,7 @@ import UUID exposing (Seeds, UUID)
 
 
 schemaVersion =
-    1
+    2
 
 
 {-| A serialized document.
@@ -179,9 +181,9 @@ type DropId
 baseTemplate : Template
 baseTemplate =
     { name = ""
-    , width = Auto
-    , height = Auto
-    , transformation = Layout.transformation
+    , width = Layout.fit
+    , height = Layout.fit
+    , transformation = Layout.untransformed
     , padding = Layout.padding 0
     , spacing = Layout.spacing 0
     , fontFamily = Inherit
@@ -363,8 +365,8 @@ pageNode theme seeds children index =
         page =
             { id = uuid
             , name = "Page " ++ String.fromInt index
-            , width = Fill
-            , height = Fill
+            , width = Layout.fill
+            , height = Layout.fill
             , transformation = baseTemplate.transformation
             , padding = baseTemplate.padding
             , spacing = baseTemplate.spacing
@@ -792,8 +794,8 @@ applySpacing setter value zipper =
     let
         value_ =
             String.toInt value
+                |> Maybe.map (clamp 0 999)
                 |> Maybe.withDefault 0
-                |> clamp 0 999
     in
     Zipper.mapLabel (\node -> Layout.setSpacing (setter value_ node.spacing) node) zipper
 
@@ -803,8 +805,8 @@ applyPadding setter value zipper =
     let
         value_ =
             String.toInt value
+                |> Maybe.map (clamp 0 999)
                 |> Maybe.withDefault 0
-                |> clamp 0 999
     in
     Zipper.mapLabel (\node -> Layout.setPadding (setter value_ node.padding) node) zipper
 
@@ -826,16 +828,6 @@ applyBorderLock value zipper =
         zipper
 
 
-applyWidth : Length -> Zipper Node -> Zipper Node
-applyWidth value zipper =
-    Zipper.mapLabel (\node -> { node | width = value }) zipper
-
-
-applyHeight : Length -> Zipper Node -> Zipper Node
-applyHeight value zipper =
-    Zipper.mapLabel (\node -> { node | height = value }) zipper
-
-
 applyAlignX : Alignment -> Zipper Node -> Zipper Node
 applyAlignX value zipper =
     Zipper.mapLabel (\node -> { node | alignmentX = value }) zipper
@@ -855,6 +847,36 @@ applyOffset setter value zipper =
                 |> Maybe.withDefault 0
     in
     Zipper.mapLabel (\node -> setTransformation (setter value_ node.transformation) node) zipper
+
+
+applyWidth : Length -> Zipper Node -> Zipper Node
+applyWidth value zipper =
+    Zipper.mapLabel (\node -> { node | width = value }) zipper
+
+
+applyWidthWith : (Maybe Int -> Length -> Length) -> String -> Zipper Node -> Zipper Node
+applyWidthWith setter value zipper =
+    let
+        value_ =
+            String.toInt value
+                |> Maybe.map (clamp 0 9999)
+    in
+    Zipper.mapLabel (\node -> { node | width = setter value_ node.width }) zipper
+
+
+applyHeight : Length -> Zipper Node -> Zipper Node
+applyHeight value zipper =
+    Zipper.mapLabel (\node -> { node | height = value }) zipper
+
+
+applyHeightWith : (Maybe Int -> Length -> Length) -> String -> Zipper Node -> Zipper Node
+applyHeightWith setter value zipper =
+    let
+        value_ =
+            String.toInt value
+                |> Maybe.map (clamp 0 9999)
+    in
+    Zipper.mapLabel (\node -> { node | height = setter value_ node.height }) zipper
 
 
 applyFontSize : String -> Zipper Node -> Zipper Node
@@ -902,8 +924,8 @@ applyBackgroundUrl value zipper =
     Zipper.mapLabel (Background.setBackground value_) zipper
 
 
-applyBackgroud : Background -> Zipper Node -> Zipper Node
-applyBackgroud value zipper =
+applyBackground : Background -> Zipper Node -> Zipper Node
+applyBackground value zipper =
     Zipper.mapLabel (Background.setBackground value) zipper
 
 
