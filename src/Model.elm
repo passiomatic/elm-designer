@@ -9,6 +9,7 @@ module Model exposing
     , Model
     , Mouse
     , Msg(..)
+    , UploadState(..)
     , WidgetState(..)
     , context
     , initialModel
@@ -20,17 +21,19 @@ module Model exposing
 import Bootstrap.Tab as Tab
 import Codecs
 import Document exposing (..)
+import File exposing (File)
 import Html as H exposing (Html)
 import Html.Events.Extra.Wheel as Wheel
 import Html5.DragDrop as DragDrop
+import Http exposing (Progress, Error)
 import Icons
 import Random
 import Result exposing (Result(..))
 import SelectList exposing (SelectList)
 import Set exposing (Set)
-import Style.Layout as Layout exposing (..)
 import Style.Background as Background exposing (Background)
 import Style.Font as Font exposing (..)
+import Style.Layout as Layout exposing (..)
 import Style.Theme as Theme exposing (Theme)
 import Time exposing (Posix)
 import Tree exposing (Tree)
@@ -85,6 +88,11 @@ type Msg
     | DocumentLoaded String
     | Ticked Posix
     | ModeChanged Mode
+    | FileDropped File (List File)
+    | FileDragging
+    | FileDragCanceled
+    | FileUploading Progress
+    | FileUploaded (Result Error String)
     | NoOp
     | DragDropMsg (DragDrop.Msg DragId DropId)
     | TabMsg Tab.State
@@ -164,8 +172,15 @@ type alias Model =
     , saveState : DocumentState
     , alerts : List String
     , dropDownState : WidgetState
+    , uploadState : UploadState
     , collapsedTreeItems : Set String
     }
+
+
+type UploadState
+    = Dragging
+    | Ready
+    | Uploading Float
 
 
 type DocumentState
@@ -262,6 +277,7 @@ initialModel { width, height, seed1, seed2, seed3, seed4 } =
     , saveState = Original
     , alerts = []
     , dropDownState = Hidden
+    , uploadState = Ready
     , collapsedTreeItems = Set.empty
     }
 

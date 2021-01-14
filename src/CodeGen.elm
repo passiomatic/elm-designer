@@ -241,8 +241,9 @@ emitNode theme node children =
         TextNode data ->
             emitText node data
 
-        -- ImageNode image ->
-        --     emitImage node image
+        ImageNode image ->
+            emitImage node image
+
         HeadingNode data ->
             emitHeading node data
 
@@ -511,15 +512,15 @@ emitOption node { text } =
 
 
 
--- emitImage : Node -> Image -> Expression
--- emitImage node image =
---     CodeGen.apply
---         [ CodeGen.fqFun elementModule "image"
---         , CodeGen.list
---             ([]
---              |> emitStandardStyles node
---             )
---         ]
+emitImage : Node -> ImageData -> Expression
+emitImage node image =
+    CodeGen.apply
+        [ CodeGen.fqFun elementModule "image"
+        , CodeGen.list
+            ([]
+             |> emitAllStyles node
+            )
+        ]
 
 
 emitHeading : Node -> HeadingData -> Expression

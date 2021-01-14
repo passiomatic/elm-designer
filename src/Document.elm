@@ -12,7 +12,7 @@ module Document exposing
     , RowData
     , Template
     , TextData
-    , Viewport(..)
+    , Viewport(..), imageNode
     , appendNode
     , applyAlignX
     , applyAlignY
@@ -210,7 +210,7 @@ type NodeType
     | RowNode RowData
     | ColumnNode
     | TextColumnNode
-      --| ImageNode ImageData
+    | ImageNode ImageData
     | ButtonNode TextData
     | CheckboxNode LabelData
     | TextFieldNode LabelData
@@ -237,9 +237,12 @@ nodeType value =
 
         RowNode _ ->
             "Row"
-
+            
         TextColumnNode ->
             "Text Column"
+
+        ImageNode _ ->
+            "Image"
 
         ButtonNode _ ->
             "Button"
@@ -397,6 +400,22 @@ pageNode theme seeds children index =
 emptyPageNode : Seeds -> Int -> ( Seeds, Tree Node )
 emptyPageNode seeds index =
     pageNode Theme.defaultTheme seeds [] index
+
+
+{-| Images require the user to drop them _into_ the app workspace so we bypass the pick-from-library process here.
+-}
+imageNode : String -> Seeds -> ( Seeds, Tree Node )
+imageNode url seeds =
+    let
+        template =
+            T.singleton
+                { baseTemplate
+                    | type_ = ImageNode { src = url, description = "" }
+                    --, width = Fill
+                    , name = "Image"
+                }
+    in
+    fromTemplate template seeds
 
 
 

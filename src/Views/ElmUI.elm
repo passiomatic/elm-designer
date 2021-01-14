@@ -83,8 +83,9 @@ renderNode ctx node children =
         TextNode data ->
             renderText ctx node selected data
 
-        -- ImageNode image ->
-        --     renderImage ctx node image
+        ImageNode data ->
+            renderImage ctx node selected data
+
         HeadingNode data ->
             renderHeading ctx node selected data
 
@@ -196,7 +197,7 @@ renderPage ctx node selected children =
         attrs =
             [ elementClasses ctx node selected
             , elementId node
-            , Events.onClick (NodeSelected node.id)
+            , onClick (NodeSelected node.id)
             ]
                 |> applyAllStyles node
     in
@@ -228,6 +229,20 @@ renderEmptyPage ctx =
 
     else
         E.none
+
+
+renderImage : Context -> Node -> Bool -> ImageData -> RenderedNode
+renderImage ctx node selected image =
+    let
+        attrs =
+            [ elementClasses ctx node selected
+            , elementId node
+            , onClick (NodeSelected node.id)
+            ]
+                |> applyAllStyles node
+    in
+    E.image attrs image
+        |> RenderedElement
 
 
 renderParagraph : Context -> Node -> Bool -> TextData -> RenderedNode
@@ -322,35 +337,6 @@ renderText ctx node selected { text } =
                     E.text text
                 )
                 |> RenderedElement
-
-
-
--- renderImage : Context -> Node -> Image -> Element Msg
--- renderImage ctx node image =
---     let
---         dropId =
---             InsertAfter node.id
---         newImage =
---             { image
---                 | src =
---                     if image.src == "" then
---                         "/placeholder.svg"
---                     else
---                         image.src
---             }
---         classes =
---             A.classList
---                 [ ( "element", True )
---                 , ( "element--selected", Document.isSelected node.id ctx.currentNode )
---                 ]
---         attrs =
---             [ E.htmlAttribute classes
---             , elementId node
---             , onClick (NodeSelected node.id)
---             ]
---                 |> applyStandardStyles node
---     in
---     E.image attrs newImage
 
 
 renderTextField : Context -> Node -> Bool -> LabelData -> RenderedNode

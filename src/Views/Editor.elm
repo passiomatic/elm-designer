@@ -12,6 +12,7 @@ import Dict exposing (Dict)
 import Document exposing (..)
 import Element exposing (Color, Orientation(..))
 import Element.Background exposing (image)
+import File exposing (File)
 import Html as H exposing (Attribute, Html)
 import Html.Attributes as A
 import Html.Entity as Entity
@@ -20,7 +21,7 @@ import Html5.DragDrop as DragDrop
 import Icons
 import Json.Decode as Decode exposing (Decoder)
 import Library exposing (LibraryItem)
-import Model exposing (Field(..), Inspector(..), Keys, Mode(..), Model, Msg(..), page)
+import Model exposing (..)
 import Palette
 import SelectList exposing (SelectList)
 import Set exposing (Set)
@@ -78,33 +79,64 @@ alertView model =
 
 
 workspaceView model =
-    let
-        -- transformAttr =
-        --     A.style "transform" (Css.translateBy model.workspaceX model.workspaceY ++ " " ++ Css.scaleBy model.workspaceScale)
-        -- originX =
-        --     Model.workspaceWidth // 2 - model.windowWidth // 2 + model.mouseX
-        -- originY =
-        --     (min model.workspaceY model.windowHeight // 2) + model.mouseY
-        -- originAttr =
-        --     A.style "transform-origin" (String.fromInt originX ++ "px" ++ " " ++ String.fromInt originY ++ "px")
-        -- isFluid =
-        --     case model. of
-        class =
-            case model.mode of
-                DesignMode ->
-                    "workspace--design"
-
-                PreviewMode ->
-                    "workspace--preview"
-    in
+    -- transformAttr =
+    --     A.style "transform" (Css.translateBy model.workspaceX model.workspaceY ++ " " ++ Css.scaleBy model.workspaceScale)
+    -- originX =
+    --     Model.workspaceWidth // 2 - model.windowWidth // 2 + model.mouseX
+    -- originY =
+    --     (min model.workspaceY model.windowHeight // 2) + model.mouseY
+    -- originAttr =
+    --     A.style "transform-origin" (String.fromInt originX ++ "px" ++ " " ++ String.fromInt originY ++ "px")
     H.div
-        [ A.class ("workspace flex-grow-1 unselectable " ++ class)
+        [ A.classList
+            [ ( "workspace flex-grow-1 unselectable", True )
+            , ( "workspace--design", model.mode == DesignMode )
+            , ( "workspace--preview", model.mode == PreviewMode )
+            , ( "dragging--file", model.uploadState == Dragging )
+            ]
+        , preventDefaultOn "dragenter" (Decode.succeed FileDragging)
+        , preventDefaultOn "dragover" (Decode.succeed FileDragging)
+        , preventDefaultOn "dragleave" (Decode.succeed FileDragCanceled)
+        , preventDefaultOn "drop" fileDropDecoder
 
         --, transformAttr
         --, originAttr
         ]
         [ pageView model
+        , uploadProgressView model.uploadState
         ]
+
+
+uploadProgressView upload =
+    case upload of
+        Uploading sent ->
+            let
+                percent =
+                    String.fromFloat (sent * 100)
+            in
+            H.div
+                [ A.class "position-absolute w-100 bg-light border rounded bpx-3 bpy-2"
+                , A.style "bottom" "20px"
+                , A.style "left" "0"
+                , A.style "z-index" "3"
+                ]
+                [ H.text "Uploading image..."
+                , H.div [ A.class "mt-1 progress", A.style "height" "10px" ]
+                    [ H.div
+                        [ A.class "progress-bar progress-bar-striped progress-bar-animated"
+                        , A.style "width" (percent ++ "%")
+                        ]
+                        []
+                    ]
+                ]
+
+        _ ->
+            none
+
+
+fileDropDecoder : Decoder Msg
+fileDropDecoder =
+    Decode.at [ "dataTransfer", "files" ] (Decode.oneOrMore FileDropped File.decoder)
 
 
 headerView : Model -> Html Msg
@@ -269,7 +301,7 @@ codeView model =
     in
     [ H.section [ A.class "section bp-3 d-flex flex-column h-100" ]
         [ H.div [ A.class "mb-2 font-weight-500" ]
-            [ H.text ("Generated code for " ++ (T.label node |> .name)  )
+            [ H.text ("Generated code for " ++ (T.label node |> .name))
             ]
         , H.div [ A.class "scroll-y flex-fill bg-white bp-1 border" ]
             [ H.pre [ A.class "preformatted" ]
@@ -489,7 +521,7 @@ isCollapsed model node =
 
 pageListView : Model -> Html Msg
 pageListView model =
-    H.div [ A.class "bp-3 scroll-y border-bottom", A.style "min-height" "112px", A.style "max-height" "112px"  ]
+    H.div [ A.class "bp-3 scroll-y border-bottom", A.style "min-height" "112px", A.style "max-height" "112px" ]
         (H.div [ A.class "d-flex align-items-center justify-content-between mb-2" ]
             [ H.div [ A.class "font-weight-500" ]
                 [ H.text "Pages" ]
@@ -636,6 +668,17 @@ pageView model =
 
 
 -- HELPERS
+
+
+preventDefaultOn : String -> Decoder msg -> Attribute msg
+preventDefaultOn event decoder =
+    E.preventDefaultOn event
+        (Decode.map
+            (\msg ->
+                ( msg, True )
+            )
+            decoder
+        )
 
 
 clickToSelectHandler id =

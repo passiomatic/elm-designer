@@ -472,7 +472,7 @@ borderWidthCodec =
 nodeTypeCodec : Codec NodeType
 nodeTypeCodec =
     Codec.custom
-        (\headingNode paragraphNode textNode rowNode columnNode textColumnNode buttonNode checkboxNode textFieldNode textFieldMultilineNode radioNode optionNode pageNode value ->
+        (\headingNode paragraphNode textNode rowNode columnNode textColumnNode imageNode buttonNode checkboxNode textFieldNode textFieldMultilineNode radioNode optionNode pageNode value ->
             case value of
                 HeadingNode data ->
                     headingNode data
@@ -492,8 +492,9 @@ nodeTypeCodec =
                 TextColumnNode ->
                     textColumnNode
 
-                -- ImageNode image ->
-                --     imageNode image
+                ImageNode image ->
+                    imageNode image
+
                 ButtonNode data ->
                     buttonNode data
 
@@ -521,7 +522,7 @@ nodeTypeCodec =
         |> Codec.variant1 "RowNode" RowNode rowCodec
         |> Codec.variant0 "ColumnNode" ColumnNode
         |> Codec.variant0 "TextColumnNode" TextColumnNode
-        --|> Codec.variant1 "ImageNode" ImageNode imageCodec
+        |> Codec.variant1 "ImageNode" ImageNode imageCodec
         |> Codec.variant1 "ButtonNode" ButtonNode textCodec
         |> Codec.variant1 "CheckboxNode" CheckboxNode labelCodec
         |> Codec.variant1 "TextFieldNode" TextFieldNode labelCodec
@@ -638,13 +639,15 @@ rowCodec =
         |> Codec.buildObject
 
 
+imageCodec : Codec ImageData
+imageCodec =
+    Codec.object ImageData
+        |> Codec.field "src" .src Codec.string
+        |> Codec.field "description" .description Codec.string
+        |> Codec.buildObject
 
--- imageCodec : Codec ImageData
--- imageCodec =
---     Codec.object ImageData
---         |> Codec.field "src" .src Codec.string
---         |> Codec.field "description" .description Codec.string
---         |> Codec.buildObject
+
+
 -- linkCodec : Codec Link
 -- linkCodec =
 --     Codec.object Link

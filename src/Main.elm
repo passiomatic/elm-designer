@@ -9,10 +9,12 @@ import CodeGen
 import Codecs
 import Dict exposing (Dict)
 import Document exposing (DragId(..), DropId(..), Node, Viewport(..))
+import File exposing (File)
 import Fonts
 import Html.Events as E
 import Html.Events.Extra.Mouse
 import Html5.DragDrop as DragDrop
+import Http exposing (Progress(..))
 import Icons
 import Json.Decode as Decode exposing (Decoder, Value)
 import Library
@@ -32,6 +34,7 @@ import Time.Extra as Time exposing (Interval(..))
 import Tree as T exposing (Tree)
 import Tree.Zipper as Zipper exposing (Zipper)
 import UUID exposing (Seeds)
+import Uploader
 import Views.Common exposing (fieldId)
 import Views.Editor as Editor
 
@@ -69,6 +72,79 @@ init flags =
 
 update msg model =
     case msg of
+        -- ###########
+        -- Image drag & drop from local filesystem
+        -- ###########
+        FileDropped file files ->
+            let
+                validFiles =
+                    List.filter
+                        (\f ->
+                            Set.member (File.mime f) imageTypes
+                        )
+                        (file :: files)
+            in
+            ( { model
+                | uploadState = Ready
+              }
+            , List.map (Uploader.start FileUploaded) validFiles
+                |> Cmd.batch
+            )
+
+        FileDragging ->
+            ( { model
+                | uploadState = Dragging
+              }
+            , Cmd.none
+            )
+
+        FileDragCanceled ->
+            ( { model
+                | uploadState = Ready
+              }
+            , Cmd.none
+            )
+
+        FileUploading progress ->
+            case progress of
+                Sending sent ->
+                    ( { model
+                        | uploadState = Uploading (Http.fractionSent sent)
+                      }
+                    , Cmd.none
+                    )
+
+                _ ->
+                    ( model, Cmd.none )
+
+        FileUploaded result ->
+            case result of
+                Ok url ->
+                    let
+                        ( newSeeds, newNode ) =
+                            Document.imageNode url model.seeds
+
+                        newPage =
+                            selectedPage model.pages
+                                |> Document.insertNode newNode
+                    in
+                    ( { model
+                        | uploadState = Ready
+                        , pages = SelectList.replaceSelected newPage model.pages
+                        , seeds = newSeeds
+                        , saveState = Changed model.currentTime
+                      }
+                    , Cmd.none
+                    )
+
+                Err _ ->
+                    ( { model | alerts = [ "Could not upload image." ] }
+                    , Cmd.none
+                    )
+
+        -- ###########
+        -- Saving
+        -- ###########
         Ticked now ->
             let
                 ( newSaveState, cmd ) =
@@ -373,7 +449,7 @@ update msg model =
                                         Layout.setStrategy Unspecified length
                             )
                         )
-                        newValue                
+                        newValue
 
                 EditingField HeightPortionField oldValue newValue ->
                     applyChangeAndFinish model
@@ -791,6 +867,7 @@ subscriptions ({ mode } as model) =
          , Ports.onPageDelete PageDeleteClicked
          , Ports.onInsertNode InsertNodeClicked
          , Time.every 1000 Ticked
+         , Uploader.track FileUploading
 
          --, E.onResize Resized
          ]
@@ -831,3 +908,8 @@ serializeDocument document =
     document
         |> Codecs.toString
         |> Ports.saveDocument
+
+
+imageTypes : Set String
+imageTypes =
+    Set.fromList [ "image/jpeg", "image/png", "image/gif", "image/svg+xml" ]
