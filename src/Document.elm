@@ -76,7 +76,7 @@ import Palette exposing (orange)
 import SelectList exposing (SelectList)
 import Set exposing (Set)
 import Style.Background as Background exposing (Background)
-import Style.Border as Border exposing (..)
+import Style.Border as Border exposing (BorderCorner, BorderStyle(..), BorderWidth)
 import Style.Font as Font exposing (..)
 import Style.Layout as Layout exposing (..)
 import Style.Theme as Theme exposing (Theme)
@@ -193,8 +193,8 @@ baseTemplate =
     , textAlignment = TextLeft
     , borderColor = Palette.darkCharcoal
     , borderStyle = Solid
-    , borderWidth = borderWidth 0
-    , borderCorner = borderCorner 0
+    , borderWidth = Border.width 0
+    , borderCorner = Border.corner 0
     , backgroundColor = Nothing
     , background = Background.None
     , alignmentX = None
@@ -822,8 +822,8 @@ applyBorderLock value zipper =
     Zipper.mapLabel
         (\node ->
             node
-                |> Border.setBorderWidth (setLock value node.borderWidth)
-                |> Border.setBorderCorner (setLock value node.borderCorner)
+                |> Border.setWidth (setLock value node.borderWidth)
+                |> Border.setCorner (setLock value node.borderCorner)
         )
         zipper
 
@@ -935,7 +935,7 @@ applyBorderColor value zipper =
         value_ =
             Css.stringToColor value
     in
-    Zipper.mapLabel (Border.setBorderColor value_) zipper
+    Zipper.mapLabel (Border.setColor value_) zipper
 
 
 applyBorderWidth : (Int -> BorderWidth -> BorderWidth) -> String -> Zipper Node -> Zipper Node
@@ -946,7 +946,7 @@ applyBorderWidth setter value zipper =
                 |> Maybe.map (clamp 0 999)
                 |> Maybe.withDefault 0
     in
-    Zipper.mapLabel (\node -> setBorderWidth (setter value_ node.borderWidth) node) zipper
+    Zipper.mapLabel (\node -> Border.setWidth (setter value_ node.borderWidth) node) zipper
 
 
 applyBorderCorner : (Int -> BorderCorner -> BorderCorner) -> String -> Zipper Node -> Zipper Node
@@ -957,7 +957,7 @@ applyBorderCorner setter value zipper =
                 |> Maybe.map (clamp 0 999)
                 |> Maybe.withDefault 0
     in
-    Zipper.mapLabel (\node -> Border.setBorderCorner (setter value_ node.borderCorner) node) zipper
+    Zipper.mapLabel (\node -> Border.setCorner (setter value_ node.borderCorner) node) zipper
 
 
 applyFontColor : String -> Zipper Node -> Zipper Node

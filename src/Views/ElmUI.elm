@@ -21,7 +21,7 @@ import Model exposing (..)
 import Palette
 import SelectList exposing (SelectList)
 import Style.Background as Background exposing (Background)
-import Style.Border as Border exposing (..)
+import Style.Border exposing (BorderCorner, BorderStyle(..), BorderWidth)
 import Style.Font as Font exposing (..)
 import Style.Layout as Layout exposing (..)
 import Tree as T exposing (Tree)

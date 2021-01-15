@@ -22,7 +22,7 @@ import Ports
 import Random exposing (Seed)
 import SelectList exposing (SelectList)
 import Set exposing (Set)
-import Style.Border as Border exposing (..)
+import Style.Border as Border exposing (BorderCorner, BorderStyle(..), BorderWidth)
 import Style.Font as Font exposing (..)
 import Style.Layout as Layout exposing (..)
 import Style.Theme as Theme exposing (Theme)
@@ -432,28 +432,28 @@ update msg model =
                     applyChangeAndFinish model Document.applyBorderColor newValue
 
                 EditingField BorderTopLeftCornerField oldValue newValue ->
-                    applyChangeAndFinish model (Document.applyBorderCorner Border.setBorderTopLeftCorner) newValue
+                    applyChangeAndFinish model (Document.applyBorderCorner Border.setTopLeftCorner) newValue
 
                 EditingField BorderTopRightCornerField oldValue newValue ->
-                    applyChangeAndFinish model (Document.applyBorderCorner Border.setBorderTopRightCorner) newValue
+                    applyChangeAndFinish model (Document.applyBorderCorner Border.setTopRightCorner) newValue
 
                 EditingField BorderBottomRightCornerField oldValue newValue ->
-                    applyChangeAndFinish model (Document.applyBorderCorner Border.setBorderBottomRightCorner) newValue
+                    applyChangeAndFinish model (Document.applyBorderCorner Border.setBottomRightCorner) newValue
 
                 EditingField BorderBottomLeftCornerField oldValue newValue ->
-                    applyChangeAndFinish model (Document.applyBorderCorner Border.setBorderBottomLeftCorner) newValue
+                    applyChangeAndFinish model (Document.applyBorderCorner Border.setBottomLeftCorner) newValue
 
                 EditingField BorderTopWidthField oldValue newValue ->
-                    applyChangeAndFinish model (Document.applyBorderWidth Border.setBorderTopWidth) newValue
+                    applyChangeAndFinish model (Document.applyBorderWidth Border.setTopWidth) newValue
 
                 EditingField BorderRightWidthField oldValue newValue ->
-                    applyChangeAndFinish model (Document.applyBorderWidth Border.setBorderRightWidth) newValue
+                    applyChangeAndFinish model (Document.applyBorderWidth Border.setRightWidth) newValue
 
                 EditingField BorderBottomWidthField oldValue newValue ->
-                    applyChangeAndFinish model (Document.applyBorderWidth Border.setBorderBottomWidth) newValue
+                    applyChangeAndFinish model (Document.applyBorderWidth Border.setBottomWidth) newValue
 
                 EditingField BorderLeftWidthField oldValue newValue ->
-                    applyChangeAndFinish model (Document.applyBorderWidth Border.setBorderLeftWidth) newValue
+                    applyChangeAndFinish model (Document.applyBorderWidth Border.setLeftWidth) newValue
 
                 -- ###########
                 -- Padding
