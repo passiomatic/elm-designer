@@ -650,7 +650,7 @@ applySpacing value attrs =
 
 applyWidth : Length -> List (E.Attribute Msg) -> List (E.Attribute Msg)
 applyWidth value attrs =
-    -- TODO mergewrge with applyHeight
+    -- TODO merge with applyHeight
     case value.strategy of
         Px value_ ->
             (E.px value_
