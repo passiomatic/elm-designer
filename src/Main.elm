@@ -87,7 +87,7 @@ update msg model =
             ( { model
                 | uploadState = Ready
               }
-            , List.map (Uploader.start FileUploaded) validFiles
+            , List.map (Uploader.start model.uploadEndpoint FileUploaded) validFiles
                 |> Cmd.batch
             )
 

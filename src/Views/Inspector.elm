@@ -69,6 +69,15 @@ resolveStyleViews model zipper =
                     , bordersView model node
                     , backgroundView model node
                     ]
+                ImageNode data -> 
+                    [ sectionView "Layout"
+                        [ positionView model node
+                        , lengthView model node
+                        , paddingView model node
+                        ]
+                    , bordersView model node
+                    , backgroundView model node
+                    ]
 
                 RowNode data ->
                     [ sectionView ""

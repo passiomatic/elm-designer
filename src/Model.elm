@@ -25,7 +25,7 @@ import File exposing (File)
 import Html as H exposing (Html)
 import Html.Events.Extra.Wheel as Wheel
 import Html5.DragDrop as DragDrop
-import Http exposing (Progress, Error)
+import Http exposing (Error, Progress)
 import Icons
 import Random
 import Result exposing (Result(..))
@@ -152,7 +152,7 @@ type Inspector
 
 type alias Model =
     { mode : Mode
-
+    , uploadEndpoint: String 
     -- , workspaceScale : Float
     -- , workspaceX : Int
     -- , workspaceY : Int
@@ -236,6 +236,7 @@ type alias Mouse =
 type alias Flags =
     { width : Int
     , height : Int
+    , uploadEndpoint : String
     , seed1 : Int
     , seed2 : Int
     , seed3 : Int
@@ -244,7 +245,7 @@ type alias Flags =
 
 
 initialModel : Flags -> Model
-initialModel { width, height, seed1, seed2, seed3, seed4 } =
+initialModel { width, height, uploadEndpoint, seed1, seed2, seed3, seed4 } =
     let
         seeds =
             Seeds
@@ -257,7 +258,7 @@ initialModel { width, height, seed1, seed2, seed3, seed4 } =
             Document.emptyPageNode seeds 1
     in
     { mode = DesignMode
-
+    , uploadEndpoint = uploadEndpoint
     -- , workspaceScale = 1.0
     -- , workspaceX = -workspaceWidth // 2 + width // 2
     -- , workspaceY = 0

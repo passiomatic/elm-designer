@@ -8,12 +8,12 @@ import Http exposing (Error)
 import Model exposing (Msg)
 
 
-start : (Result Error String -> Msg) -> File -> Cmd Msg
-start msg file =
+start : String -> (Result Error String -> Msg) -> File -> Cmd Msg
+start url msg file =
     Http.request
         { method = "POST"
         , headers = []
-        , url = "https://0x0.st"
+        , url = url
         , body =
             Http.multipartBody
                 [ Http.filePart "file" file
