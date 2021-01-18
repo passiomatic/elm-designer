@@ -75,22 +75,6 @@ update msg model =
         -- ###########
         -- Image drag & drop from local filesystem
         -- ###########
-        FileDropped file files ->
-            let
-                validFiles =
-                    List.filter
-                        (\f ->
-                            Set.member (File.mime f) imageTypes
-                        )
-                        (file :: files)
-            in
-            ( { model
-                | uploadState = Ready
-              }
-            , List.map (Uploader.start model.uploadEndpoint FileUploaded) validFiles
-                |> Cmd.batch
-            )
-
         FileDragging ->
             ( { model
                 | uploadState = Dragging
@@ -105,11 +89,24 @@ update msg model =
             , Cmd.none
             )
 
-        FileUploading progress ->
+        FileDropped file files ->
+            let
+                ( newUploadState, cmd ) =
+                    (file :: files)
+                        |> acceptFiles
+                        |> Uploader.uploadNextFile model.uploadEndpoint
+            in
+            ( { model
+                | uploadState = newUploadState
+              }
+            , cmd
+            )
+
+        FileUploading name others progress ->
             case progress of
                 Sending sent ->
                     ( { model
-                        | uploadState = Uploading (Http.fractionSent sent)
+                        | uploadState = Uploading name others (Http.fractionSent sent)
                       }
                     , Cmd.none
                     )
@@ -127,14 +124,22 @@ update msg model =
                         newPage =
                             selectedPage model.pages
                                 |> Document.insertNode newNode
+
+                        ( newUploadState, cmd ) =
+                            case model.uploadState of
+                                Uploading _ others _ ->
+                                    Uploader.uploadNextFile model.uploadEndpoint others
+
+                                _ ->
+                                    ( Ready, Cmd.none )
                     in
                     ( { model
-                        | uploadState = Ready
+                        | uploadState = newUploadState
                         , pages = SelectList.replaceSelected newPage model.pages
                         , seeds = newSeeds
                         , saveState = Changed model.currentTime
                       }
-                    , Cmd.none
+                    , cmd
                     )
 
                 Err _ ->
@@ -856,23 +861,28 @@ main =
 
 
 subscriptions : Model -> Sub Msg
-subscriptions ({ mode } as model) =
-    Sub.batch
-        ([ BE.onKeyDown (Decode.map (KeyChanged True) keysDecoder)
-         , BE.onKeyUp (Decode.map (KeyChanged False) keysDecoder)
-         , BE.onMouseDown (Decode.map (MouseButtonChanged True) mouseDecoder)
-         , BE.onMouseUp (Decode.map (MouseButtonChanged False) mouseDecoder)
-         , Ports.onDocumentLoad DocumentLoaded
-         , Ports.onPageAdd PageAddClicked
-         , Ports.onPageDelete PageDeleteClicked
-         , Ports.onInsertNode InsertNodeClicked
-         , Time.every 1000 Ticked
-         , Uploader.track FileUploading
+subscriptions model =
+    let
+        uploadSub =
+            case model.uploadState of
+                Uploading name others _ ->
+                    Uploader.track name others
 
-         --, E.onResize Resized
-         ]
-         --|> trackMouseMove (mode == PanMode)
-        )
+                _ ->
+                    Sub.none
+    in
+    Sub.batch
+        [ BE.onKeyDown (Decode.map (KeyChanged True) keysDecoder)
+        , BE.onKeyUp (Decode.map (KeyChanged False) keysDecoder)
+        , BE.onMouseDown (Decode.map (MouseButtonChanged True) mouseDecoder)
+        , BE.onMouseUp (Decode.map (MouseButtonChanged False) mouseDecoder)
+        , Ports.onDocumentLoad DocumentLoaded
+        , Ports.onPageAdd PageAddClicked
+        , Ports.onPageDelete PageDeleteClicked
+        , Ports.onInsertNode InsertNodeClicked
+        , Time.every 1000 Ticked
+        , uploadSub
+        ]
 
 
 trackMouseMove shouldTrack subs =
@@ -910,6 +920,14 @@ serializeDocument document =
         |> Ports.saveDocument
 
 
-imageTypes : Set String
-imageTypes =
+acceptedTypes : Set String
+acceptedTypes =
     Set.fromList [ "image/jpeg", "image/png", "image/gif", "image/svg+xml" ]
+
+
+acceptFiles files =
+    List.filter
+        (\f ->
+            Set.member (File.mime f) acceptedTypes
+        )
+        files

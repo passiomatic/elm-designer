@@ -91,7 +91,7 @@ type Msg
     | FileDropped File (List File)
     | FileDragging
     | FileDragCanceled
-    | FileUploading Progress
+    | FileUploading String (List File) Progress
     | FileUploaded (Result Error String)
     | NoOp
     | DragDropMsg (DragDrop.Msg DragId DropId)
@@ -180,7 +180,7 @@ type alias Model =
 type UploadState
     = Dragging
     | Ready
-    | Uploading Float
+    | Uploading String (List File) Float
 
 
 type DocumentState

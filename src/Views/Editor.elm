@@ -107,26 +107,28 @@ workspaceView model =
         ]
 
 
-uploadProgressView upload =
-    case upload of
-        Uploading sent ->
+uploadProgressView uploadState =
+    case uploadState of
+        Uploading name _ sent ->
             let
                 percent =
                     String.fromFloat (sent * 100)
             in
             H.div
-                [ A.class "position-absolute w-100 bg-light border rounded bpx-3 bpy-2"
-                , A.style "bottom" "20px"
+                [ A.class "position-absolute w-100"
+                , A.style "bottom" "1.4rem"
                 , A.style "left" "0"
                 , A.style "z-index" "3"
                 ]
-                [ H.text "Uploading image..."
-                , H.div [ A.class "mt-1 progress", A.style "height" "10px" ]
-                    [ H.div
-                        [ A.class "progress-bar progress-bar-striped progress-bar-animated"
-                        , A.style "width" (percent ++ "%")
+                [ H.div [ A.class "w-50 mx-auto bg-light border rounded bpx-2 bpy-2" ]
+                    [ H.div [ A.class "label-sm" ] [ H.text ("Uploading image " ++ name ++ "...") ]
+                    , H.div [ A.class "mt-1 progress", A.style "height" "8px" ]
+                        [ H.div
+                            [ A.class "progress-bar progress-bar-striped progress-bar-animated"
+                            , A.style "width" (percent ++ "%")
+                            ]
+                            []
                         ]
-                        []
                     ]
                 ]
 

@@ -1,33 +1,46 @@
-module Uploader exposing (start, track)
+module Uploader exposing (track, uploadNextFile)
 
-{-| See <https://0x0.st>
+{-| Upload a file using a given endpoint and tracking progress.
 -}
 
 import File exposing (File)
 import Http exposing (Error)
-import Model exposing (Msg)
-
-
-start : String -> (Result Error String -> Msg) -> File -> Cmd Msg
-start url msg file =
-    Http.request
-        { method = "POST"
-        , headers = []
-        , url = url
-        , body =
-            Http.multipartBody
-                [ Http.filePart "file" file
-                ]
-        , expect = Http.expectString msg
-        , timeout = Just uploadTimeout
-        -- TODO Replace with actual file name?
-        , tracker = Just "file-upload"
-        }
-
-
-track msg =
-    Http.track "file-upload" msg
+import Model exposing (Msg(..), UploadState(..))
+import Set exposing (Set)
 
 
 uploadTimeout =
     60 * 1000
+
+
+uploadNextFile endpoint files =
+    case files of
+        next :: others ->
+            ( Uploading (File.name next) others 0
+            , postTo endpoint next
+            )
+
+        [] ->
+            ( Ready
+            , Cmd.none
+            )
+
+
+postTo : String -> File -> Cmd Msg
+postTo endpoint file =
+    Http.request
+        { method = "POST"
+        , headers = []
+        , url = endpoint
+        , body =
+            Http.multipartBody
+                [ Http.filePart "file" file
+                ]
+        , expect = Http.expectString FileUploaded
+        , timeout = Just uploadTimeout
+        , tracker = Just (File.name file)
+        }
+
+
+track name others =
+    Http.track name (FileUploading name others)
