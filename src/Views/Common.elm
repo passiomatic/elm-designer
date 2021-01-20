@@ -13,6 +13,12 @@ fieldId field =
         FontColorField ->
             "font-color-hex"
 
+        LetterSpacingField ->
+            "letter-spacing"
+
+        WordSpacingField ->
+            "word-spacing"
+
         BackgroundColorField ->
             "background-color-hex"
 

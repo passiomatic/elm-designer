@@ -569,6 +569,8 @@ applyAllStyles node attrs =
         |> applyFontFamily node.fontFamily
         |> applyFontColor node.fontColor
         |> applyFontWeight node.fontWeight
+        |> applyLetterSpacing node.letterSpacing
+        |> applyWordSpacing node.wordSpacing
         |> applyTextAlign node.textAlignment
         |> applyAlignX node.alignmentX
         |> applyAlignY node.alignmentY
@@ -589,6 +591,8 @@ applyChildStyles node attrs =
         |> applyFontFamily node.fontFamily
         |> applyFontColor node.fontColor
         |> applyFontWeight node.fontWeight
+        |> applyLetterSpacing node.letterSpacing
+        |> applyWordSpacing node.wordSpacing
         |> applyTextAlign node.textAlignment
         |> applyBackground node.background
         |> applyBackgroundColor node.backgroundColor
@@ -799,6 +803,16 @@ applyPadding value attrs =
         , left = value.left
         }
         :: attrs
+
+
+applyLetterSpacing : Float -> List (E.Attribute Msg) -> List (E.Attribute Msg)
+applyLetterSpacing value attrs =
+    Font.letterSpacing value :: attrs
+
+
+applyWordSpacing : Float -> List (E.Attribute Msg) -> List (E.Attribute Msg)
+applyWordSpacing value attrs =
+    Font.wordSpacing value :: attrs
 
 
 applyTextAlign : TextAlignment -> List (E.Attribute Msg) -> List (E.Attribute Msg)
