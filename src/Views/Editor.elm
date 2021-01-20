@@ -269,7 +269,7 @@ codeView model =
     in
     [ H.section [ A.class "section bp-3 d-flex flex-column h-100" ]
         [ H.div [ A.class "mb-2 font-weight-500" ]
-            [ H.text ("Generated code for " ++ (T.label node |> .name)  )
+            [ H.text ("Generated code for " ++ (T.label node |> .name))
             ]
         , H.div [ A.class "scroll-y flex-fill bg-white bp-1 border" ]
             [ H.pre [ A.class "preformatted" ]
@@ -489,7 +489,7 @@ isCollapsed model node =
 
 pageListView : Model -> Html Msg
 pageListView model =
-    H.div [ A.class "bp-3 scroll-y border-bottom", A.style "min-height" "112px", A.style "max-height" "112px"  ]
+    H.div [ A.class "bp-3 scroll-y border-bottom", A.style "min-height" "112px", A.style "max-height" "112px" ]
         (H.div [ A.class "d-flex align-items-center justify-content-between mb-2" ]
             [ H.div [ A.class "font-weight-500" ]
                 [ H.text "Pages" ]
@@ -571,20 +571,20 @@ pageView model =
         ctx =
             Model.context model
 
-        ( chromeClass, width, height ) =
+        ( viewportClass, width, height ) =
             case model.viewport of
                 DeviceModel name ->
                     let
                         ( w, h, _ ) =
                             Document.findDeviceInfo name
                     in
-                    ( "chrome--device", px w, px h )
+                    ( "viewport--device", px w, px h )
 
                 Custom w h _ ->
-                    ( "chrome--custom", px w, px h )
+                    ( "viewport--custom", px w, px h )
 
                 Fluid ->
-                    ( "chrome--fluid", "calc(100% - 2px)", "calc(100% - 2px)" )
+                    ( "viewport--fluid", "calc(100% - 2px)", "calc(100% - 2px)" )
 
         content =
             ElmUI.render ctx tree
@@ -595,17 +595,25 @@ pageView model =
                 [ A.classList
                     [ ( "page", True )
                     , ( "page--design", True )
+                    , ( viewportClass, True )
                     ]
+                , A.attribute "data-fold" height
                 , A.style "width" width
-                , A.style "height" height
+                , A.style "min-height" height
                 ]
-                [ content ]
+                [ content
+                , H.div
+                    [ A.class "page__fold"
+                    , A.style "top" height
+                    ]
+                    [ H.text "Fold" ]
+                ]
 
         PreviewMode ->
             H.div
                 [ A.classList
                     [ ( "chrome m-4", True )
-                    , ( chromeClass, True )
+                    , ( viewportClass, True )
                     ]
                 ]
                 [ H.div [ A.class "chrome__header d-flex justify-content-between" ]
@@ -624,10 +632,6 @@ pageView model =
                         ]
                     , A.style "width" width
                     , A.style "height" height
-
-                    --, A.style "min-height" height
-                    --, A.style "top" <| px 100
-                    --, A.style "left" <| px (Model.workspaceWidth // 2 - model.pageWidth // 2)
                     ]
                     [ content
                     ]
