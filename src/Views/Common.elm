@@ -1,7 +1,38 @@
-module Views.Common exposing (fieldId, none)
+module Views.Common exposing (canDropInto, canDropSibling, fieldId, none)
 
+import Document exposing (DragId(..))
 import Html as H exposing (Html)
+import Html5.DragDrop as DragDrop
 import Model exposing (Field(..))
+import Tree as T exposing (Tree)
+
+
+canDropInto container dragDrop =
+    case DragDrop.getDragId dragDrop of
+        Just dragId ->
+            case dragId of
+                Move node ->
+                    Document.canDropInto container node
+
+                Insert template ->
+                    Document.canDropInto container (T.label template)
+
+        Nothing ->
+            False
+
+
+canDropSibling sibling dragDrop =
+    case DragDrop.getDragId dragDrop of
+        Just dragId ->
+            case dragId of
+                Move node ->
+                    Document.canDropSibling sibling node
+
+                Insert template ->
+                    Document.canDropSibling sibling (T.label template)
+
+        Nothing ->
+            False
 
 
 fieldId : Field -> String
@@ -105,6 +136,7 @@ fieldId field =
 
         HeightPortionField ->
             "height-portion"
+
 
 none =
     H.div [] []

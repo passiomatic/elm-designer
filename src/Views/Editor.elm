@@ -27,7 +27,7 @@ import Set exposing (Set)
 import Style.Theme as Theme
 import Tree as T exposing (Tree)
 import Tree.Zipper as Zipper exposing (Zipper)
-import Views.Common exposing (fieldId, none)
+import Views.Common as Common exposing (none)
 import Views.ElmUI as ElmUI
 import Views.Inspector as Inspector
 
@@ -288,25 +288,25 @@ leftPaneView : Model -> Html Msg
 leftPaneView model =
     H.aside [ A.class "pane pane--left border-right d-flex flex-column" ]
         [ pageListView model
-        , treeView model
+        , outlineView model
         , libraryView model
         ]
 
 
-treeView : Model -> Html Msg
-treeView model =
+outlineView : Model -> Html Msg
+outlineView model =
     let
         tree =
             SelectList.selected model.pages
                 |> Zipper.toTree
     in
     H.div [ A.class "bp-3 scroll-y border-bottom flex-grow-1" ]
-        [ T.restructure identity (treeItemView model) tree
+        [ T.restructure identity (outlineItemView model) tree
         ]
 
 
-treeItemView : Model -> Node -> List (Html Msg) -> Html Msg
-treeItemView model node children =
+outlineItemView : Model -> Node -> List (Html Msg) -> Html Msg
+outlineItemView model node children =
     let
         currentNode =
             SelectList.selected model.pages
@@ -316,7 +316,7 @@ treeItemView model node children =
 
         topHint =
             H.div
-                (makeDroppableIf (canDropSibling model.dragDrop node)
+                (makeDroppableIf (Common.canDropSibling node model.dragDrop)
                     (InsertBefore node.id)
                     [ A.classList
                         [ ( "tree__drop-hint tree__drop-hint--before", True )
@@ -328,7 +328,7 @@ treeItemView model node children =
 
         bottomHint =
             H.div
-                (makeDroppableIf (canDropSibling model.dragDrop node)
+                (makeDroppableIf (Common.canDropSibling node model.dragDrop)
                     (InsertAfter node.id)
                     [ A.classList
                         [ ( "tree__drop-hint tree__drop-hint--after", True )
@@ -367,7 +367,7 @@ treeItemView model node children =
                     , if Document.isContainer node then
                         H.div
                             (nodeClasses
-                                |> makeDroppableIf (canDropInto model.dragDrop node) (AppendTo node.id)
+                                |> makeDroppableIf (Common.canDropInto node model.dragDrop) (AppendTo node.id)
                                 |> makeDraggable (Move node)
                             )
                             (collapseIcon collapsed node [ treeLabel node ])
@@ -386,13 +386,13 @@ treeItemView model node children =
             if Document.isPageNode node then
                 H.div [ A.class "d-flex flex-column h-100" ]
                     [ H.div [ A.class "mb-2 font-weight-500" ]
-                        [ H.text "Page Elements" ]
+                        [ H.text "Outline" ]
                     , H.ol
                         (A.classList
                             [ ( "tree rounded flex-grow-1", True )
                             , ( "tree--dropping", isDroppingInto node.id model.dragDrop )
                             ]
-                            :: makeDroppableIf (canDropInto model.dragDrop node) (AppendTo node.id) []
+                            :: makeDroppableIf (Common.canDropInto node model.dragDrop) (AppendTo node.id) []
                         )
                         children
                     ]
@@ -411,7 +411,7 @@ treeItemView model node children =
                     , H.div
                         (if Document.isContainer node then
                             nodeClasses
-                                |> makeDroppableIf (canDropInto model.dragDrop node) (AppendTo node.id)
+                                |> makeDroppableIf (Common.canDropInto node model.dragDrop) (AppendTo node.id)
                                 |> makeDraggable (Move node)
 
                          else
@@ -428,44 +428,15 @@ treeItemView model node children =
                     ]
 
 
-canDropSibling dragDrop sibling =
-    case DragDrop.getDragId dragDrop of
-        Just dragId ->
-            case dragId of
-                Move node ->
-                    Document.canDropSibling sibling node
-
-                Insert template ->
-                    Document.canDropSibling sibling (T.label template)
-
-        Nothing ->
-            False
-
-
-canDropInto dragDrop container =
-    case DragDrop.getDragId dragDrop of
-        Just dragId ->
-            case dragId of
-                Move node ->
-                    Document.canDropInto container node
-
-                Insert template ->
-                    Document.canDropInto container (T.label template)
-
-        Nothing ->
-            False
-
-
 emptyPageNotice model node =
     H.div
         (A.classList
             [ ( "d-flex flex-column border border-dashed justify-content-center rounded text-center text-muted h-100", True )
             , ( "tree--dropping", isDroppingInto node.id model.dragDrop )
             ]
-            :: makeDroppableIf (canDropInto model.dragDrop node) (AppendTo node.id) []
+            :: makeDroppableIf (Common.canDropInto node model.dragDrop) (AppendTo node.id) []
         )
-        [ H.div [ A.class "large font-weight-bold mb-2" ] [ H.text "Page is empty" ]
-        , H.div [] [ H.text "Drop elements here from library below." ]
+        [--H.div [] [ H.text "Drop library elements here" ]
         ]
 
 

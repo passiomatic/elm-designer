@@ -1003,20 +1003,5 @@ emitBackground value attrs =
 
 -- HELPERS
 
-
-emitPadding_ : { a | top : Int, right : Int, bottom : Int, left : Int } -> Expression
-emitPadding_ { top, right, bottom, left } =
-    -- TODO use main emitPadding instead
-    CodeGen.apply
-        [ CodeGen.fqFun elementModule "paddingEach"
-        , CodeGen.record
-            [ ( "top", CodeGen.int top )
-            , ( "right", CodeGen.int right )
-            , ( "bottom", CodeGen.int bottom )
-            , ( "left", CodeGen.int left )
-            ]
-        ]
-
-
 zero =
     Layout.padding 0

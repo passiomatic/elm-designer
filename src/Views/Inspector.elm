@@ -18,7 +18,7 @@ import Html.Events as E
 import Html.Events.Extra.Wheel as Wheel
 import Html.Keyed as Keyed
 import Html5.DragDrop as DragDrop
-import Icons exposing (arrowLeftAnim)
+import Icons
 import Model exposing (..)
 import Palette
 import SelectList exposing (SelectList)
@@ -26,7 +26,6 @@ import Style.Background as Background exposing (Background)
 import Style.Font as Font exposing (..)
 import Style.Layout as Layout exposing (..)
 import Style.Theme as Theme
-import Svg.Attributes exposing (fontFamily, maskContentUnits)
 import Tree as T exposing (Tree)
 import Tree.Zipper as Zipper exposing (Zipper)
 import Views.Common exposing (fieldId, none)
