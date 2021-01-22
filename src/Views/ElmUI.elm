@@ -1023,10 +1023,6 @@ textEditor attrs text =
         }
 
 
-isDragging dragDrop =
-    DragDrop.getDragId dragDrop /= Nothing
-
-
 isDroppingInto dropId dragDrop =
     case DragDrop.getDropId dragDrop of
         Just dropId_ ->

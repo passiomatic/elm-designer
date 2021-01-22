@@ -41,7 +41,7 @@ view model =
     H.node "main"
         [ A.classList
             [ ( "h-100", True )
-            , ( "dragging", isDragging model.dragDrop )
+            , ( "dragging--element", Common.isDragging model.dragDrop )
             ]
         ]
         (case model.mode of
@@ -79,28 +79,12 @@ alertView model =
 
 
 workspaceView model =
-    -- transformAttr =
-    --     A.style "transform" (Css.translateBy model.workspaceX model.workspaceY ++ " " ++ Css.scaleBy model.workspaceScale)
-    -- originX =
-    --     Model.workspaceWidth // 2 - model.windowWidth // 2 + model.mouseX
-    -- originY =
-    --     (min model.workspaceY model.windowHeight // 2) + model.mouseY
-    -- originAttr =
-    --     A.style "transform-origin" (String.fromInt originX ++ "px" ++ " " ++ String.fromInt originY ++ "px")
     H.div
         [ A.classList
             [ ( "workspace flex-grow-1 unselectable", True )
             , ( "workspace--design", model.mode == DesignMode )
             , ( "workspace--preview", model.mode == PreviewMode )
-            , ( "dragging--file", model.uploadState == Dragging )
             ]
-        , preventDefaultOn "dragenter" (Decode.succeed FileDragging)
-        , preventDefaultOn "dragover" (Decode.succeed FileDragging)
-        , preventDefaultOn "dragleave" (Decode.succeed FileDragCanceled)
-        , preventDefaultOn "drop" fileDropDecoder
-
-        --, transformAttr
-        --, originAttr
         ]
         [ pageView model
         , uploadProgressView model.uploadState
@@ -600,11 +584,16 @@ pageView model =
                 [ A.classList
                     [ ( "page", True )
                     , ( "page--design", True )
+                    , ( "dragging--file", model.uploadState == Dragging )
                     , ( viewportClass, True )
                     ]
                 , A.attribute "data-fold" height
                 , A.style "width" width
                 , A.style "min-height" height
+                , preventDefaultOn "dragenter" (Decode.succeed FileDragging)
+                , preventDefaultOn "dragover" (Decode.succeed FileDragging)
+                , preventDefaultOn "dragleave" (Decode.succeed FileDragCanceled)
+                , preventDefaultOn "drop" fileDropDecoder
                 ]
                 [ content
                 , H.div
@@ -693,10 +682,6 @@ makeDroppableIf pred dropId attrs =
 
 makeDraggable dragId attrs =
     attrs ++ DragDrop.draggable DragDropMsg dragId
-
-
-isDragging dragDrop =
-    DragDrop.getDragId dragDrop /= Nothing
 
 
 isDroppingInto dropId dragDrop =

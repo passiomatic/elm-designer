@@ -35,7 +35,7 @@ import Tree as T exposing (Tree)
 import Tree.Zipper as Zipper exposing (Zipper)
 import UUID exposing (Seeds)
 import Uploader
-import Views.Common exposing (fieldId)
+import Views.Common as Common exposing (fieldId)
 import Views.Editor as Editor
 
 
@@ -77,7 +77,13 @@ update msg model =
         -- ###########
         FileDragging ->
             ( { model
-                | uploadState = Dragging
+                | uploadState =
+                    -- User is dragging an element instead?
+                    if Common.isDragging model.dragDrop then
+                        Ready
+
+                    else
+                        Dragging
               }
             , Cmd.none
             )
@@ -498,17 +504,16 @@ update msg model =
                     applyChangeAndFinish model Document.applyFontColor newValue
 
                 -- ###########
-                -- Letter Spacing 
+                -- Letter Spacing
                 -- ###########
                 EditingField LetterSpacingField oldValue newValue ->
                     applyChangeAndFinish model Document.applyLetterSpacing newValue
 
                 -- ###########
-                -- Word Spacing 
+                -- Word Spacing
                 -- ###########
                 EditingField WordSpacingField oldValue newValue ->
                     applyChangeAndFinish model Document.applyWordSpacing newValue
-
 
                 -- ###########
                 -- Background

@@ -19,14 +19,3 @@
   background-image: linear-gradient(160deg, #0093e9 0%, #80d0c7 100%);
   align-items: start; // 1.
 }
-
-.dragging--file.workspace:after {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  bottom: 0;
-  right: 0;
-  z-index: 1;
-  background: rgba($secondary, 0.5);
-}

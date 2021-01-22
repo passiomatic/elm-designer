@@ -1,10 +1,14 @@
-module Views.Common exposing (canDropInto, canDropSibling, fieldId, none)
+module Views.Common exposing (canDropInto, canDropSibling, fieldId, none, isDragging)
 
 import Document exposing (DragId(..))
 import Html as H exposing (Html)
 import Html5.DragDrop as DragDrop
 import Model exposing (Field(..))
 import Tree as T exposing (Tree)
+
+
+isDragging dragDrop =
+    DragDrop.getDragId dragDrop /= Nothing
 
 
 canDropInto container dragDrop =
