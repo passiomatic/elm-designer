@@ -10,9 +10,9 @@ import Elm.Pretty
 import Pretty
 import Set exposing (Set)
 import Style.Background as Background exposing (Background)
-import Style.Border as Border exposing (..)
+import Style.Border as Border exposing (BorderCorner, BorderStyle(..), BorderWidth)
 import Style.Font as Font exposing (..)
-import Style.Layout as Layout exposing (..)
+import Style.Layout as Layout exposing (Alignment(..), Length, Padding, Spacing(..), Strategy(..), Transformation)
 import Style.Theme as Theme exposing (Theme)
 import Tree as T exposing (Tree)
 
@@ -547,13 +547,15 @@ emitAllStyles node attrs =
         |> emitBorder node.borderColor node.borderStyle node.borderWidth
         |> emitCorner node.borderCorner
         |> emitPadding node.padding
-        -- |> emitWidth node.width
-        -- |> emitHeight node.height
+        |> emitWidth node.width
+        |> emitHeight node.height
         |> emitSpacing node.spacing
         |> emitFontSize node.fontSize
         |> emitFontFamily node.fontFamily
         |> emitFontColor node.fontColor
         |> emitFontWeight node.fontWeight
+        |> emitLetterSpacing node.letterSpacing
+        |> emitWordSpacing node.wordSpacing
         |> emitTextAlign node.textAlignment
         |> emitAlignX node.alignmentX
         |> emitAlignY node.alignmentY
@@ -815,38 +817,97 @@ emitSpacing value attrs =
                 CodeGen.apply [ CodeGen.fqFun elementModule "spacingXY", CodeGen.int x, CodeGen.int y ] :: attrs
 
 
--- emitWidth : Length -> List Expression -> List Expression
--- emitWidth value attrs =
---     let
---         widthFun =
---             CodeGen.fqFun elementModule "width"
---     in
---     case value of
---         Shrink ->
---             CodeGen.apply [ widthFun, CodeGen.fqFun elementModule "shrink" ] :: attrs
-
---         Fill ->
---             CodeGen.apply [ widthFun, CodeGen.fqFun elementModule "fill" ] :: attrs
-
---         _ ->
---             attrs
+emitWidth : Length -> List Expression -> List Expression
+emitWidth value attrs =
+    emitLength value (CodeGen.fqFun elementModule "width") attrs
 
 
--- emitHeight : Length -> List Expression -> List Expression
--- emitHeight value attrs =
---     let
---         heightFun =
---             CodeGen.fqFun elementModule "height"
---     in
---     case value of
---         Shrink ->
---             CodeGen.apply [ heightFun, CodeGen.fqFun elementModule "shrink" ] :: attrs
+emitHeight : Length -> List Expression -> List Expression
+emitHeight value attrs =
+    emitLength value (CodeGen.fqFun elementModule "height") attrs
 
---         Fill ->
---             CodeGen.apply [ heightFun, CodeGen.fqFun elementModule "fill" ] :: attrs
 
---         _ ->
---             attrs
+emitLength : Length -> Expression -> List Expression -> List Expression
+emitLength value fun attrs =
+    case value.strategy of
+        Px px ->
+            CodeGen.apply
+                [ fun
+                , CodeGen.parens
+                    (CodeGen.pipe (CodeGen.apply [ CodeGen.fqFun elementModule "px", CodeGen.int px ])
+                        ([]
+                            |> emitMinLength value.min
+                            |> emitMaxLength value.max
+                        )
+                    )
+                ]
+                :: attrs
+
+        Content ->
+            CodeGen.apply
+                [ fun
+                , CodeGen.parens
+                    (CodeGen.pipe (CodeGen.fqFun elementModule "shrink")
+                        ([]
+                            |> emitMinLength value.min
+                            |> emitMaxLength value.max
+                        )
+                    )
+                ]
+                :: attrs
+
+        Fill portion ->
+            (if portion == 1 then
+                CodeGen.apply
+                    [ fun
+                    , CodeGen.parens
+                        (CodeGen.pipe (CodeGen.fqFun elementModule "fill")
+                            ([]
+                                |> emitMinLength value.min
+                                |> emitMaxLength value.max
+                            )
+                        )
+                    ]
+
+             else
+                CodeGen.apply
+                    [ fun
+                    , CodeGen.parens
+                        (CodeGen.pipe (CodeGen.apply [ CodeGen.fqFun elementModule "fillPortion", CodeGen.int portion ])
+                            ([]
+                                |> emitMinLength value.min
+                                |> emitMaxLength value.max
+                            )
+                        )
+                    ]
+            )
+                :: attrs
+
+        Unspecified ->
+            -- TODO Emit "shrink" as default to specify min/max values anyway?
+            --   This is probably fixed in Elm UI 2 since we can emit min/max
+            --   values indipendently of element width/height values
+            attrs
+
+
+emitMinLength : Maybe Int -> List Expression -> List Expression
+emitMinLength value attrs =
+    case value of
+        Just value_ ->
+            CodeGen.apply [ CodeGen.fqFun elementModule "minimum", CodeGen.int value_ ] :: attrs
+
+        Nothing ->
+            attrs
+
+
+emitMaxLength : Maybe Int -> List Expression -> List Expression
+emitMaxLength value attrs =
+    case value of
+        Just value_ ->
+            CodeGen.apply [ CodeGen.fqFun elementModule "maximum", CodeGen.int value_ ] :: attrs
+
+        Nothing ->
+            attrs
 
 
 emitAlignX : Alignment -> List Expression -> List Expression
@@ -891,6 +952,22 @@ emitFontSize value attrs =
             attrs
 
 
+emitLetterSpacing : Float -> List Expression -> List Expression
+emitLetterSpacing value attrs =
+    if value /= 0 then
+        CodeGen.apply [ CodeGen.fqFun fontModule "letterSpacing", CodeGen.float value ] :: attrs
+    else 
+        attrs
+
+
+emitWordSpacing : Float -> List Expression -> List Expression
+emitWordSpacing value attrs =
+    if value /= 0 then
+        CodeGen.apply [ CodeGen.fqFun fontModule "wordSpacing", CodeGen.float value ] :: attrs
+    else 
+        attrs
+
+
 emitTextAlign : TextAlignment -> List Expression -> List Expression
 emitTextAlign value attrs =
     case value of
@@ -926,21 +1003,6 @@ emitBackground value attrs =
 
 
 -- HELPERS
-
-
-emitPadding_ : { a | top : Int, right : Int, bottom : Int, left : Int } -> Expression
-emitPadding_ { top, right, bottom, left } =
-    -- TODO use main emitPadding instead
-    CodeGen.apply
-        [ CodeGen.fqFun elementModule "paddingEach"
-        , CodeGen.record
-            [ ( "top", CodeGen.int top )
-            , ( "right", CodeGen.int right )
-            , ( "bottom", CodeGen.int bottom )
-            , ( "left", CodeGen.int left )
-            ]
-        ]
-
 
 zero =
     Layout.padding 0

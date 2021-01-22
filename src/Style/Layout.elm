@@ -51,20 +51,6 @@ type alias Length =
     }
 
 
-{-| Element length strategy.
--}
-type Strategy
-    = Px Int
-    | Content
-    | Fill Int
-    | Unspecified
-
-
-px : Int -> Strategy
-px value =
-    Px value
-
-
 fit : Length
 fit =
     Length Content Nothing Nothing
@@ -73,11 +59,6 @@ fit =
 fill : Length
 fill =
     Length (Fill 1) Nothing Nothing
-
-
-portion : Int -> Strategy
-portion value =
-    Fill value
 
 
 setStrategy : Strategy -> Length -> Length
@@ -93,6 +74,25 @@ setMinLength value record =
 setMaxLength : Maybe Int -> Length -> Length
 setMaxLength value record =
     { record | max = value }
+
+
+{-| Element length strategy.
+-}
+type Strategy
+    = Px Int
+    | Content
+    | Fill Int
+    | Unspecified
+
+
+px : Int -> Strategy
+px value =
+    Px value
+
+
+portion : Int -> Strategy
+portion value =
+    Fill value
 
 
 

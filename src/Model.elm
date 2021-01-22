@@ -103,6 +103,8 @@ type Msg
 type Field
     = FontSizeField
     | FontColorField
+    | LetterSpacingField
+    | WordSpacingField
     | BackgroundColorField
     | PaddingTopField
     | PaddingRightField

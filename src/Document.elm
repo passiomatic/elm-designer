@@ -30,6 +30,7 @@ module Document exposing
     , applyHeight
     , applyHeightWith
     , applyLabel
+    , applyLetterSpacing
     , applyOffset
     , applyPadding
     , applyPaddingLock
@@ -62,7 +63,7 @@ module Document exposing
     , schemaVersion
     , selectNodeWith
     , selectParentOf
-    , viewports
+    , viewports, applyWordSpacing
     )
 
 import Css
@@ -76,7 +77,7 @@ import Palette exposing (orange)
 import SelectList exposing (SelectList)
 import Set exposing (Set)
 import Style.Background as Background exposing (Background)
-import Style.Border as Border exposing (..)
+import Style.Border as Border exposing (BorderCorner, BorderStyle(..), BorderWidth)
 import Style.Font as Font exposing (..)
 import Style.Layout as Layout exposing (..)
 import Style.Theme as Theme exposing (Theme)
@@ -122,10 +123,9 @@ type alias Node =
     , fontColor : Local Color
     , fontSize : Local Int
     , fontWeight : FontWeight
+    , letterSpacing : Float
+    , wordSpacing : Float
     , textAlignment : TextAlignment
-
-    -- , letterSpacing : Float
-    -- , wordSpacing : Float
     , borderColor : Color
     , borderStyle : BorderStyle
     , borderWidth : BorderWidth
@@ -151,6 +151,7 @@ type alias Template =
     , fontWeight : FontWeight
     , textAlignment : TextAlignment
 
+    -- TODO Needed?
     -- , letterSpacing : Float
     -- , wordSpacing : Float
     , borderColor : Color
@@ -193,8 +194,8 @@ baseTemplate =
     , textAlignment = TextLeft
     , borderColor = Palette.darkCharcoal
     , borderStyle = Solid
-    , borderWidth = borderWidth 0
-    , borderCorner = borderCorner 0
+    , borderWidth = Border.width 0
+    , borderCorner = Border.corner 0
     , backgroundColor = Nothing
     , background = Background.None
     , alignmentX = None
@@ -341,6 +342,8 @@ fromTemplate template seeds =
                     , fontColor = template_.fontColor
                     , fontSize = template_.fontSize
                     , fontWeight = template_.fontWeight
+                    , letterSpacing = 0
+                    , wordSpacing = 0
                     , textAlignment = template_.textAlignment
                     , borderColor = template_.borderColor
                     , borderStyle = template_.borderStyle
@@ -377,6 +380,8 @@ pageNode theme seeds children index =
             , fontColor = Local theme.textColor
             , fontSize = Local theme.textSize
             , fontWeight = baseTemplate.fontWeight
+            , letterSpacing = 0
+            , wordSpacing = 0
             , textAlignment = baseTemplate.textAlignment
             , borderColor = baseTemplate.borderColor
             , borderStyle = baseTemplate.borderStyle
@@ -841,8 +846,8 @@ applyBorderLock value zipper =
     Zipper.mapLabel
         (\node ->
             node
-                |> Border.setBorderWidth (setLock value node.borderWidth)
-                |> Border.setBorderCorner (setLock value node.borderCorner)
+                |> Border.setWidth (setLock value node.borderWidth)
+                |> Border.setCorner (setLock value node.borderCorner)
         )
         zipper
 
@@ -917,6 +922,28 @@ applyFontFamily value zipper =
     Zipper.mapLabel (Font.setFontFamily value) zipper
 
 
+applyLetterSpacing : String -> Zipper Node -> Zipper Node
+applyLetterSpacing value zipper =
+    let
+        value_ =
+            String.toFloat value
+                |> Maybe.map (clamp -999 999)
+                |> Maybe.withDefault 0
+    in
+    Zipper.mapLabel (Font.setLetterSpacing value_) zipper
+
+
+applyWordSpacing : String -> Zipper Node -> Zipper Node
+applyWordSpacing value zipper =
+    let
+        value_ =
+            String.toFloat value
+                |> Maybe.map (clamp -999 999)
+                |> Maybe.withDefault 0
+    in
+    Zipper.mapLabel (Font.setWordSpacing value_) zipper
+
+
 applyBackgroundColor : String -> Zipper Node -> Zipper Node
 applyBackgroundColor value zipper =
     let
@@ -954,7 +981,7 @@ applyBorderColor value zipper =
         value_ =
             Css.stringToColor value
     in
-    Zipper.mapLabel (Border.setBorderColor value_) zipper
+    Zipper.mapLabel (Border.setColor value_) zipper
 
 
 applyBorderWidth : (Int -> BorderWidth -> BorderWidth) -> String -> Zipper Node -> Zipper Node
@@ -965,7 +992,7 @@ applyBorderWidth setter value zipper =
                 |> Maybe.map (clamp 0 999)
                 |> Maybe.withDefault 0
     in
-    Zipper.mapLabel (\node -> setBorderWidth (setter value_ node.borderWidth) node) zipper
+    Zipper.mapLabel (\node -> Border.setWidth (setter value_ node.borderWidth) node) zipper
 
 
 applyBorderCorner : (Int -> BorderCorner -> BorderCorner) -> String -> Zipper Node -> Zipper Node
@@ -976,7 +1003,7 @@ applyBorderCorner setter value zipper =
                 |> Maybe.map (clamp 0 999)
                 |> Maybe.withDefault 0
     in
-    Zipper.mapLabel (\node -> Border.setBorderCorner (setter value_ node.borderCorner) node) zipper
+    Zipper.mapLabel (\node -> Border.setCorner (setter value_ node.borderCorner) node) zipper
 
 
 applyFontColor : String -> Zipper Node -> Zipper Node

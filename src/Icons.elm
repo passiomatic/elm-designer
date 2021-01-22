@@ -6,9 +6,7 @@ module Icons exposing
     , alignRight
     , arrowDown
     , arrowLeft
-    , arrowLeftAnim
     , arrowRight
-    , arrowRightAnim
     , arrowUp
     , checkCircle
     , checkSquare
@@ -83,26 +81,10 @@ arrowLeft =
         |> I.toHtml []
 
 
-arrowLeftAnim : Html msg
-arrowLeftAnim =
-    I.arrowLeft
-        |> I.withSize largeSize
-        |> I.withClass "anim-left"
-        |> I.toHtml []
-
-
 arrowRight : Html msg
 arrowRight =
     I.arrowRight
         |> I.withSize largeSize
-        |> I.toHtml []
-
-
-arrowRightAnim : Html msg
-arrowRightAnim =
-    I.arrowRight
-        |> I.withSize largeSize
-        |> I.withClass "anim--right"
         |> I.toHtml []
 
 

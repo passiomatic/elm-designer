@@ -67,9 +67,9 @@ defaultTheme =
     , headingFontWeight = Bold
     , paragraphSpacing = Layout.spacingXY 0 (round (16 * 0.5))
     , headingSpacing = Layout.spacing 0
-    , borderWidth = Border.borderWidth 1
+    , borderWidth = Border.width 1
     , borderColor = Palette.darkGray
-    , borderCorner = Border.borderCorner 2
+    , borderCorner = Border.corner 2
     }
 
 

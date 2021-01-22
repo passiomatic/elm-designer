@@ -100,14 +100,15 @@ nodeCodec =
         |> Codec.field "name" .name Codec.string
         |> Codec.field "width" .width lengthCodec
         |> Codec.field "height" .height lengthCodec
-        -- TODO: rename in "transformation" with next schema change
-        |> Codec.field "adjustment" .transformation transformationCodec
+        |> Codec.field "transformation" .transformation transformationCodec
         |> Codec.field "padding" .padding paddingCodec
         |> Codec.field "spacing" .spacing spacingCodec
         |> Codec.field "fontFamily" .fontFamily (localCodec fontFamilyCodec)
         |> Codec.field "fontColor" .fontColor (localCodec colorCodec)
         |> Codec.field "fontSize" .fontSize (localCodec Codec.int)
         |> Codec.field "fontWeight" .fontWeight fontWeightCodec
+        |> Codec.field "letterSpacing" .letterSpacing Codec.float
+        |> Codec.field "wordSpacing" .wordSpacing Codec.float
         |> Codec.field "textAlignment" .textAlignment textAlignmentCodec
         |> Codec.field "borderColor" .borderColor colorCodec
         |> Codec.field "borderStyle" .borderStyle borderStyleCodec
