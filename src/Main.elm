@@ -149,8 +149,8 @@ update msg model =
                     )
 
                 Err _ ->
-                    ( { model | alerts = [ "Could not upload image." ] }
-                    , Cmd.none
+                    ( model
+                    , showErrorBox "Error" "Could not upload image"
                     )
 
         -- ###########
@@ -289,10 +289,8 @@ update msg model =
                     -- let
                     --     _ = Debug.log "Error loading document:" (Decode.errorToString reason)
                     -- in
-                    ( { model
-                        | alerts = [ "Error loading document (perhaps schema has changed?)" ]
-                      }
-                    , Cmd.none
+                    ( model
+                    , showErrorBox "Error" "Error loading document (perhaps schema has changed?)" 
                     )
 
         CollapseNodeClicked collapse id ->
@@ -949,3 +947,22 @@ acceptFiles files =
             Set.member (File.mime f) acceptedTypes
         )
         files
+
+
+-- NOTIFICATION 
+
+showErrorBox title message =
+    Ports.showMessageBox
+        { type_ = "error"
+        , title = title
+        , message = message
+        , buttons = [ "OK" ]
+        }
+
+showMessageBox title message =
+    Ports.showMessageBox
+        { type_ = "info"
+        , title = title
+        , message = message
+        , buttons = [ "OK" ]
+        }        

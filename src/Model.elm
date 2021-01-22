@@ -172,7 +172,6 @@ type alias Model =
     , seeds : Seeds
     , currentTime : Posix
     , saveState : DocumentState
-    , alerts : List String
     , dropDownState : WidgetState
     , uploadState : UploadState
     , collapsedTreeItems : Set String
@@ -278,7 +277,6 @@ initialModel { width, height, uploadEndpoint, seed1, seed2, seed3, seed4 } =
     , seeds = newSeeds
     , currentTime = Time.millisToPosix 0
     , saveState = Original
-    , alerts = []
     , dropDownState = Hidden
     , uploadState = Ready
     , collapsedTreeItems = Set.empty

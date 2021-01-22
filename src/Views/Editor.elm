@@ -46,35 +46,20 @@ view model =
         ]
         (case model.mode of
             PreviewMode ->
-                [ alertView model
-                , headerView model
+                [ headerView model
                 , H.div [ A.class "d-flex" ]
                     [ workspaceView model
                     ]
                 ]
 
             _ ->
-                [ alertView model
-                , headerView model
+                [ headerView model
                 , H.div [ A.class "d-flex" ]
                     [ leftPaneView model
                     , workspaceView model
                     , rightPaneView model
                     ]
                 ]
-        )
-
-
-alertView : Model -> Html Msg
-alertView model =
-    H.div []
-        (List.map
-            (\alert ->
-                H.div [ A.class "alert alert-danger m-0" ]
-                    [ H.text alert
-                    ]
-            )
-            model.alerts
         )
 
 
