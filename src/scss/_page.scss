@@ -7,9 +7,36 @@
 
 .page--design {
   box-sizing: content-box; // Exclude border to computed width
-  border: 1px solid $border-color; // Do selection outline can bleed outside
+  border: 1px solid $border-color; // So selection outline can bleed outside
   margin: 0 auto;
+  // See: https://css-tricks.com/boxes-fill-height-dont-squish/
+  display: flex;
+  flex-direction: column;
+  position: relative;
 }
+
+// First element created by Elm UI  
+.page--design>div:first-child {
+  flex: 1;
+}
+
+.page__fold {
+  display: none;
+}
+
+.viewport--device .page__fold,
+.viewport--custom .page__fold {
+  display: block;
+  position: absolute;  
+  top: 0; // Positioned in Elm
+  left: -2rem;
+  width: 2rem;
+  z-index: 1;
+  font-size: $small-font-size;
+  border-top: 1px solid $gray-600;
+  color: $gray-600;
+}
+
 
 .page--interactive {
   overflow-y: scroll;
@@ -47,28 +74,28 @@ $corner-device: 15px;
 
 // Device
 
-.chrome--device {
+.viewport--device .chrome__header {
   border: 12px solid $body-color;
   border-radius: $corner-device;
 }
 
-.chrome--device .chrome__header {
+.viewport--device .chrome__header {
   display: none !important;
 }
 
-.chrome--device .page--interactive {
+.viewport--device .page--interactive {
   border-radius: $corner-device - 9px;
 }
 
 // Fluid/Desktop
 
-.chrome--fluid {
+.viewport--fluid {
   border-radius: $corner-fluid;
   background: $gray-100;
   width: 100%;
 }
 
-.chrome--fluid .chrome__header {
+.viewport--fluid .chrome__header {
   //display: block;
 }
 

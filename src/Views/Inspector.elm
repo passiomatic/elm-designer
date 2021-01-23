@@ -18,7 +18,7 @@ import Html.Events as E
 import Html.Events.Extra.Wheel as Wheel
 import Html.Keyed as Keyed
 import Html5.DragDrop as DragDrop
-import Icons exposing (arrowLeftAnim)
+import Icons
 import Model exposing (..)
 import Palette
 import SelectList exposing (SelectList)
@@ -26,7 +26,6 @@ import Style.Background as Background exposing (Background)
 import Style.Font as Font exposing (..)
 import Style.Layout as Layout exposing (..)
 import Style.Theme as Theme
-import Svg.Attributes exposing (fontFamily, maskContentUnits)
 import Tree as T exposing (Tree)
 import Tree.Zipper as Zipper exposing (Zipper)
 import Views.Common exposing (fieldId, none)
@@ -1623,22 +1622,21 @@ fontView model zipper =
         theme =
             Theme.defaultTheme
 
-        fontSize_ =
+        ( inherited, fontSize_ ) =
             case model.inspector of
                 EditingField FontSizeField _ new ->
-                    new
+                    ( False, new )
 
                 _ ->
                     case node.fontSize of
                         Local value ->
-                            String.fromInt value
+                            ( False, String.fromInt value )
 
                         Inherit ->
-                            "("
-                                ++ (Document.resolveInheritedFontSize theme.textSize zipper
-                                        |> String.fromInt
-                                   )
-                                ++ ")"
+                            ( True
+                            , Document.resolveInheritedFontSize theme.textSize zipper
+                                |> String.fromInt
+                            )
 
         resolvedFontFamily =
             Document.resolveInheritedFontFamily theme.textFontFamily zipper
@@ -1659,7 +1657,10 @@ fontView model zipper =
             [ H.div [ A.class "form-group mr-2 w-25" ]
                 [ H.input
                     [ A.id (fieldId FontSizeField)
-                    , A.class "form-control form-control-sm"
+                    , A.classList
+                        [ ( "form-control form-control-sm", True )
+                        , ( "text-muted font-italic", inherited )
+                        ]
                     , A.type_ "number"
                     , A.min (String.fromInt Font.minFontSizeAllowed)
                     , A.value fontSize_
@@ -1684,78 +1685,6 @@ fontView model zipper =
 
             _ ->
                 none
-        ]
-
-
-fontView_ : Zipper Node -> Model -> Node -> Html Msg
-fontView_ zipper model ({ fontSize, fontWeight, fontFamily, fontColor, textAlignment, spacing, type_ } as node) =
-    let
-        theme =
-            Theme.defaultTheme
-
-        fontSize_ =
-            case model.inspector of
-                EditingField FontSizeField _ new ->
-                    new
-
-                _ ->
-                    case fontSize of
-                        Local value ->
-                            String.fromInt value
-
-                        Inherit ->
-                            "("
-                                ++ (Document.resolveInheritedFontSize theme.textSize zipper
-                                        |> String.fromInt
-                                   )
-                                ++ ")"
-
-        resolvedFontFamily =
-            Document.resolveInheritedFontFamily theme.textFontFamily zipper
-
-        fontColor_ =
-            case fontColor of
-                Local value ->
-                    value
-
-                Inherit ->
-                    Document.resolveInheritedFontColor theme.textColor zipper
-    in
-    H.section [ A.class "section bp-3 border-bottom" ]
-        [ H.h2 [ A.class "section__title" ]
-            [ H.text "Text" ]
-        , H.div [ A.class "form-group" ]
-            [ fontFamilyView fontFamily resolvedFontFamily (canInherit node)
-            ]
-        , H.div [ A.class "d-flex" ]
-            [ H.div [ A.class "form-group mr-2 w-25" ]
-                [ H.input
-                    [ A.id (fieldId FontSizeField)
-                    , A.class "form-control form-control-sm"
-                    , A.type_ "text"
-                    , A.value fontSize_
-                    , E.onFocus (FieldEditingStarted FontSizeField fontSize_)
-                    , E.onBlur FieldEditingFinished
-                    , E.onInput FieldChanged
-                    ]
-                    []
-                    |> addDropdown FontSizeField model.dropDownState (fontSizeItems node)
-                ]
-            , H.div [ A.class "form-group w-75" ]
-                [ fontWeightView resolvedFontFamily fontWeight
-                ]
-            ]
-        , colorView model (Just fontColor_) FontColorField FontColorChanged
-        , case node.type_ of
-            ParagraphNode _ ->
-                liheHeightView model spacing
-
-            HeadingNode _ ->
-                liheHeightView model spacing
-
-            _ ->
-                none
-        , textAlignmentView model textAlignment
         ]
 
 
@@ -1833,9 +1762,6 @@ fontFamilyView fontFamily resolvedFontFamily inherit =
                 _ ->
                     A.selected False :: attrs
 
-        inheritedLabel name =
-            "(" ++ name ++ ")"
-
         inheritOption =
             case fontFamily of
                 Local _ ->
@@ -1849,13 +1775,19 @@ fontFamilyView fontFamily resolvedFontFamily inherit =
                         ( "", none )
 
                 Inherit ->
-                    ( inheritedLabel resolvedFontFamily.name
+                    -- Generate a unique enough key to avoid VDOM quirks
+                    ( "inherited-" ++ resolvedFontFamily.name
                     , H.option [ A.disabled True, A.selected True ]
-                        [ H.text (inheritedLabel resolvedFontFamily.name) ]
+                        [ H.text resolvedFontFamily.name ]
                     )
     in
     Keyed.node "select"
-        [ onFontFamilySelect FontFamilyChanged, A.class "custom-select custom-select-sm" ]
+        [ onFontFamilySelect FontFamilyChanged
+        , A.classList
+            [ ( "custom-select custom-select-sm", True )
+            , ( "text-muted font-italic", fontFamily == Inherit )
+            ]
+        ]
         (inheritOption
             :: (Fonts.families
                     |> List.map

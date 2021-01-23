@@ -30,6 +30,7 @@ module Document exposing
     , applyHeight
     , applyHeightWith
     , applyLabel
+    , applyLetterSpacing
     , applyOffset
     , applyPadding
     , applyPaddingLock
@@ -62,7 +63,7 @@ module Document exposing
     , schemaVersion
     , selectNodeWith
     , selectParentOf
-    , viewports
+    , viewports, applyWordSpacing
     )
 
 import Css
@@ -122,10 +123,9 @@ type alias Node =
     , fontColor : Local Color
     , fontSize : Local Int
     , fontWeight : FontWeight
+    , letterSpacing : Float
+    , wordSpacing : Float
     , textAlignment : TextAlignment
-
-    -- , letterSpacing : Float
-    -- , wordSpacing : Float
     , borderColor : Color
     , borderStyle : BorderStyle
     , borderWidth : BorderWidth
@@ -151,6 +151,7 @@ type alias Template =
     , fontWeight : FontWeight
     , textAlignment : TextAlignment
 
+    -- TODO Needed?
     -- , letterSpacing : Float
     -- , wordSpacing : Float
     , borderColor : Color
@@ -338,6 +339,8 @@ fromTemplate template seeds =
                     , fontColor = template_.fontColor
                     , fontSize = template_.fontSize
                     , fontWeight = template_.fontWeight
+                    , letterSpacing = 0
+                    , wordSpacing = 0
                     , textAlignment = template_.textAlignment
                     , borderColor = template_.borderColor
                     , borderStyle = template_.borderStyle
@@ -374,6 +377,8 @@ pageNode theme seeds children index =
             , fontColor = Local theme.textColor
             , fontSize = Local theme.textSize
             , fontWeight = baseTemplate.fontWeight
+            , letterSpacing = 0
+            , wordSpacing = 0
             , textAlignment = baseTemplate.textAlignment
             , borderColor = baseTemplate.borderColor
             , borderStyle = baseTemplate.borderStyle
@@ -896,6 +901,28 @@ applyFontSize value zipper =
 applyFontFamily : Local FontFamily -> Zipper Node -> Zipper Node
 applyFontFamily value zipper =
     Zipper.mapLabel (Font.setFontFamily value) zipper
+
+
+applyLetterSpacing : String -> Zipper Node -> Zipper Node
+applyLetterSpacing value zipper =
+    let
+        value_ =
+            String.toFloat value
+                |> Maybe.map (clamp -999 999)
+                |> Maybe.withDefault 0
+    in
+    Zipper.mapLabel (Font.setLetterSpacing value_) zipper
+
+
+applyWordSpacing : String -> Zipper Node -> Zipper Node
+applyWordSpacing value zipper =
+    let
+        value_ =
+            String.toFloat value
+                |> Maybe.map (clamp -999 999)
+                |> Maybe.withDefault 0
+    in
+    Zipper.mapLabel (Font.setWordSpacing value_) zipper
 
 
 applyBackgroundColor : String -> Zipper Node -> Zipper Node

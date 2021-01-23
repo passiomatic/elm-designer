@@ -26,6 +26,7 @@ import Style.Font as Font exposing (..)
 import Style.Layout as Layout exposing (..)
 import Tree as T exposing (Tree)
 import Tree.Zipper as Zipper exposing (Zipper)
+import Views.Common as Common
 
 
 type RenderedNode
@@ -135,6 +136,7 @@ renderTextColumn ctx node selected children =
             , elementId node
             , onClick (NodeSelected node.id)
             ]
+                |> makeDroppableIf (Common.canDropInto node ctx.dragDrop) (AppendTo node.id)
                 |> applyAllStyles node
     in
     E.textColumn attrs newChildren
@@ -156,6 +158,7 @@ renderColumn ctx node selected children =
             , elementId node
             , onClick (NodeSelected node.id)
             ]
+                |> makeDroppableIf (Common.canDropInto node ctx.dragDrop) (AppendTo node.id)
                 |> applyAllStyles node
     in
     E.column attrs newChildren
@@ -177,6 +180,7 @@ renderRow ctx node selected { wrapped } children =
             , elementId node
             , onClick (NodeSelected node.id)
             ]
+                |> makeDroppableIf (Common.canDropInto node ctx.dragDrop) (AppendTo node.id)
                 |> applyAllStyles node
     in
     (if wrapped then
@@ -198,36 +202,37 @@ renderPage ctx node selected children =
             , elementId node
             , Events.onClick (NodeSelected node.id)
             ]
+                |> makeDroppableIf (Common.canDropInto node ctx.dragDrop) (AppendTo node.id)
                 |> applyAllStyles node
     in
     RenderedElement
         (if List.isEmpty children then
-            renderEmptyPage ctx
+            renderEmptyPage attrs
 
          else
             E.column attrs (elements children)
         )
 
 
-renderEmptyPage ctx =
-    if isDragging ctx.dragDrop then
-        E.column
-            [ E.height E.fill
-            , E.width E.fill
+renderEmptyPage attrs =
+    E.column attrs
+        [ E.el
+            [ Font.size 18
+            , Font.color Palette.lightCharcoal
+            , Font.bold
+            , E.centerX
+            , E.centerY
+            , E.moveUp 8
             ]
-            [ E.row
-                [ E.centerX
-                , E.centerY
-                , Font.color Palette.lightCharcoal
-                , Font.size 21
-                ]
-                [ E.html Icons.arrowLeftAnim
-                , E.text "Drop elements on the left"
-                ]
+            (E.text "Page is empty")
+        , E.el
+            [ Font.size 14
+            , Font.color Palette.lightCharcoal
+            , E.centerX
+            , E.centerY
             ]
-
-    else
-        E.none
+            (E.text "Drop library elements here.")
+        ]
 
 
 renderParagraph : Context -> Node -> Bool -> TextData -> RenderedNode
@@ -515,6 +520,7 @@ renderRadio ctx node selected label children =
          , elementId node
          , onClick (NodeSelected node.id)
          ]
+            |> makeDroppableIf (Common.canDropInto node ctx.dragDrop) (AppendTo node.id)
             |> applyWidth node.width
             |> applyHeight node.height
             |> applyAlignX node.alignmentX
@@ -569,6 +575,8 @@ applyAllStyles node attrs =
         |> applyFontFamily node.fontFamily
         |> applyFontColor node.fontColor
         |> applyFontWeight node.fontWeight
+        |> applyLetterSpacing node.letterSpacing
+        |> applyWordSpacing node.wordSpacing
         |> applyTextAlign node.textAlignment
         |> applyAlignX node.alignmentX
         |> applyAlignY node.alignmentY
@@ -589,6 +597,8 @@ applyChildStyles node attrs =
         |> applyFontFamily node.fontFamily
         |> applyFontColor node.fontColor
         |> applyFontWeight node.fontWeight
+        |> applyLetterSpacing node.letterSpacing
+        |> applyWordSpacing node.wordSpacing
         |> applyTextAlign node.textAlignment
         |> applyBackground node.background
         |> applyBackgroundColor node.backgroundColor
@@ -799,6 +809,16 @@ applyPadding value attrs =
         , left = value.left
         }
         :: attrs
+
+
+applyLetterSpacing : Float -> List (E.Attribute Msg) -> List (E.Attribute Msg)
+applyLetterSpacing value attrs =
+    Font.letterSpacing value :: attrs
+
+
+applyWordSpacing : Float -> List (E.Attribute Msg) -> List (E.Attribute Msg)
+applyWordSpacing value attrs =
+    Font.wordSpacing value :: attrs
 
 
 applyTextAlign : TextAlignment -> List (E.Attribute Msg) -> List (E.Attribute Msg)
@@ -1051,3 +1071,18 @@ onClick msg =
 
 onDoubleClick msg =
     E.htmlAttribute (Html.Events.stopPropagationOn "dblclick" (Decode.succeed ( msg, True )))
+
+
+makeDroppable =
+    makeDroppableIf True
+
+
+makeDroppableIf pred dropId attrs =
+    if pred then
+        attrs
+            ++ (DragDrop.droppable DragDropMsg dropId
+                    |> List.map E.htmlAttribute
+               )
+
+    else
+        attrs

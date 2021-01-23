@@ -417,6 +417,19 @@ update msg model =
                     applyChangeAndFinish model Document.applyFontColor newValue
 
                 -- ###########
+                -- Letter Spacing 
+                -- ###########
+                EditingField LetterSpacingField oldValue newValue ->
+                    applyChangeAndFinish model Document.applyLetterSpacing newValue
+
+                -- ###########
+                -- Word Spacing 
+                -- ###########
+                EditingField WordSpacingField oldValue newValue ->
+                    applyChangeAndFinish model Document.applyWordSpacing newValue
+
+
+                -- ###########
                 -- Background
                 -- ###########
                 EditingField BackgroundColorField oldValue newValue ->

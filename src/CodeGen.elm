@@ -553,6 +553,8 @@ emitAllStyles node attrs =
         |> emitFontFamily node.fontFamily
         |> emitFontColor node.fontColor
         |> emitFontWeight node.fontWeight
+        |> emitLetterSpacing node.letterSpacing
+        |> emitWordSpacing node.wordSpacing
         |> emitTextAlign node.textAlignment
         |> emitAlignX node.alignmentX
         |> emitAlignY node.alignmentY
@@ -949,6 +951,22 @@ emitFontSize value attrs =
             attrs
 
 
+emitLetterSpacing : Float -> List Expression -> List Expression
+emitLetterSpacing value attrs =
+    if value /= 0 then
+        CodeGen.apply [ CodeGen.fqFun fontModule "letterSpacing", CodeGen.float value ] :: attrs
+    else 
+        attrs
+
+
+emitWordSpacing : Float -> List Expression -> List Expression
+emitWordSpacing value attrs =
+    if value /= 0 then
+        CodeGen.apply [ CodeGen.fqFun fontModule "wordSpacing", CodeGen.float value ] :: attrs
+    else 
+        attrs
+
+
 emitTextAlign : TextAlignment -> List Expression -> List Expression
 emitTextAlign value attrs =
     case value of
@@ -984,21 +1002,6 @@ emitBackground value attrs =
 
 
 -- HELPERS
-
-
-emitPadding_ : { a | top : Int, right : Int, bottom : Int, left : Int } -> Expression
-emitPadding_ { top, right, bottom, left } =
-    -- TODO use main emitPadding instead
-    CodeGen.apply
-        [ CodeGen.fqFun elementModule "paddingEach"
-        , CodeGen.record
-            [ ( "top", CodeGen.int top )
-            , ( "right", CodeGen.int right )
-            , ( "bottom", CodeGen.int bottom )
-            , ( "left", CodeGen.int left )
-            ]
-        ]
-
 
 zero =
     Layout.padding 0
