@@ -15,6 +15,9 @@
   //box-shadow: 0 0 0 1px $primary;
 }
 
+// ----------------------
+// Drag & drop
+
 .page--design .element--dropped {
   background: rgba($primary, 0.1);
 }
@@ -29,4 +32,15 @@
   z-index: 1;
   background: rgba($secondary, 0.2);
   pointer-events: none;
+}
+
+// ----------------------
+// Allow selection of left/right aligned elements within their container
+
+.element.s.pg > .element.s.al {
+  z-index: 2;
+}
+
+.element.s.pg > .element.s.ar {
+  z-index: 2;
 }
