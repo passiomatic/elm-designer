@@ -11,6 +11,7 @@ import Element.Events as Events
 import Element.Font as Font
 import Element.Input as Input exposing (Option)
 import Element.Region as Region
+import File exposing (File)
 import Html as H exposing (Html)
 import Html.Attributes as A
 import Html.Events
@@ -138,6 +139,7 @@ renderTextColumn ctx node selected children =
             , onClick (NodeSelected node.id)
             ]
                 |> makeDroppableIf (Common.canDropInto node ctx.dragDrop) (AppendTo node.id)
+                |> makeFileDroppableIf (not <| Common.isDragging ctx.dragDrop) node.id
                 |> applyAllStyles node
     in
     E.textColumn attrs newChildren
@@ -160,6 +162,7 @@ renderColumn ctx node selected children =
             , onClick (NodeSelected node.id)
             ]
                 |> makeDroppableIf (Common.canDropInto node ctx.dragDrop) (AppendTo node.id)
+                |> makeFileDroppableIf (not <| Common.isDragging ctx.dragDrop) node.id
                 |> applyAllStyles node
     in
     E.column attrs newChildren
@@ -182,6 +185,7 @@ renderRow ctx node selected { wrapped } children =
             , onClick (NodeSelected node.id)
             ]
                 |> makeDroppableIf (Common.canDropInto node ctx.dragDrop) (AppendTo node.id)
+                |> makeFileDroppableIf (not <| Common.isDragging ctx.dragDrop) node.id
                 |> applyAllStyles node
     in
     (if wrapped then
@@ -204,6 +208,7 @@ renderPage ctx node selected children =
             , onClick (NodeSelected node.id)
             ]
                 |> makeDroppableIf (Common.canDropInto node ctx.dragDrop) (AppendTo node.id)
+                |> makeFileDroppableIf (not <| Common.isDragging ctx.dragDrop) node.id
                 |> applyAllStyles node
     in
     RenderedElement
@@ -1009,6 +1014,7 @@ elementClasses ctx node selected =
             [ ( "element", True )
             , ( "element--dropped", isDroppingInto dropId ctx.dragDrop )
             , ( "element--selected", selected )
+            , ( "dragging--file", isDroppingFileInto node.id ctx.fileDrop )
             ]
         )
 
@@ -1029,6 +1035,15 @@ isDroppingInto dropId dragDrop =
             dropId_ == dropId
 
         Nothing ->
+            False
+
+
+isDroppingFileInto nodeId fileDrop =
+    case fileDrop of
+        DraggingOn nodeId_ ->
+            nodeId_ == nodeId
+
+        _ ->
             False
 
 
@@ -1055,10 +1070,6 @@ onDoubleClick msg =
     E.htmlAttribute (Html.Events.stopPropagationOn "dblclick" (Decode.succeed ( msg, True )))
 
 
-makeDroppable =
-    makeDroppableIf True
-
-
 makeDroppableIf pred dropId attrs =
     if pred then
         attrs
@@ -1068,3 +1079,43 @@ makeDroppableIf pred dropId attrs =
 
     else
         attrs
+
+
+makeFileDroppableIf pred nodeId attrs =
+    if pred then
+        attrs
+            ++ ([ on "dragenter" (Decode.succeed (FileDragging nodeId))
+                , on "dragover" (Decode.succeed (FileDragging nodeId))
+                , on "dragleave" (Decode.succeed FileDragCanceled)
+                , on "drop" (fileDropDecoder nodeId)
+                ]
+                    |> List.map E.htmlAttribute
+               )
+
+    else
+        attrs
+
+
+{-| Stop given event and prevent default behavior.
+
+    1. preventDefault does not allow browser to display dropped 
+        image on viewport, replacing app UI altogether
+    2. stopPropagation allows to have any nested container to 
+        handle its own drag events
+-}
+on : String -> Decoder msg -> H.Attribute msg
+on name decoder =
+    decoder
+        |> Decode.map
+            (\msg ->
+                { message = msg
+                , stopPropagation = True
+                , preventDefault = True
+                }
+            )
+        |> Html.Events.custom name
+
+
+fileDropDecoder : NodeId -> Decoder Msg
+fileDropDecoder nodeId =
+    Decode.at [ "dataTransfer", "files" ] (Decode.oneOrMore (FileDropped nodeId) File.decoder)

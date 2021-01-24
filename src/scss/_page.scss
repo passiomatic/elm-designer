@@ -15,19 +15,6 @@
   position: relative;
 }
 
-.dragging--file.page--design:after {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  bottom: 0;
-  right: 0;
-  z-index: 1;
-  background: rgba($secondary, 0.2);
-  pointer-events: none;
-}
-
-
 // First element created by Elm UI  
 .page--design>div:first-child {
   flex: 1;

@@ -42,18 +42,8 @@ import Views.Editor as Editor
 saveInterval =
     3
 
-
-minWorkspaceScale =
-    0.25
-
-
-maxWorkspaceScale =
-    2
-
-
-wheelSensibility =
-    0.005
-
+appName = 
+    "Elm Designer"
 
 init : Flags -> ( Model, Cmd Msg )
 init flags =
@@ -75,27 +65,21 @@ update msg model =
         -- ###########
         -- Image drag & drop from local filesystem
         -- ###########
-        FileDragging ->
+        FileDragging nodeId ->
             ( { model
-                | uploadState =
-                    -- User is dragging an element instead?
-                    if Common.isDragging model.dragDrop then
-                        Ready
-
-                    else
-                        Dragging
+                | fileDrop = DraggingOn nodeId
               }
             , Cmd.none
             )
 
         FileDragCanceled ->
             ( { model
-                | uploadState = Ready
+                | fileDrop = Empty
               }
             , Cmd.none
             )
 
-        FileDropped file files ->
+        FileDropped nodeId file files ->
             let
                 ( newUploadState, cmd ) =
                     (file :: files)
@@ -104,15 +88,16 @@ update msg model =
             in
             ( { model
                 | uploadState = newUploadState
+                , fileDrop = DroppedInto nodeId
               }
             , cmd
             )
 
-        FileUploading name others progress ->
+        FileUploading current others progress ->
             case progress of
                 Sending sent ->
                     ( { model
-                        | uploadState = Uploading name others (Http.fractionSent sent)
+                        | uploadState = Uploading current others (Http.fractionSent sent) 
                       }
                     , Cmd.none
                     )
@@ -127,9 +112,18 @@ update msg model =
                         ( newSeeds, newNode ) =
                             Document.imageNode url model.seeds
 
-                        newPage =
+                        zipper = 
                             selectedPage model.pages
-                                |> Document.insertNode newNode
+
+                        newPage =                            
+                            case model.fileDrop of
+                                DroppedInto parentId ->
+                                    Document.selectNodeWith parentId zipper
+                                        |> Maybe.map (Document.appendNode newNode)
+                                        |> Maybe.withDefault zipper
+
+                                _ ->
+                                    zipper
 
                         ( newUploadState, cmd ) =
                             case model.uploadState of
@@ -141,6 +135,7 @@ update msg model =
                     in
                     ( { model
                         | uploadState = newUploadState
+                        , fileDrop = if newUploadState == Ready then Empty else model.fileDrop
                         , pages = SelectList.replaceSelected newPage model.pages
                         , seeds = newSeeds
                         , saveState = Changed model.currentTime
@@ -150,7 +145,7 @@ update msg model =
 
                 Err _ ->
                     ( model
-                    , showErrorBox "Error" "Could not upload image"
+                    , showErrorBox "Could not upload image"
                     )
 
         -- ###########
@@ -290,7 +285,7 @@ update msg model =
                     --     _ = Debug.log "Error loading document:" (Decode.errorToString reason)
                     -- in
                     ( model
-                    , showErrorBox "Error" "Error loading document (perhaps schema has changed?)" 
+                    , showErrorBox  "Error loading document (perhaps schema has changed?)"
                     )
 
         CollapseNodeClicked collapse id ->
@@ -881,8 +876,8 @@ subscriptions model =
     let
         uploadSub =
             case model.uploadState of
-                Uploading name others _ ->
-                    Uploader.track name others
+                Uploading current others _ ->
+                    Uploader.track current others
 
                 _ ->
                     Sub.none
@@ -949,20 +944,23 @@ acceptFiles files =
         files
 
 
--- NOTIFICATION 
 
-showErrorBox title message =
+-- NOTIFICATION
+
+
+showErrorBox message =
     Ports.showMessageBox
         { type_ = "error"
-        , title = title
+        , title = appName
         , message = message
         , buttons = [ "OK" ]
         }
 
-showMessageBox title message =
+
+showMessageBox message =
     Ports.showMessageBox
         { type_ = "info"
-        , title = title
+        , title = appName
         , message = message
         , buttons = [ "OK" ]
-        }        
+        }

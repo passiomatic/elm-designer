@@ -16,7 +16,7 @@ uploadTimeout =
 uploadNextFile endpoint files =
     case files of
         next :: others ->
-            ( Uploading (File.name next) others 0
+            ( Uploading next others 0
             , postTo endpoint next
             )
 
@@ -42,5 +42,5 @@ postTo endpoint file =
         }
 
 
-track name others =
-    Http.track name (FileUploading name others)
+track current others =
+    Http.track (File.name current) (FileUploading current others)

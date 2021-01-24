@@ -78,7 +78,7 @@ workspaceView model =
 
 uploadProgressView uploadState =
     case uploadState of
-        Uploading name _ sent ->
+        Uploading file _ sent ->
             let
                 percent =
                     String.fromFloat (sent * 100)
@@ -90,7 +90,7 @@ uploadProgressView uploadState =
                 , A.style "z-index" "3"
                 ]
                 [ H.div [ A.class "w-50 mx-auto bg-light border rounded bpx-2 bpy-2" ]
-                    [ H.div [ A.class "label-sm" ] [ H.text ("Uploading image " ++ name ++ "...") ]
+                    [ H.div [ A.class "label-sm" ] [ H.text ("Uploading image " ++ (File.name file) ++ "...") ]
                     , H.div [ A.class "mt-1 progress", A.style "height" "8px" ]
                         [ H.div
                             [ A.class "progress-bar progress-bar-striped progress-bar-animated"
@@ -103,11 +103,6 @@ uploadProgressView uploadState =
 
         _ ->
             none
-
-
-fileDropDecoder : Decoder Msg
-fileDropDecoder =
-    Decode.at [ "dataTransfer", "files" ] (Decode.oneOrMore FileDropped File.decoder)
 
 
 headerView : Model -> Html Msg
@@ -439,8 +434,7 @@ emptyPageNotice model node =
             ]
             :: makeDroppableIf (Common.canDropInto node model.dragDrop) (AppendTo node.id) []
         )
-        [--H.div [] [ H.text "Drop library elements here" ]
-        ]
+        []
 
 
 treeLabel node =
@@ -569,16 +563,11 @@ pageView model =
                 [ A.classList
                     [ ( "page", True )
                     , ( "page--design", True )
-                    , ( "dragging--file", model.uploadState == Dragging )
                     , ( viewportClass, True )
                     ]
                 , A.attribute "data-fold" height
                 , A.style "width" width
                 , A.style "min-height" height
-                , preventDefaultOn "dragenter" (Decode.succeed FileDragging)
-                , preventDefaultOn "dragover" (Decode.succeed FileDragging)
-                , preventDefaultOn "dragleave" (Decode.succeed FileDragCanceled)
-                , preventDefaultOn "drop" fileDropDecoder
                 ]
                 [ content
                 , H.div

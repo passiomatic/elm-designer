@@ -606,6 +606,9 @@ canDropSibling sibling { type_ } =
         ( _, TextColumnNode ) ->
             True
 
+        ( _, ImageNode _ ) ->
+            True
+
         ( _, HeadingNode _ ) ->
             True
 

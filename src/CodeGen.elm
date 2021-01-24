@@ -511,15 +511,18 @@ emitOption node { text } =
         ]
 
 
-
 emitImage : Node -> ImageData -> Expression
 emitImage node image =
     CodeGen.apply
         [ CodeGen.fqFun elementModule "image"
         , CodeGen.list
             ([]
-             |> emitAllStyles node
+                |> emitAllStyles node
             )
+        , CodeGen.record
+            [ ( "src", CodeGen.string image.src )
+            , ( "description", CodeGen.string image.description )
+            ]
         ]
 
 
@@ -956,7 +959,8 @@ emitLetterSpacing : Float -> List Expression -> List Expression
 emitLetterSpacing value attrs =
     if value /= 0 then
         CodeGen.apply [ CodeGen.fqFun fontModule "letterSpacing", CodeGen.float value ] :: attrs
-    else 
+
+    else
         attrs
 
 
@@ -964,7 +968,8 @@ emitWordSpacing : Float -> List Expression -> List Expression
 emitWordSpacing value attrs =
     if value /= 0 then
         CodeGen.apply [ CodeGen.fqFun fontModule "wordSpacing", CodeGen.float value ] :: attrs
-    else 
+
+    else
         attrs
 
 
@@ -1003,6 +1008,7 @@ emitBackground value attrs =
 
 
 -- HELPERS
+
 
 zero =
     Layout.padding 0

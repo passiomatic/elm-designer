@@ -2,6 +2,7 @@ module Model exposing
     ( Context
     , DocumentState(..)
     , Field(..)
+    , FileDrop(..)
     , Flags
     , Inspector(..)
     , Keys
@@ -19,14 +20,11 @@ module Model exposing
     )
 
 import Bootstrap.Tab as Tab
-import Codecs
 import Document exposing (..)
 import File exposing (File)
-import Html as H exposing (Html)
 import Html.Events.Extra.Wheel as Wheel
 import Html5.DragDrop as DragDrop
 import Http exposing (Error, Progress)
-import Icons
 import Random
 import Result exposing (Result(..))
 import SelectList exposing (SelectList)
@@ -88,10 +86,10 @@ type Msg
     | DocumentLoaded String
     | Ticked Posix
     | ModeChanged Mode
-    | FileDropped File (List File)
-    | FileDragging
+    | FileDropped NodeId File (List File)
+    | FileDragging NodeId
     | FileDragCanceled
-    | FileUploading String (List File) Progress
+    | FileUploading File (List File) Progress
     | FileUploaded (Result Error String)
     | NoOp
     | DragDropMsg (DragDrop.Msg DragId DropId)
@@ -154,7 +152,8 @@ type Inspector
 
 type alias Model =
     { mode : Mode
-    , uploadEndpoint: String 
+    , uploadEndpoint : String
+
     -- , workspaceScale : Float
     -- , workspaceX : Int
     -- , workspaceY : Int
@@ -168,6 +167,7 @@ type alias Model =
     , viewport : Viewport
     , inspector : Inspector
     , dragDrop : DragDrop.Model DragId DropId
+    , fileDrop : FileDrop
     , rightPaneTabState : Tab.State
     , seeds : Seeds
     , currentTime : Posix
@@ -178,10 +178,15 @@ type alias Model =
     }
 
 
+type FileDrop
+    = DraggingOn NodeId
+    | DroppedInto NodeId
+    | Empty
+
+
 type UploadState
-    = Dragging
+    = Uploading File (List File) Float
     | Ready
-    | Uploading String (List File) Float
 
 
 type DocumentState
@@ -195,6 +200,7 @@ type DocumentState
 type alias Context =
     { currentNode : Zipper Node
     , dragDrop : DragDrop.Model DragId DropId
+    , fileDrop : FileDrop
     , inspector : Inspector
     , mode : Mode
     , theme : Theme
@@ -205,6 +211,7 @@ context : Model -> Context
 context model =
     { currentNode = SelectList.selected model.pages
     , dragDrop = model.dragDrop
+    , fileDrop = model.fileDrop
     , inspector = model.inspector
     , mode = model.mode
     , theme = Theme.defaultTheme
@@ -260,6 +267,7 @@ initialModel { width, height, uploadEndpoint, seed1, seed2, seed3, seed4 } =
     in
     { mode = DesignMode
     , uploadEndpoint = uploadEndpoint
+
     -- , workspaceScale = 1.0
     -- , workspaceX = -workspaceWidth // 2 + width // 2
     -- , workspaceY = 0
@@ -273,6 +281,7 @@ initialModel { width, height, uploadEndpoint, seed1, seed2, seed3, seed4 } =
     , viewport = Fluid
     , inspector = NotEdited
     , dragDrop = DragDrop.init
+    , fileDrop = Empty
     , rightPaneTabState = Tab.customInitialState "tab-design"
     , seeds = newSeeds
     , currentTime = Time.millisToPosix 0
