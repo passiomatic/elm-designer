@@ -517,6 +517,7 @@ emitImage node image =
         [ CodeGen.fqFun elementModule "image"
         , CodeGen.list
             ([]
+                |> clipIf (Border.isRounded node.borderCorner)
                 |> emitAllStyles node
             )
         , CodeGen.record
@@ -1008,6 +1009,14 @@ emitBackground value attrs =
 
 
 -- HELPERS
+
+
+clipIf pred attrs =
+    if pred then
+        CodeGen.fqFun elementModule "clip" :: attrs
+
+    else
+        attrs
 
 
 zero =

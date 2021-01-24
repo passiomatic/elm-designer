@@ -110,7 +110,7 @@ update msg model =
                 Ok url ->
                     let
                         ( newSeeds, newNode ) =
-                            Document.imageNode url model.seeds
+                            Document.imageNode (String.trim url) model.seeds
 
                         zipper = 
                             selectedPage model.pages

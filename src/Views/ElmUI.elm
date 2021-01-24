@@ -249,6 +249,7 @@ renderImage ctx node selected image =
             , elementId node
             , onClick (NodeSelected node.id)
             ]
+                |> clipIf (Style.Border.isRounded node.borderCorner)
                 |> applyAllStyles node
     in
     E.image attrs image
@@ -968,6 +969,14 @@ forceBackgroundColor value attrs =
 -- HELPERS
 
 
+clipIf pred attrs =
+    if pred then
+        E.clip :: attrs
+
+    else
+        attrs
+
+
 options : List RenderedNode -> List (Option NodeId Msg)
 options children =
     List.foldr
@@ -1098,10 +1107,11 @@ makeFileDroppableIf pred nodeId attrs =
 
 {-| Stop given event and prevent default behavior.
 
-    1. preventDefault does not allow browser to display dropped 
+    1. preventDefault does not allow browser to display dropped
         image on viewport, replacing app UI altogether
-    2. stopPropagation allows to have any nested container to 
+    2. stopPropagation allows to have any nested container to
         handle its own drag events
+
 -}
 on : String -> Decoder msg -> H.Attribute msg
 on name decoder =

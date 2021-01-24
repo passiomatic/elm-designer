@@ -3,6 +3,7 @@ module Style.Border exposing
     , BorderStyle(..)
     , BorderWidth
     , corner
+    , isRounded
     , setBottomLeftCorner
     , setBottomRightCorner
     , setBottomWidth
@@ -142,3 +143,8 @@ setBottomLeftCorner value record =
 
     else
         { record | bottomLeft = value }
+
+
+isRounded : BorderCorner -> Bool
+isRounded value =
+    value.topLeft /= 0 || value.topRight /= 0 || value.bottomLeft /= 0 || value.bottomRight /= 0
