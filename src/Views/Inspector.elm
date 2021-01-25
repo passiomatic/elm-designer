@@ -1431,7 +1431,7 @@ positionView model ({ transformation } as node) =
                     new
 
                 _ ->
-                    String.fromFloat untransformed.offsetX
+                    String.fromFloat transformation.offsetX
 
         offsetY =
             case model.inspector of
@@ -1439,7 +1439,7 @@ positionView model ({ transformation } as node) =
                     new
 
                 _ ->
-                    String.fromFloat untransformed.offsetY
+                    String.fromFloat transformation.offsetY
     in
     H.div [ A.class "form-group row align-items-center mb-3" ]
         [ H.label [ A.class "col-sm-3 col-form-label-sm" ]
@@ -1467,7 +1467,7 @@ positionView model ({ transformation } as node) =
                     , A.class "form-control form-control-sm text-center mx-auto w-33"
                     , A.type_ "number"
                     , A.value offsetY
-                    , A.title "Move bottom/top"
+                    , A.title "Move down/up"
                     , E.onFocus (FieldEditingStarted OffsetYField offsetY)
                     , E.onBlur FieldEditingFinished
                     , E.onInput FieldChanged
