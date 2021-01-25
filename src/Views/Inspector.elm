@@ -2,10 +2,9 @@ module Views.Inspector exposing (view)
 
 {- Inspector allows to edit node style information. -}
 
-import Array
 import Bootstrap.Tab as Tab
 import Codecs
-import Css exposing (em, percent, px)
+import Css
 import Dict exposing (Dict)
 import Document exposing (..)
 import Element exposing (Color, Orientation(..))
@@ -15,9 +14,7 @@ import Html as H exposing (Attribute, Html)
 import Html.Attributes as A
 import Html.Entity as Entity
 import Html.Events as E
-import Html.Events.Extra.Wheel as Wheel
 import Html.Keyed as Keyed
-import Html5.DragDrop as DragDrop
 import Icons
 import Model exposing (..)
 import Palette
@@ -110,16 +107,16 @@ resolveStyleViews model zipper =
                     ]
 
                 TextColumnNode ->
-                    [ sectionView "Text"
-                        [ fontView model zipper
-                        ]
-                    , sectionView "Layout"
+                    [ sectionView "Layout"
                         [ positionView model node
                         , lengthView model node
                         , spacingXView model node
                         , spacingYView model node
                         , paddingView model node
                         ]
+                    , sectionView "Text"
+                        [ fontView model zipper
+                        ]                        
                     , bordersView model node
                     , backgroundView model node
                     ]
@@ -129,15 +126,15 @@ resolveStyleViews model zipper =
                         [ labelView label model node
                         , spacingYView model node
                         ]
-                    , sectionView "Text"
-                        [ fontView model zipper
-                        , textAlignmentView model node.textAlignment
-                        ]
                     , sectionView "Layout"
                         [ positionView model node
                         , lengthView model node
                         , paddingView model node
                         ]
+                    , sectionView "Text"
+                        [ fontView model zipper
+                        , textAlignmentView model node.textAlignment
+                        ]                        
                     , bordersView model node
                     , backgroundView model node
                     ]
