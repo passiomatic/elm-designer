@@ -44,3 +44,8 @@
 .element.s.pg > .element.s.ar {
   z-index: 2;
 }
+
+// Make the inline text editor to honor node text aligment
+.element textarea  {
+  text-align: inherit;
+}
