@@ -49,3 +49,8 @@
 .element textarea  {
   text-align: inherit;
 }
+
+// Disallow image dragging while in design mode
+.page--design .element>img { 
+    -webkit-user-drag: none;
+}
