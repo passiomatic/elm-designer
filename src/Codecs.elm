@@ -102,14 +102,15 @@ nodeCodec =
         |> Codec.field "name" .name Codec.string
         |> Codec.field "width" .width lengthCodec
         |> Codec.field "height" .height lengthCodec
-        -- TODO: rename in "transformation" with next schema change
-        |> Codec.field "adjustment" .transformation transformationCodec
+        |> Codec.field "transformation" .transformation transformationCodec
         |> Codec.field "padding" .padding paddingCodec
         |> Codec.field "spacing" .spacing spacingCodec
         |> Codec.field "fontFamily" .fontFamily (localCodec fontFamilyCodec)
         |> Codec.field "fontColor" .fontColor (localCodec colorCodec)
         |> Codec.field "fontSize" .fontSize (localCodec Codec.int)
         |> Codec.field "fontWeight" .fontWeight fontWeightCodec
+        |> Codec.field "letterSpacing" .letterSpacing Codec.float
+        |> Codec.field "wordSpacing" .wordSpacing Codec.float
         |> Codec.field "textAlignment" .textAlignment textAlignmentCodec
         |> Codec.field "borderColor" .borderColor colorCodec
         |> Codec.field "borderStyle" .borderStyle borderStyleCodec
@@ -158,37 +159,34 @@ localCodec codec =
 
 lengthCodec : Codec Length
 lengthCodec =
+    Codec.object Length
+        |> Codec.field "strategy" .strategy strategyCodec
+        |> Codec.field "min" .min (Codec.maybe Codec.int)
+        |> Codec.field "max" .max (Codec.maybe Codec.int)
+        |> Codec.buildObject
+
+
+strategyCodec : Codec Strategy
+strategyCodec =
     Codec.custom
-        (\length fill fillPortion shrink maximun minimun auto value_ ->
+        (\px content fill auto value_ ->
             case value_ of
-                Length value ->
-                    length value
+                Px value ->
+                    px value
 
-                Fill ->
-                    fill
+                Content ->
+                    content
 
-                FillPortion value ->
-                    fillPortion value
+                Fill value ->
+                    fill value
 
-                Shrink ->
-                    shrink
-
-                Maximum value ->
-                    maximun value
-
-                Minimun value ->
-                    minimun value
-
-                Auto ->
+                Unspecified ->
                     auto
         )
-        |> Codec.variant1 "Length" Length Codec.int
-        |> Codec.variant0 "Fill" Fill
-        |> Codec.variant1 "FillPortion" FillPortion Codec.int
-        |> Codec.variant0 "Shrink" Shrink
-        |> Codec.variant1 "Maximum" Maximum Codec.int
-        |> Codec.variant1 "Minimun" Minimun Codec.int
-        |> Codec.variant0 "Auto" Auto
+        |> Codec.variant1 "Px" Px Codec.int
+        |> Codec.variant0 "Content" Content
+        |> Codec.variant1 "Fill" Fill Codec.int
+        |> Codec.variant0 "Unspecified" Unspecified
         |> Codec.buildCustom
 
 
@@ -489,7 +487,7 @@ borderWidthCodec =
 nodeTypeCodec : Codec NodeType
 nodeTypeCodec =
     Codec.custom
-        (\headingNode paragraphNode textNode rowNode columnNode textColumnNode buttonNode checkboxNode textFieldNode textFieldMultilineNode radioNode optionNode pageNode value ->
+        (\headingNode paragraphNode textNode rowNode columnNode textColumnNode imageNode buttonNode checkboxNode textFieldNode textFieldMultilineNode radioNode optionNode pageNode value ->
             case value of
                 HeadingNode data ->
                     headingNode data
@@ -509,8 +507,9 @@ nodeTypeCodec =
                 TextColumnNode ->
                     textColumnNode
 
-                -- ImageNode image ->
-                --     imageNode image
+                ImageNode image ->
+                    imageNode image
+
                 ButtonNode data ->
                     buttonNode data
 
@@ -538,7 +537,7 @@ nodeTypeCodec =
         |> Codec.variant1 "RowNode" RowNode rowCodec
         |> Codec.variant0 "ColumnNode" ColumnNode
         |> Codec.variant0 "TextColumnNode" TextColumnNode
-        --|> Codec.variant1 "ImageNode" ImageNode imageCodec
+        |> Codec.variant1 "ImageNode" ImageNode imageCodec
         |> Codec.variant1 "ButtonNode" ButtonNode textCodec
         |> Codec.variant1 "CheckboxNode" CheckboxNode labelCodec
         |> Codec.variant1 "TextFieldNode" TextFieldNode labelCodec
@@ -655,13 +654,15 @@ rowCodec =
         |> Codec.buildObject
 
 
+imageCodec : Codec ImageData
+imageCodec =
+    Codec.object ImageData
+        |> Codec.field "src" .src Codec.string
+        |> Codec.field "description" .description Codec.string
+        |> Codec.buildObject
 
--- imageCodec : Codec ImageData
--- imageCodec =
---     Codec.object ImageData
---         |> Codec.field "src" .src Codec.string
---         |> Codec.field "description" .description Codec.string
---         |> Codec.buildObject
+
+
 -- linkCodec : Codec Link
 -- linkCodec =
 --     Codec.object Link

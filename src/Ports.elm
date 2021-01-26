@@ -7,10 +7,12 @@ port module Ports exposing
     , onPageDelete
     , saveDocument
     , selectText
+    , setDragImage
     , setFontLinks
     , setupAppMenu
+    , showNotification
     , showPageContextMenu
-    , setDragImage
+    , showMessageBox
     )
 
 import Json.Decode as Decode exposing (Decoder, Value)
@@ -44,6 +46,22 @@ port showPageContextMenu : String -> Cmd msg
 
 
 port setupAppMenu : List MenuItem -> Cmd msg
+
+
+port showNotification :
+    { title : String
+    , message : String
+    }
+    -> Cmd msg
+
+
+port showMessageBox :
+    { type_ : String
+    , title : String
+    , message : String
+    , buttons : List String
+    }
+    -> Cmd msg
 
 
 

@@ -1,7 +1,42 @@
-module Views.Common exposing (fieldId, none)
+module Views.Common exposing (canDropInto, canDropSibling, fieldId, none, isDragging)
 
+import Document exposing (DragId(..))
 import Html as H exposing (Html)
+import Html5.DragDrop as DragDrop
 import Model exposing (Field(..))
+import Tree as T exposing (Tree)
+
+
+isDragging dragDrop =
+    DragDrop.getDragId dragDrop /= Nothing
+
+
+canDropInto container dragDrop =
+    case DragDrop.getDragId dragDrop of
+        Just dragId ->
+            case dragId of
+                Move node ->
+                    Document.canDropInto container node
+
+                Insert template ->
+                    Document.canDropInto container (T.label template)
+
+        Nothing ->
+            False
+
+
+canDropSibling sibling dragDrop =
+    case DragDrop.getDragId dragDrop of
+        Just dragId ->
+            case dragId of
+                Move node ->
+                    Document.canDropSibling sibling node
+
+                Insert template ->
+                    Document.canDropSibling sibling (T.label template)
+
+        Nothing ->
+            False
 
 
 fieldId : Field -> String
@@ -13,20 +48,14 @@ fieldId field =
         FontColorField ->
             "font-color-hex"
 
+        LetterSpacingField ->
+            "letter-spacing"
+
+        WordSpacingField ->
+            "word-spacing"
+
         BackgroundColorField ->
             "background-color-hex"
-
-        PositionTopField ->
-            "position-top"
-
-        PositionRightField ->
-            "position-right"
-
-        PositionBottomField ->
-            "position-bottom"
-
-        PositionLeftField ->
-            "position-left"
 
         PaddingTopField ->
             "padding-top"
@@ -87,6 +116,30 @@ fieldId field =
 
         OffsetYField ->
             "offset-y"
+
+        WidthMinField ->
+            "width-min"
+
+        WidthMaxField ->
+            "width-max"
+
+        WidthPxField ->
+            "width-px"
+
+        WidthPortionField ->
+            "width-portion"
+
+        HeightMinField ->
+            "height-min"
+
+        HeightMaxField ->
+            "height-max"
+
+        HeightPxField ->
+            "height-px"
+
+        HeightPortionField ->
+            "height-portion"
 
 
 none =

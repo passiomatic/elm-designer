@@ -2,6 +2,7 @@ module Model exposing
     ( Context
     , DocumentState(..)
     , Field(..)
+    , FileDrop(..)
     , Flags
     , Inspector(..)
     , Keys
@@ -9,6 +10,7 @@ module Model exposing
     , Model
     , Mouse
     , Msg(..)
+    , UploadState(..)
     , WidgetState(..)
     , context
     , initialModel
@@ -18,19 +20,18 @@ module Model exposing
     )
 
 import Bootstrap.Tab as Tab
-import Codecs
 import Document exposing (..)
-import Html as H exposing (Html)
+import File exposing (File)
 import Html.Events.Extra.Wheel as Wheel
 import Html5.DragDrop as DragDrop
-import Icons
+import Http exposing (Error, Progress)
 import Random
 import Result exposing (Result(..))
 import SelectList exposing (SelectList)
 import Set exposing (Set)
-import Style.Layout as Layout exposing (..)
 import Style.Background as Background exposing (Background)
 import Style.Font as Font exposing (..)
+import Style.Layout as Layout exposing (..)
 import Style.Theme as Theme exposing (Theme)
 import Style.Border exposing (BorderStyle(..))
 import Time exposing (Posix)
@@ -87,6 +88,11 @@ type Msg
     | DocumentLoaded String
     | Ticked Posix
     | ModeChanged Mode
+    | FileDropped NodeId File (List File)
+    | FileDragging NodeId
+    | FileDragCanceled
+    | FileUploading File (List File) Progress
+    | FileUploaded (Result Error String)
     | NoOp
     | DragDropMsg (DragDrop.Msg DragId DropId)
     | TabMsg Tab.State
@@ -97,11 +103,9 @@ type Msg
 type Field
     = FontSizeField
     | FontColorField
+    | LetterSpacingField
+    | WordSpacingField
     | BackgroundColorField
-    | PositionTopField
-    | PositionRightField
-    | PositionBottomField
-    | PositionLeftField
     | PaddingTopField
     | PaddingRightField
     | PaddingBottomField
@@ -122,6 +126,14 @@ type Field
     | LabelField
     | OffsetXField
     | OffsetYField
+    | WidthMinField
+    | WidthMaxField
+    | WidthPxField
+    | WidthPortionField
+    | HeightMinField
+    | HeightMaxField
+    | HeightPxField
+    | HeightPortionField
 
 
 type WidgetState
@@ -142,6 +154,7 @@ type Inspector
 
 type alias Model =
     { mode : Mode
+    , uploadEndpoint : String
 
     -- , workspaceScale : Float
     -- , workspaceX : Int
@@ -156,14 +169,26 @@ type alias Model =
     , viewport : Viewport
     , inspector : Inspector
     , dragDrop : DragDrop.Model DragId DropId
+    , fileDrop : FileDrop
     , rightPaneTabState : Tab.State
     , seeds : Seeds
     , currentTime : Posix
     , saveState : DocumentState
-    , alerts : List String
     , dropDownState : WidgetState
+    , uploadState : UploadState
     , collapsedTreeItems : Set String
     }
+
+
+type FileDrop
+    = DraggingOn NodeId
+    | DroppedInto NodeId
+    | Empty
+
+
+type UploadState
+    = Uploading File (List File) Float
+    | Ready
 
 
 type DocumentState
@@ -177,6 +202,7 @@ type DocumentState
 type alias Context =
     { currentNode : Zipper Node
     , dragDrop : DragDrop.Model DragId DropId
+    , fileDrop : FileDrop
     , inspector : Inspector
     , mode : Mode
     , theme : Theme
@@ -187,6 +213,7 @@ context : Model -> Context
 context model =
     { currentNode = SelectList.selected model.pages
     , dragDrop = model.dragDrop
+    , fileDrop = model.fileDrop
     , inspector = model.inspector
     , mode = model.mode
     , theme = Theme.defaultTheme
@@ -219,6 +246,7 @@ type alias Mouse =
 type alias Flags =
     { width : Int
     , height : Int
+    , uploadEndpoint : String
     , seed1 : Int
     , seed2 : Int
     , seed3 : Int
@@ -227,7 +255,7 @@ type alias Flags =
 
 
 initialModel : Flags -> Model
-initialModel { width, height, seed1, seed2, seed3, seed4 } =
+initialModel { width, height, uploadEndpoint, seed1, seed2, seed3, seed4 } =
     let
         seeds =
             Seeds
@@ -240,6 +268,7 @@ initialModel { width, height, seed1, seed2, seed3, seed4 } =
             Document.emptyPageNode seeds 1
     in
     { mode = DesignMode
+    , uploadEndpoint = uploadEndpoint
 
     -- , workspaceScale = 1.0
     -- , workspaceX = -workspaceWidth // 2 + width // 2
@@ -254,12 +283,13 @@ initialModel { width, height, seed1, seed2, seed3, seed4 } =
     , viewport = Fluid
     , inspector = NotEdited
     , dragDrop = DragDrop.init
+    , fileDrop = Empty
     , rightPaneTabState = Tab.customInitialState "tab-design"
     , seeds = newSeeds
     , currentTime = Time.millisToPosix 0
     , saveState = Original
-    , alerts = []
     , dropDownState = Hidden
+    , uploadState = Ready
     , collapsedTreeItems = Set.empty
     }
 

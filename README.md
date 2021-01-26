@@ -20,7 +20,8 @@ Elm Designer is distributed as an Electron app. Right now there’s a [macOS bin
 
 - Color picker is quite limited at the moment since Elm Designer is using HTML 5 `input type=color`. Specifically you can't reset a color or specify `inherit`. See [#1][issue1]
 - When switching fonts the weight of the new font should match, or be closer as possible, to the old one. See [#2][issue2]
-- Non-fluid pages larger than current workspace dimensions push right panel out of app window
+- "Insert" menu allows to create non-renderable nodes. See [#20][issue20]
+- ~~Non-fluid pages larger than current workspace dimensions push right panel out of app window~~
 
 ## Build Elm Designer from sources
 
@@ -34,9 +35,9 @@ Elm Designer uses [Parcel][2] to compile Elm and SASS source files. Please read 
 
 You can run [Electron][4] as a command-line app and then point it to the `main.js` entry point.
 
-So, first install Electron globally on your machine:
+So, first install Electron and all its dependencies locally:
 
-    npm i electron@11.0.4 -g
+    npm ci
 
 Then run:
 
@@ -51,3 +52,4 @@ This will build the app assets with Parcel in production mode, copy the files in
 [issue1]: https://github.com/passiomatic/elm-designer/issues/1 
 [issue2]: https://github.com/passiomatic/elm-designer/issues/2 
 [d]: https://github.com/passiomatic/elm-designer/releases/tag/v0.1.0
+[issue20]: https://github.com/passiomatic/elm-designer/issues/20

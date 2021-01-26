@@ -15,10 +15,13 @@ clean:
 	rm -fR build
 
 run: clean build
-	electron ./dist/main.js
+	npm run electron
 
 package-mac: clean build icon
-	electron-builder -m
+	npm run package:mac
+
+package-linux: clean build icon
+	npm run package:linux
 
 icon: 
 	mkdir dist/electron.iconset

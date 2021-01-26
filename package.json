@@ -1,17 +1,18 @@
 {
   "name": "elm-designer",
   "productName": "Elm Designer",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "A code generator for Elm UI",
-  "author": "Andrea Peltrin",
+  "author": "Andrea Peltrin <designer@passiomatic.com>",
   "repository": "https://github.com/passiomatic/elm-designer",
   "devDependencies": {
     "cssnano": "4.1.10",
+    "electron": "11.1.1",
+    "electron-builder": "22.9.1",
     "electron-notarize": "1.0.0",
     "elm-hot": "1.1.5",
     "node-elm-compiler": "5.0.5",
-    "sass": "1.26.10",
-    "electron": "11.0.4"
+    "sass": "1.26.10"
   },
   "dependencies": {
     "parcel-bundler": "1.12.4"
@@ -19,10 +20,10 @@
   "main": "./dist/main.js",
   "build": {
     "appId": "com.passiomatic.ElmDesigner",
-    "buildVersion": "0.1.0 build A",
-    "directories" : {
+    "buildVersion": "0.1.1 build A",
+    "directories": {
       "output": "build"
-    }, 
+    },
     "icon": "./dist/app.icns",
     "mac": {
       "category": "public.app-category.developer-tools",
@@ -35,11 +36,18 @@
       "target": "msi"
     },
     "linux": {
+      "category": "Development",
+      "executableName": "elm-designer",
       "target": [
         "AppImage",
         "deb"
       ]
     },
     "afterSign": "./notarize.js"
+  },
+  "scripts": {
+    "electron": "electron ./dist/main.js",
+    "package:mac": "electron-builder -m",
+    "package:linux": "electron-builder -l"
   }
 }

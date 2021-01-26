@@ -2,21 +2,22 @@ module Style.Border exposing
     ( BorderCorner
     , BorderStyle(..)
     , BorderWidth
-    , borderCorner
+    , corner
+    , isRounded
+    , setBottomLeftCorner
+    , setBottomRightCorner
+    , setBottomWidth
     , borderStyleName
-    , borderWidth
-    , setBorderBottomLeftCorner
-    , setBorderBottomRightCorner
-    , setBorderBottomWidth
-    , setBorderColor
-    , setBorderCorner
-    , setBorderLeftWidth
-    , setBorderRightWidth
+    , setColor
+    , setCorner
+    , setLeftWidth
+    , setRightWidth
+    , setTopLeftCorner
+    , setTopRightCorner
     , setBorderStyle
-    , setBorderTopLeftCorner
-    , setBorderTopRightCorner
-    , setBorderTopWidth
-    , setBorderWidth
+    , setTopWidth
+    , setWidth
+    , width
     )
 
 {-| Border properties.
@@ -34,55 +35,55 @@ type alias BorderWidth =
     }
 
 
-borderWidth : Int -> BorderWidth
-borderWidth value =
+width : Int -> BorderWidth
+width value =
     BorderWidth True value value value value
 
 
-setBorderWidth : BorderWidth -> { a | borderWidth : BorderWidth } -> { a | borderWidth : BorderWidth }
-setBorderWidth value node =
+setWidth : BorderWidth -> { a | borderWidth : BorderWidth } -> { a | borderWidth : BorderWidth }
+setWidth value node =
     { node | borderWidth = value }
 
 
-setBorderColor : Color -> { a | borderColor : Color } -> { a | borderColor : Color }
-setBorderColor value node =
+setColor : Color -> { a | borderColor : Color } -> { a | borderColor : Color }
+setColor value node =
     { node | borderColor = value }
 
 
-setBorderTopWidth : Int -> BorderWidth -> BorderWidth
-setBorderTopWidth value borderWidth_ =
-    if borderWidth_.locked then
-        borderWidth value
+setTopWidth : Int -> BorderWidth -> BorderWidth
+setTopWidth value record =
+    if record.locked then
+        width value
 
     else
-        { borderWidth_ | top = value }
+        { record | top = value }
 
 
-setBorderRightWidth : Int -> BorderWidth -> BorderWidth
-setBorderRightWidth value borderWidth_ =
-    if borderWidth_.locked then
-        borderWidth value
-
-    else
-        { borderWidth_ | right = value }
-
-
-setBorderBottomWidth : Int -> BorderWidth -> BorderWidth
-setBorderBottomWidth value borderWidth_ =
-    if borderWidth_.locked then
-        borderWidth value
+setRightWidth : Int -> BorderWidth -> BorderWidth
+setRightWidth value record =
+    if record.locked then
+        width value
 
     else
-        { borderWidth_ | bottom = value }
+        { record | right = value }
 
 
-setBorderLeftWidth : Int -> BorderWidth -> BorderWidth
-setBorderLeftWidth value borderWidth_ =
-    if borderWidth_.locked then
-        borderWidth value
+setBottomWidth : Int -> BorderWidth -> BorderWidth
+setBottomWidth value record =
+    if record.locked then
+        width value
 
     else
-        { borderWidth_ | left = value }
+        { record | bottom = value }
+
+
+setLeftWidth : Int -> BorderWidth -> BorderWidth
+setLeftWidth value record =
+    if record.locked then
+        width value
+
+    else
+        { record | left = value }
 
 
 type BorderStyle
@@ -100,50 +101,50 @@ type alias BorderCorner =
     }
 
 
-borderCorner : Int -> BorderCorner
-borderCorner value =
+corner : Int -> BorderCorner
+corner value =
     BorderCorner True value value value value
 
 
-setBorderCorner : BorderCorner -> { a | borderCorner : BorderCorner } -> { a | borderCorner : BorderCorner }
-setBorderCorner value node =
+setCorner : BorderCorner -> { a | borderCorner : BorderCorner } -> { a | borderCorner : BorderCorner }
+setCorner value node =
     { node | borderCorner = value }
 
 
-setBorderTopLeftCorner : Int -> BorderCorner -> BorderCorner
-setBorderTopLeftCorner value borderCorner_ =
-    if borderCorner_.locked then
-        borderCorner value
+setTopLeftCorner : Int -> BorderCorner -> BorderCorner
+setTopLeftCorner value record =
+    if record.locked then
+        corner value
 
     else
-        { borderCorner_ | topLeft = value }
+        { record | topLeft = value }
 
 
-setBorderTopRightCorner : Int -> BorderCorner -> BorderCorner
-setBorderTopRightCorner value borderCorner_ =
-    if borderCorner_.locked then
-        borderCorner value
-
-    else
-        { borderCorner_ | topRight = value }
-
-
-setBorderBottomRightCorner : Int -> BorderCorner -> BorderCorner
-setBorderBottomRightCorner value borderCorner_ =
-    if borderCorner_.locked then
-        borderCorner value
+setTopRightCorner : Int -> BorderCorner -> BorderCorner
+setTopRightCorner value record =
+    if record.locked then
+        corner value
 
     else
-        { borderCorner_ | bottomRight = value }
+        { record | topRight = value }
 
 
-setBorderBottomLeftCorner : Int -> BorderCorner -> BorderCorner
-setBorderBottomLeftCorner value borderCorner_ =
-    if borderCorner_.locked then
-        borderCorner value
+setBottomRightCorner : Int -> BorderCorner -> BorderCorner
+setBottomRightCorner value record =
+    if record.locked then
+        corner value
 
     else
-        { borderCorner_ | bottomLeft = value }
+        { record | bottomRight = value }
+
+
+setBottomLeftCorner : Int -> BorderCorner -> BorderCorner
+setBottomLeftCorner value record =
+    if record.locked then
+        corner value
+
+    else
+        { record | bottomLeft = value }
 
 
 setBorderStyle : BorderStyle -> { a | borderStyle : BorderStyle } -> { a | borderStyle : BorderStyle }
@@ -162,3 +163,8 @@ borderStyleName borderStyle =
 
         Dotted ->
             "Dotted"
+
+
+isRounded : BorderCorner -> Bool
+isRounded value =
+    value.topLeft /= 0 || value.topRight /= 0 || value.bottomLeft /= 0 || value.bottomRight /= 0
