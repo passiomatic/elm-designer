@@ -39,6 +39,7 @@ var app = Elm.Main.init({
   flags: {
     width: w,
     height: h,
+    uploadEndpoint: "https://0x0.st", 
     seed1: seeds[0],
     seed2: seeds[1],
     seed3: seeds[2],
@@ -171,6 +172,26 @@ app.ports.setupAppMenu.subscribe(function (items) {
   ipc.send('setup-app-menu', items)
 });
 
+// app.ports.showNotification.subscribe(function (options) {
+//   const notification = new Notification(options.title, {
+//     body: options.message
+//   })  
+// });
+
+app.ports.showMessageBox.subscribe(function (options) {
+  if(!remote) {
+      console.error(options.message)
+      return
+  }
+
+  const focusedWindow = remote.getCurrentWindow()
+
+  if (!focusedWindow || focusedWindow === null) {
+    return
+  }
+
+  const buttonId = remote.dialog.showMessageBoxSync(focusedWindow, options)
+});
 
 // Forward all app menu commands to Elm
 
@@ -179,4 +200,3 @@ window.onload = () => {
     app.ports[`on${message}`].send(value)
   })
 }
-

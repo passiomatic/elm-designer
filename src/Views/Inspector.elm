@@ -2,10 +2,9 @@ module Views.Inspector exposing (view)
 
 {- Inspector allows to edit node style information. -}
 
-import Array
 import Bootstrap.Tab as Tab
 import Codecs
-import Css exposing (em, percent, px)
+import Css
 import Dict exposing (Dict)
 import Document exposing (..)
 import Element exposing (Color, Orientation(..))
@@ -15,10 +14,8 @@ import Html as H exposing (Attribute, Html)
 import Html.Attributes as A
 import Html.Entity as Entity
 import Html.Events as E
-import Html.Events.Extra.Wheel as Wheel
 import Html.Keyed as Keyed
-import Html5.DragDrop as DragDrop
-import Icons exposing (arrowLeftAnim)
+import Icons
 import Model exposing (..)
 import Palette
 import SelectList exposing (SelectList)
@@ -26,7 +23,6 @@ import Style.Background as Background exposing (Background)
 import Style.Font as Font exposing (..)
 import Style.Layout as Layout exposing (..)
 import Style.Theme as Theme
-import Svg.Attributes exposing (fontFamily)
 import Tree as T exposing (Tree)
 import Tree.Zipper as Zipper exposing (Zipper)
 import Views.Common exposing (fieldId, none)
@@ -69,6 +65,15 @@ resolveStyleViews model zipper =
                     , bordersView model node
                     , backgroundView model node
                     ]
+                ImageNode data -> 
+                    [ sectionView "Layout"
+                        [ positionView model node
+                        , lengthView model node
+                        , paddingView model node
+                        ]
+                    , bordersView model node
+                    , backgroundView model node
+                    ]
 
                 RowNode data ->
                     [ sectionView ""
@@ -102,16 +107,16 @@ resolveStyleViews model zipper =
                     ]
 
                 TextColumnNode ->
-                    [ sectionView "Text"
-                        [ fontView model zipper
-                        ]
-                    , sectionView "Layout"
+                    [ sectionView "Layout"
                         [ positionView model node
                         , lengthView model node
                         , spacingXView model node
                         , spacingYView model node
                         , paddingView model node
                         ]
+                    , sectionView "Text"
+                        [ fontView model zipper
+                        ]                        
                     , bordersView model node
                     , backgroundView model node
                     ]
@@ -121,15 +126,15 @@ resolveStyleViews model zipper =
                         [ labelView label model node
                         , spacingYView model node
                         ]
-                    , sectionView "Text"
-                        [ fontView model zipper
-                        , textAlignmentView model node.textAlignment
-                        ]
                     , sectionView "Layout"
                         [ positionView model node
                         , lengthView model node
                         , paddingView model node
                         ]
+                    , sectionView "Text"
+                        [ fontView model zipper
+                        , textAlignmentView model node.textAlignment
+                        ]                        
                     , bordersView model node
                     , backgroundView model node
                     ]
@@ -724,7 +729,7 @@ bordersView model { borderColor, borderWidth, borderCorner } =
                             , H.input
                                 [ A.id (fieldId BorderTopLeftCornerField)
                                 , A.type_ "number"
-                                , A.min "0"                                
+                                , A.min "0"
                                 , A.value topLeftCorner
                                 , A.class "form-control form-control-sm text-center"
                                 , E.onFocus (FieldEditingStarted BorderTopLeftCornerField topLeftCorner)
@@ -1116,77 +1121,302 @@ wrapRowOptionView wrapped =
 
 
 widthView : Model -> Node -> Html Msg
-widthView _ { width } =
-    H.div [ A.class "form-group row align-items-center mb-2" ]
-        [ H.label [ A.class "col-sm-3 col-form-label-sm m-0" ]
-            [ H.text "Width" ]
-        , H.div [ A.class "col-sm-9 btn-group", A.attribute "role" "group" ]
-            [ H.button
-                [ A.classList
-                    [ ( "btn btn-light btn-sm w-33", True )
-                    , ( "active", width == Auto )
+widthView model { width } =
+    let
+        min =
+            case model.inspector of
+                EditingField WidthMinField _ new ->
+                    new
+
+                _ ->
+                    Maybe.map String.fromInt width.min
+                        |> Maybe.withDefault ""
+
+        max =
+            case model.inspector of
+                EditingField WidthMaxField _ new ->
+                    new
+
+                _ ->
+                    Maybe.map String.fromInt width.max
+                        |> Maybe.withDefault ""
+    in
+    H.div []
+        [ H.div [ A.class "form-group row align-items-center" ]
+            [ H.label [ A.class "col-sm-3 col-form-label-sm m-0" ]
+                [ H.text "Width" ]
+            , H.div [ A.class "col-sm-9 btn-group", A.attribute "role" "group" ]
+                [ H.button
+                    [ A.classList
+                        [ ( "btn btn-light btn-sm", True )
+                        , ( "active", isContent width.strategy )
+                        ]
+                    , E.onClick (WidthChanged (Length Content width.min width.max))
+                    , A.type_ "button"
                     ]
-                , E.onClick (WidthChanged Auto)
-                , A.type_ "button"
+                    [ H.text "Fit" ]
+                , case width.strategy of
+                    Fill value ->
+                        H.button
+                            [ A.classList
+                                [ ( "btn btn-light btn-sm", True )
+                                , ( "active", True )
+                                ]
+                            , E.onClick (WidthChanged (Length (Fill value) width.min width.max))
+                            , A.type_ "button"
+                            ]
+                            [ H.text "Fill" ]
+
+                    _ ->
+                        H.button
+                            [ A.classList
+                                [ ( "btn btn-light btn-sm", True )
+                                ]
+                            , E.onClick (WidthChanged (Length (Fill 1) width.min width.max))
+                            , A.type_ "button"
+                            ]
+                            [ H.text "Fill" ]
+                , case width.strategy of
+                    Px value ->
+                        H.button
+                            [ A.classList
+                                [ ( "btn btn-light btn-sm", True )
+                                , ( "active", isPxOrUnspecified width.strategy )
+                                ]
+                            , E.onClick (WidthChanged (Length (Px value) width.min width.max))
+                            , A.type_ "button"
+                            ]
+                            [ H.text "Px" ]
+
+                    _ ->
+                        H.button
+                            [ A.classList
+                                [ ( "btn btn-light btn-sm", True )
+                                , ( "active", isPxOrUnspecified width.strategy )
+                                ]
+                            , E.onClick (WidthChanged (Length Unspecified width.min width.max))
+                            , A.type_ "button"
+                            ]
+                            [ H.text "Px" ]
                 ]
-                [ H.text "Auto" ]
-            , H.button
-                [ A.classList
-                    [ ( "btn btn-light btn-sm w-33", True )
-                    , ( "active", width == Fill )
-                    ]
-                , E.onClick (WidthChanged Fill)
-                , A.type_ "button"
-                ]
-                [ H.text "Fill" ]
-            , H.button
-                [ A.classList
-                    [ ( "btn btn-light btn-sm w-33", True )
-                    , ( "active", width == Shrink )
-                    ]
-                , E.onClick (WidthChanged Shrink)
-                , A.type_ "button"
-                ]
-                [ H.text "Shrink" ]
+            ]
+        , H.div [ A.class "form-group row align-items-center mb-2" ]
+            [ H.label [ A.class "col-sm-3 col-form-label-sm m-0" ]
+                [ H.text "" ]
+            , H.div [ A.class "col-sm-9 d-flex justify-content-end", A.style "gap" "0 .375rem" ]
+                (case width.strategy of
+                    Px value ->
+                        let
+                            value_ =
+                                case model.inspector of
+                                    EditingField WidthPxField _ new ->
+                                        new
+
+                                    _ ->
+                                        String.fromInt value
+                        in
+                        [ numericFieldView WidthPxField "Exact" value_
+                        , numericFieldView WidthMinField "Min." min
+                        , numericFieldView WidthMaxField "Max." max
+                        ]
+
+                    Unspecified ->
+                        let
+                            value_ =
+                                case model.inspector of
+                                    EditingField WidthPxField _ new ->
+                                        new
+
+                                    _ ->
+                                        ""
+                        in
+                        [ numericFieldView WidthPxField "Exact" value_
+                        , numericFieldView WidthMinField "Min." min
+                        , numericFieldView WidthMaxField "Max." max
+                        ]
+
+                    Content ->
+                        [ numericFieldView WidthMinField "Min." min
+                        , numericFieldView WidthMaxField "Max." max
+                        ]
+
+                    Fill value ->
+                        let
+                            value_ =
+                                case model.inspector of
+                                    EditingField WidthPortionField _ new ->
+                                        new
+
+                                    _ ->
+                                        String.fromInt value
+                        in
+                        [ numericFieldView WidthPortionField "Portion" value_
+                        , numericFieldView WidthMinField "Min." min
+                        , numericFieldView WidthMaxField "Max." max
+                        ]
+                )
             ]
         ]
 
 
 heightView : Model -> Node -> Html Msg
-heightView _ { height } =
-    H.div [ A.class "form-group row align-items-center mb-2" ]
-        [ H.label [ A.class "col-sm-3 col-form-label-sm m-0" ]
-            [ H.text "Height" ]
-        , H.div [ A.class "col-sm-9 btn-group", A.attribute "role" "group" ]
-            [ H.button
-                [ A.classList
-                    [ ( "btn btn-light btn-sm w-33", True )
-                    , ( "active", height == Auto )
+heightView model { height } =
+    let
+        min =
+            case model.inspector of
+                EditingField HeightMinField _ new ->
+                    new
+
+                _ ->
+                    Maybe.map String.fromInt height.min
+                        |> Maybe.withDefault ""
+
+        max =
+            case model.inspector of
+                EditingField HeightMaxField _ new ->
+                    new
+
+                _ ->
+                    Maybe.map String.fromInt height.max
+                        |> Maybe.withDefault ""
+    in
+    H.div []
+        [ H.div [ A.class "form-group row align-items-center" ]
+            [ H.label [ A.class "col-sm-3 col-form-label-sm m-0" ]
+                [ H.text "Height" ]
+            , H.div [ A.class "col-sm-9 btn-group", A.attribute "role" "group" ]
+                [ H.button
+                    [ A.classList
+                        [ ( "btn btn-light btn-sm", True )
+                        , ( "active", isContent height.strategy )
+                        ]
+                    , E.onClick (HeightChanged (Length Content height.min height.max))
+                    , A.type_ "button"
                     ]
-                , E.onClick (HeightChanged Auto)
-                , A.type_ "button"
+                    [ H.text "Fit" ]
+                , case height.strategy of
+                    Fill value ->
+                        H.button
+                            [ A.classList
+                                [ ( "btn btn-light btn-sm", True )
+                                , ( "active", True )
+                                ]
+                            , E.onClick (HeightChanged (Length (Fill value) height.min height.max))
+                            , A.type_ "button"
+                            ]
+                            [ H.text "Fill" ]
+
+                    _ ->
+                        H.button
+                            [ A.classList
+                                [ ( "btn btn-light btn-sm", True )
+                                ]
+                            , E.onClick (HeightChanged (Length (Fill 1) height.min height.max))
+                            , A.type_ "button"
+                            ]
+                            [ H.text "Fill" ]
+                , case height.strategy of
+                    Px value ->
+                        H.button
+                            [ A.classList
+                                [ ( "btn btn-light btn-sm", True )
+                                , ( "active", isPxOrUnspecified height.strategy )
+                                ]
+                            , E.onClick (HeightChanged (Length (Px value) height.min height.max))
+                            , A.type_ "button"
+                            ]
+                            [ H.text "Px" ]
+
+                    _ ->
+                        H.button
+                            [ A.classList
+                                [ ( "btn btn-light btn-sm", True )
+                                , ( "active", isPxOrUnspecified height.strategy )
+                                ]
+                            , E.onClick (HeightChanged (Length Unspecified height.min height.max))
+                            , A.type_ "button"
+                            ]
+                            [ H.text "Px" ]
                 ]
-                [ H.text "Auto" ]
-            , H.button
-                [ A.classList
-                    [ ( "btn btn-light btn-sm w-33", True )
-                    , ( "active", height == Fill )
-                    ]
-                , E.onClick (HeightChanged Fill)
-                , A.type_ "button"
-                ]
-                [ H.text "Fill" ]
-            , H.button
-                [ A.classList
-                    [ ( "btn btn-light btn-sm w-33", True )
-                    , ( "active", height == Shrink )
-                    ]
-                , E.onClick (HeightChanged Shrink)
-                , A.type_ "button"
-                ]
-                [ H.text "Shrink" ]
+            ]
+        , H.div [ A.class "form-group row align-items-center mb-2" ]
+            [ H.label [ A.class "col-sm-3 col-form-label-sm m-0" ]
+                [ H.text "" ]
+            , H.div [ A.class "col-sm-9 d-flex justify-content-end", A.style "gap" "0 .375rem" ]
+                (case height.strategy of
+                    Px value ->
+                        let
+                            value_ =
+                                case model.inspector of
+                                    EditingField HeightPxField _ new ->
+                                        new
+
+                                    _ ->
+                                        String.fromInt value
+                        in
+                        [ numericFieldView HeightPxField "Exact" value_
+                        , numericFieldView HeightMinField "Min." min
+                        , numericFieldView HeightMaxField "Max." max
+                        ]
+
+                    Unspecified ->
+                        let
+                            value_ =
+                                case model.inspector of
+                                    EditingField HeightPxField _ new ->
+                                        new
+
+                                    _ ->
+                                        ""
+                        in
+                        [ numericFieldView HeightPxField "Exact" value_
+                        , numericFieldView HeightMinField "Min." min
+                        , numericFieldView HeightMaxField "Max." max
+                        ]
+
+                    Content ->
+                        [ numericFieldView HeightMinField "Min." min
+                        , numericFieldView HeightMaxField "Max." max
+                        ]
+
+                    Fill value ->
+                        let
+                            value_ =
+                                case model.inspector of
+                                    EditingField HeightPortionField _ new ->
+                                        new
+
+                                    _ ->
+                                        String.fromInt value
+                        in
+                        [ numericFieldView HeightPortionField "Portion" value_
+                        , numericFieldView HeightMinField "Min." min
+                        , numericFieldView HeightMaxField "Max." max
+                        ]
+                )
             ]
         ]
+
+
+isContent value =
+    case value of
+        Content ->
+            True
+
+        _ ->
+            False
+
+
+isPxOrUnspecified value =
+    case value of
+        Px _ ->
+            True
+
+        Unspecified ->
+            True
+
+        _ ->
+            False
 
 
 positionView : Model -> Node -> Html Msg
@@ -1234,7 +1464,7 @@ positionView model ({ transformation } as node) =
                     , A.class "form-control form-control-sm text-center mx-auto w-33"
                     , A.type_ "number"
                     , A.value offsetY
-                    , A.title "Move bottom/top"
+                    , A.title "Move down/up"
                     , E.onFocus (FieldEditingStarted OffsetYField offsetY)
                     , E.onBlur FieldEditingFinished
                     , E.onInput FieldChanged
@@ -1398,22 +1628,21 @@ fontView model zipper =
         theme =
             Theme.defaultTheme
 
-        fontSize_ =
+        ( inherited, fontSize_ ) =
             case model.inspector of
                 EditingField FontSizeField _ new ->
-                    new
+                    ( False, new )
 
                 _ ->
                     case node.fontSize of
                         Local value ->
-                            String.fromInt value
+                            ( False, String.fromInt value )
 
                         Inherit ->
-                            "("
-                                ++ (Document.resolveInheritedFontSize theme.textSize zipper
-                                        |> String.fromInt
-                                   )
-                                ++ ")"
+                            ( True
+                            , Document.resolveInheritedFontSize theme.textSize zipper
+                                |> String.fromInt
+                            )
 
         resolvedFontFamily =
             Document.resolveInheritedFontFamily theme.textFontFamily zipper
@@ -1434,7 +1663,10 @@ fontView model zipper =
             [ H.div [ A.class "form-group mr-2 w-25" ]
                 [ H.input
                     [ A.id (fieldId FontSizeField)
-                    , A.class "form-control form-control-sm"
+                    , A.classList
+                        [ ( "form-control form-control-sm", True )
+                        , ( "text-muted font-italic", inherited )
+                        ]
                     , A.type_ "number"
                     , A.min (String.fromInt Font.minFontSizeAllowed)
                     , A.value fontSize_
@@ -1459,78 +1691,6 @@ fontView model zipper =
 
             _ ->
                 none
-        ]
-
-
-fontView_ : Zipper Node -> Model -> Node -> Html Msg
-fontView_ zipper model ({ fontSize, fontWeight, fontFamily, fontColor, textAlignment, spacing, type_ } as node) =
-    let
-        theme =
-            Theme.defaultTheme
-
-        fontSize_ =
-            case model.inspector of
-                EditingField FontSizeField _ new ->
-                    new
-
-                _ ->
-                    case fontSize of
-                        Local value ->
-                            String.fromInt value
-
-                        Inherit ->
-                            "("
-                                ++ (Document.resolveInheritedFontSize theme.textSize zipper
-                                        |> String.fromInt
-                                   )
-                                ++ ")"
-
-        resolvedFontFamily =
-            Document.resolveInheritedFontFamily theme.textFontFamily zipper
-
-        fontColor_ =
-            case fontColor of
-                Local value ->
-                    value
-
-                Inherit ->
-                    Document.resolveInheritedFontColor theme.textColor zipper
-    in
-    H.section [ A.class "section bp-3 border-bottom" ]
-        [ H.h2 [ A.class "section__title" ]
-            [ H.text "Text" ]
-        , H.div [ A.class "form-group" ]
-            [ fontFamilyView fontFamily resolvedFontFamily (canInherit node)
-            ]
-        , H.div [ A.class "d-flex" ]
-            [ H.div [ A.class "form-group mr-2 w-25" ]
-                [ H.input
-                    [ A.id (fieldId FontSizeField)
-                    , A.class "form-control form-control-sm"
-                    , A.type_ "text"
-                    , A.value fontSize_
-                    , E.onFocus (FieldEditingStarted FontSizeField fontSize_)
-                    , E.onBlur FieldEditingFinished
-                    , E.onInput FieldChanged
-                    ]
-                    []
-                    |> addDropdown FontSizeField model.dropDownState (fontSizeItems node)
-                ]
-            , H.div [ A.class "form-group w-75" ]
-                [ fontWeightView resolvedFontFamily fontWeight
-                ]
-            ]
-        , colorView model (Just fontColor_) FontColorField FontColorChanged
-        , case node.type_ of
-            ParagraphNode _ ->
-                liheHeightView model spacing
-
-            HeadingNode _ ->
-                liheHeightView model spacing
-
-            _ ->
-                none
-        , textAlignmentView model textAlignment
         ]
 
 
@@ -1608,9 +1768,6 @@ fontFamilyView fontFamily resolvedFontFamily inherit =
                 _ ->
                     A.selected False :: attrs
 
-        inheritedLabel name =
-            "(" ++ name ++ ")"
-
         inheritOption =
             case fontFamily of
                 Local _ ->
@@ -1624,13 +1781,19 @@ fontFamilyView fontFamily resolvedFontFamily inherit =
                         ( "", none )
 
                 Inherit ->
-                    ( inheritedLabel resolvedFontFamily.name
+                    -- Generate a unique enough key to avoid VDOM quirks
+                    ( "inherited-" ++ resolvedFontFamily.name
                     , H.option [ A.disabled True, A.selected True ]
-                        [ H.text (inheritedLabel resolvedFontFamily.name) ]
+                        [ H.text resolvedFontFamily.name ]
                     )
     in
     Keyed.node "select"
-        [ onFontFamilySelect FontFamilyChanged, A.class "custom-select custom-select-sm" ]
+        [ onFontFamilySelect FontFamilyChanged
+        , A.classList
+            [ ( "custom-select custom-select-sm", True )
+            , ( "text-muted font-italic", fontFamily == Inherit )
+            ]
+        ]
         (inheritOption
             :: (Fonts.families
                     |> List.map
@@ -1701,3 +1864,23 @@ canInherit node =
 emptyView : Model -> a -> Html Msg
 emptyView _ _ =
     H.div [] []
+
+
+numericFieldView field label value =
+    H.div [ A.class "form-group w-33 mb-0" ]
+        [ -- H.label [ A.class "col-form-label-sm mb-0"]
+          -- [ H.text label
+          -- ]
+          H.input
+            [ A.id (fieldId field)
+            , A.class "form-control form-control-sm text-center"
+            , A.type_ "number"
+            , A.min "0"
+            , A.value value
+            , A.placeholder label
+            , E.onFocus (FieldEditingStarted field value)
+            , E.onBlur FieldEditingFinished
+            , E.onInput FieldChanged
+            ]
+            []
+        ]

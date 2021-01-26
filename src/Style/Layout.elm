@@ -1,12 +1,19 @@
 module Style.Layout exposing
     ( Alignment(..)
-    , Length(..)
+    , Length
     , Padding
     , Spacing(..)
+    , Strategy(..)
     , Transformation
+    , fill
+    , fit
     , padding
     , paddingXY
+    , portion
+    , px
     , setLock
+    , setMaxLength
+    , setMinLength
     , setOffsetX
     , setOffsetY
     , setPadding
@@ -17,10 +24,11 @@ module Style.Layout exposing
     , setSpacing
     , setSpacingX
     , setSpacingY
+    , setStrategy
     , setTransformation
     , spacing
     , spacingXY
-    , transformation
+    , untransformed
     )
 
 {-| These types mirrors the Elm UI ones as much as possible.
@@ -36,21 +44,55 @@ module Style.Layout exposing
 
 {-| Element length, used as width or height.
 -}
-type Length
-    = Length Int
-    | Shrink
-    | Fill
-    | FillPortion Int
-    | Maximum Int
-    | Minimun Int
-    | Auto
+type alias Length =
+    { strategy : Strategy
+    , min : Maybe Int
+    , max : Maybe Int
+    }
 
 
-{-| Set lock flag for padding and borders.
+fit : Length
+fit =
+    Length Content Nothing Nothing
+
+
+fill : Length
+fill =
+    Length (Fill 1) Nothing Nothing
+
+
+setStrategy : Strategy -> Length -> Length
+setStrategy value record =
+    { record | strategy = value }
+
+
+setMinLength : Maybe Int -> Length -> Length
+setMinLength value record =
+    { record | min = value }
+
+
+setMaxLength : Maybe Int -> Length -> Length
+setMaxLength value record =
+    { record | max = value }
+
+
+{-| Element length strategy.
 -}
-setLock : Bool -> { a | locked : Bool } -> { a | locked : Bool }
-setLock value record =
-    { record | locked = value }
+type Strategy
+    = Px Int
+    | Content
+    | Fill Int
+    | Unspecified
+
+
+px : Int -> Strategy
+px value =
+    Px value
+
+
+portion : Int -> Strategy
+portion value =
+    Fill value
 
 
 
@@ -133,7 +175,7 @@ setPaddingLeft value padding_ =
 
 
 
--- ADJUSTMENT
+-- TRANSFORMATION
 
 
 type alias Transformation =
@@ -146,7 +188,7 @@ type alias Transformation =
 
 {-| Create an "untransformed" style.
 -}
-transformation =
+untransformed =
     Transformation 0 0 0 1.0
 
 
@@ -207,3 +249,14 @@ setSpacingY value spacing_ =
 
         SpaceEvenly ->
             spacing value
+
+
+
+-- MISC
+
+
+{-| Set lock flag for padding and borders.
+-}
+setLock : Bool -> { a | locked : Bool } -> { a | locked : Bool }
+setLock value record =
+    { record | locked = value }

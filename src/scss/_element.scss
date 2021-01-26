@@ -3,6 +3,7 @@
 // ----------------------
 
 .element {
+  transition: background-color .2s ease-out;
 }
 
 // ----------------------
@@ -14,6 +15,42 @@
   //box-shadow: 0 0 0 1px $primary;
 }
 
+// ----------------------
+// Drag & drop
+
 .page--design .element--dropped {
   background: rgba($primary, 0.1);
+}
+
+.page--design .dragging--file:after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
+  z-index: 1;
+  background: rgba($secondary, 0.2);
+  pointer-events: none;
+}
+
+// ----------------------
+// Allow selection of left/right aligned elements within their container
+
+.element.s.pg > .element.s.al {
+  z-index: 2;
+}
+
+.element.s.pg > .element.s.ar {
+  z-index: 2;
+}
+
+// Make the inline text editor to honor node text aligment
+.element textarea  {
+  text-align: inherit;
+}
+
+// Disallow image dragging while in design mode
+.page--design .element>img { 
+    -webkit-user-drag: none;
 }

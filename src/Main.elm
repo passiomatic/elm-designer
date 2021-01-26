@@ -9,19 +9,22 @@ import CodeGen
 import Codecs
 import Dict exposing (Dict)
 import Document exposing (DragId(..), DropId(..), Node, Viewport(..))
+import File exposing (File)
 import Fonts
 import Html.Events as E
 import Html.Events.Extra.Mouse
 import Html5.DragDrop as DragDrop
+import Http exposing (Progress(..))
 import Icons
 import Json.Decode as Decode exposing (Decoder, Value)
 import Library
+import Maybe
 import Model exposing (..)
 import Ports
 import Random exposing (Seed)
 import SelectList exposing (SelectList)
 import Set exposing (Set)
-import Style.Border as Border exposing (..)
+import Style.Border as Border exposing (BorderCorner, BorderStyle(..), BorderWidth)
 import Style.Font as Font exposing (..)
 import Style.Layout as Layout exposing (..)
 import Style.Theme as Theme exposing (Theme)
@@ -32,7 +35,8 @@ import Tree as T exposing (Tree)
 import Tree.Zipper as Zipper exposing (Zipper)
 import UUID exposing (Seeds)
 import UndoList
-import Views.Common exposing (fieldId)
+import Uploader
+import Views.Common as Common exposing (fieldId)
 import Views.Editor as Editor
 
 
@@ -40,16 +44,8 @@ saveInterval =
     3
 
 
-minWorkspaceScale =
-    0.25
-
-
-maxWorkspaceScale =
-    2
-
-
-wheelSensibility =
-    0.005
+appName =
+    "Elm Designer"
 
 
 init : Flags -> ( Model, Cmd Msg )
@@ -74,6 +70,100 @@ update msg model =
             model.pages
     in
     case msg of
+        -- ###########
+        -- Image drag & drop from local filesystem
+        -- ###########
+        FileDragging nodeId ->
+            ( { model
+                | fileDrop = DraggingOn nodeId
+              }
+            , Cmd.none
+            )
+
+        FileDragCanceled ->
+            ( { model
+                | fileDrop = Empty
+              }
+            , Cmd.none
+            )
+
+        FileDropped nodeId file files ->
+            let
+                ( newUploadState, cmd ) =
+                    (file :: files)
+                        |> acceptFiles
+                        |> Uploader.uploadNextFile model.uploadEndpoint
+            in
+            ( { model
+                | uploadState = newUploadState
+                , fileDrop = DroppedInto nodeId
+              }
+            , cmd
+            )
+
+        FileUploading current others progress ->
+            case progress of
+                Sending sent ->
+                    ( { model
+                        | uploadState = Uploading current others (Http.fractionSent sent)
+                      }
+                    , Cmd.none
+                    )
+
+                _ ->
+                    ( model, Cmd.none )
+
+        FileUploaded result ->
+            case result of
+                Ok url ->
+                    let
+                        ( newSeeds, newNode ) =
+                            Document.imageNode (String.trim url) model.seeds
+
+                        zipper =
+                            selectedPage model.pages.present
+
+                        newPage =
+                            case model.fileDrop of
+                                DroppedInto parentId ->
+                                    Document.selectNodeWith parentId zipper
+                                        |> Maybe.map (Document.appendNode newNode)
+                                        |> Maybe.withDefault zipper
+
+                                _ ->
+                                    zipper
+
+                        ( newUploadState, cmd ) =
+                            case model.uploadState of
+                                Uploading _ others _ ->
+                                    Uploader.uploadNextFile model.uploadEndpoint others
+
+                                _ ->
+                                    ( Ready, Cmd.none )
+                    in
+                    ( { model
+                        | uploadState = newUploadState
+                        , fileDrop =
+                            if newUploadState == Ready then
+                                Empty
+
+                            else
+                                model.fileDrop
+                        , pages = { pages | present = SelectList.replaceSelected newPage model.pages.present }
+                        , seeds = newSeeds
+                        , saveState = Changed model.currentTime
+                      }
+                    , cmd
+                    )
+
+                Err _ ->
+                    ( model
+                    , showErrorBox "Could not upload image"
+                    )
+
+        -- ###########
+        -- Saving
+        -- ###########
         Ticked now ->
             let
                 ( newSaveState, cmd ) =
@@ -210,10 +300,8 @@ update msg model =
                     -- let
                     --     _ = Debug.log "Error loading document:" (Decode.errorToString reason)
                     -- in
-                    ( { model
-                        | alerts = [ "Error loading document (perhaps schema has changed?)" ]
-                      }
-                    , Cmd.none
+                    ( model
+                    , showErrorBox "Error loading document (perhaps schema has changed?)"
                     )
 
         CollapseNodeClicked collapse id ->
@@ -330,6 +418,80 @@ update msg model =
                     applyChangeAndFinish model Document.applyLabel newValue
 
                 -- ###########
+                -- Width
+                -- ###########
+                EditingField WidthPxField oldValue newValue ->
+                    applyChangeAndFinish model
+                        (Document.applyWidthWith
+                            (\value length ->
+                                case value of
+                                    Just value_ ->
+                                        Layout.setStrategy (Layout.px value_) length
+
+                                    Nothing ->
+                                        Layout.setStrategy Unspecified length
+                            )
+                        )
+                        newValue
+
+                EditingField WidthPortionField oldValue newValue ->
+                    applyChangeAndFinish model
+                        (Document.applyWidthWith
+                            (\value length ->
+                                case value of
+                                    Just value_ ->
+                                        Layout.setStrategy (Layout.portion value_) length
+
+                                    Nothing ->
+                                        Layout.setStrategy (Layout.portion 1) length
+                            )
+                        )
+                        newValue
+
+                EditingField WidthMinField oldValue newValue ->
+                    applyChangeAndFinish model (Document.applyWidthWith Layout.setMinLength) newValue
+
+                EditingField WidthMaxField oldValue newValue ->
+                    applyChangeAndFinish model (Document.applyWidthWith Layout.setMaxLength) newValue
+
+                -- ###########
+                -- Height
+                -- ###########
+                EditingField HeightPxField oldValue newValue ->
+                    applyChangeAndFinish model
+                        (Document.applyHeightWith
+                            (\value length ->
+                                case value of
+                                    Just value_ ->
+                                        Layout.setStrategy (Layout.px value_) length
+
+                                    Nothing ->
+                                        Layout.setStrategy Unspecified length
+                            )
+                        )
+                        newValue
+
+                EditingField HeightPortionField oldValue newValue ->
+                    applyChangeAndFinish model
+                        (Document.applyHeightWith
+                            (\value length ->
+                                case value of
+                                    Just value_ ->
+                                        Layout.setStrategy (Layout.portion value_) length
+
+                                    Nothing ->
+                                        Layout.setStrategy (Layout.portion 1) length
+                            )
+                        )
+                        newValue
+
+                EditingField HeightMinField oldValue newValue ->
+                    applyChangeAndFinish model (Document.applyHeightWith Layout.setMinLength) newValue
+
+                EditingField HeightMaxField oldValue newValue ->
+                    applyChangeAndFinish model (Document.applyHeightWith Layout.setMaxLength) newValue
+
+                -- ###########
                 -- Transformation
                 -- ###########
                 EditingField OffsetXField oldValue newValue ->
@@ -351,6 +513,18 @@ update msg model =
                     applyChangeAndFinish model Document.applyFontColor newValue
 
                 -- ###########
+                -- Letter Spacing
+                -- ###########
+                EditingField LetterSpacingField oldValue newValue ->
+                    applyChangeAndFinish model Document.applyLetterSpacing newValue
+
+                -- ###########
+                -- Word Spacing
+                -- ###########
+                EditingField WordSpacingField oldValue newValue ->
+                    applyChangeAndFinish model Document.applyWordSpacing newValue
+
+                -- ###########
                 -- Background
                 -- ###########
                 EditingField BackgroundColorField oldValue newValue ->
@@ -366,28 +540,28 @@ update msg model =
                     applyChangeAndFinish model Document.applyBorderColor newValue
 
                 EditingField BorderTopLeftCornerField oldValue newValue ->
-                    applyChangeAndFinish model (Document.applyBorderCorner Border.setBorderTopLeftCorner) newValue
+                    applyChangeAndFinish model (Document.applyBorderCorner Border.setTopLeftCorner) newValue
 
                 EditingField BorderTopRightCornerField oldValue newValue ->
-                    applyChangeAndFinish model (Document.applyBorderCorner Border.setBorderTopRightCorner) newValue
+                    applyChangeAndFinish model (Document.applyBorderCorner Border.setTopRightCorner) newValue
 
                 EditingField BorderBottomRightCornerField oldValue newValue ->
-                    applyChangeAndFinish model (Document.applyBorderCorner Border.setBorderBottomRightCorner) newValue
+                    applyChangeAndFinish model (Document.applyBorderCorner Border.setBottomRightCorner) newValue
 
                 EditingField BorderBottomLeftCornerField oldValue newValue ->
-                    applyChangeAndFinish model (Document.applyBorderCorner Border.setBorderBottomLeftCorner) newValue
+                    applyChangeAndFinish model (Document.applyBorderCorner Border.setBottomLeftCorner) newValue
 
                 EditingField BorderTopWidthField oldValue newValue ->
-                    applyChangeAndFinish model (Document.applyBorderWidth Border.setBorderTopWidth) newValue
+                    applyChangeAndFinish model (Document.applyBorderWidth Border.setTopWidth) newValue
 
                 EditingField BorderRightWidthField oldValue newValue ->
-                    applyChangeAndFinish model (Document.applyBorderWidth Border.setBorderRightWidth) newValue
+                    applyChangeAndFinish model (Document.applyBorderWidth Border.setRightWidth) newValue
 
                 EditingField BorderBottomWidthField oldValue newValue ->
-                    applyChangeAndFinish model (Document.applyBorderWidth Border.setBorderBottomWidth) newValue
+                    applyChangeAndFinish model (Document.applyBorderWidth Border.setBottomWidth) newValue
 
                 EditingField BorderLeftWidthField oldValue newValue ->
-                    applyChangeAndFinish model (Document.applyBorderWidth Border.setBorderLeftWidth) newValue
+                    applyChangeAndFinish model (Document.applyBorderWidth Border.setLeftWidth) newValue
 
                 -- ###########
                 -- Padding
@@ -435,7 +609,7 @@ update msg model =
             applyChangeAndFinish model Document.applyBackgroundColor value
 
         BackgroundSizingChanged value ->
-            applyChangeAndFinish model Document.applyBackgroud value
+            applyChangeAndFinish model Document.applyBackground value
 
         BorderColorChanged value ->
             applyChangeAndFinish model Document.applyBorderColor value
@@ -728,24 +902,30 @@ main =
 
 
 subscriptions : Model -> Sub Msg
-subscriptions ({ mode } as model) =
-    Sub.batch
-        ([ BE.onKeyDown (Decode.map (KeyChanged True) keysDecoder)
-         , BE.onKeyUp (Decode.map (KeyChanged False) keysDecoder)
-         , BE.onMouseDown (Decode.map (MouseButtonChanged True) mouseDecoder)
-         , BE.onMouseUp (Decode.map (MouseButtonChanged False) mouseDecoder)
-         , Ports.onDocumentLoad DocumentLoaded
-         , Ports.onPageAdd PageAddClicked
-         , Ports.onPageDelete PageDeleteClicked
-         , Ports.onInsertNode InsertNodeClicked
-         , Ports.onUnDo UnDo
-         , Ports.onReDo ReDo
-         , Time.every 1000 Ticked
+subscriptions model =
+    let
+        uploadSub =
+            case model.uploadState of
+                Uploading current others _ ->
+                    Uploader.track current others
 
-         --, E.onResize Resized
-         ]
-         --|> trackMouseMove (mode == PanMode)
-        )
+                _ ->
+                    Sub.none
+    in
+    Sub.batch
+        [ BE.onKeyDown (Decode.map (KeyChanged True) keysDecoder)
+        , BE.onKeyUp (Decode.map (KeyChanged False) keysDecoder)
+        , BE.onMouseDown (Decode.map (MouseButtonChanged True) mouseDecoder)
+        , BE.onMouseUp (Decode.map (MouseButtonChanged False) mouseDecoder)
+        , Ports.onDocumentLoad DocumentLoaded
+        , Ports.onPageAdd PageAddClicked
+        , Ports.onPageDelete PageDeleteClicked
+        , Ports.onInsertNode InsertNodeClicked
+        , Ports.onUnDo UnDo
+        , Ports.onReDo ReDo
+        , Time.every 1000 Ticked
+        , uploadSub
+        ]
 
 
 trackMouseMove shouldTrack subs =
@@ -781,3 +961,38 @@ serializeDocument document =
     document
         |> Codecs.toString
         |> Ports.saveDocument
+
+
+acceptedTypes : Set String
+acceptedTypes =
+    Set.fromList [ "image/jpeg", "image/png", "image/gif", "image/svg+xml" ]
+
+
+acceptFiles files =
+    List.filter
+        (\f ->
+            Set.member (File.mime f) acceptedTypes
+        )
+        files
+
+
+
+-- NOTIFICATION
+
+
+showErrorBox message =
+    Ports.showMessageBox
+        { type_ = "error"
+        , title = appName
+        , message = message
+        , buttons = [ "OK" ]
+        }
+
+
+showMessageBox message =
+    Ports.showMessageBox
+        { type_ = "info"
+        , title = appName
+        , message = message
+        , buttons = [ "OK" ]
+        }

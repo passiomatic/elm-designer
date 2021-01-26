@@ -133,7 +133,7 @@ heading1 theme =
             { baseTemplate
                 | type_ = HeadingNode { level = 1, text = "" }
                 , name = "Heading 1"
-                , width = Fill
+                , width = Layout.fill
                 , spacing = theme.headingSpacing
                 , fontWeight = theme.headingFontWeight
                 , fontSize = Local theme.heading1Size
@@ -153,7 +153,7 @@ heading2 theme =
             { baseTemplate
                 | type_ = HeadingNode { level = 2, text = "" }
                 , name = "Heading 2"
-                , width = Fill
+                , width = Layout.fill
                 , spacing = theme.headingSpacing
                 , fontWeight = theme.headingFontWeight
                 , fontSize = Local theme.heading2Size
@@ -173,7 +173,7 @@ heading3 theme =
             { baseTemplate
                 | type_ = HeadingNode { level = 3, text = "" }
                 , name = "Heading 3"
-                , width = Fill
+                , width = Layout.fill
                 , spacing = theme.headingSpacing
                 , fontWeight = theme.headingFontWeight
                 , fontSize = Local theme.heading3Size
@@ -192,7 +192,7 @@ paragraph theme =
         T.singleton
             { baseTemplate
                 | name = "Paragraph"
-                , width = Fill
+                , width = Layout.fill
                 , spacing = theme.paragraphSpacing
                 , fontWeight = theme.textFontWeight
                 , type_ = ParagraphNode { text = "" }
@@ -231,7 +231,7 @@ wrappedRow theme =
             { baseTemplate
                 | name = "Row"
                 , type_ = RowNode { wrapped = True }
-                , width = Fill
+                , width = Layout.fill
             }
     }
 
@@ -247,7 +247,7 @@ column theme =
             { baseTemplate
                 | name = "Column"
                 , type_ = ColumnNode
-                , width = Fill
+                , width = Layout.fill
             }
     }
 
@@ -263,7 +263,7 @@ textColumn theme =
             { baseTemplate
                 | name = "Text Column"
                 , type_ = TextColumnNode
-                , width = Fill
+                , width = Layout.fill
             }
     }
 
@@ -289,7 +289,7 @@ textField theme =
                         { text = "Label"
                         , position = LabelAbove
                         }
-                , width = Fill
+                , width = Layout.fill
                 , borderWidth = theme.borderWidth
                 , borderColor = theme.borderColor
                 , borderCorner = theme.borderCorner
@@ -314,7 +314,7 @@ textFieldMultiline theme =
                         { text = "Label"
                         , position = LabelAbove
                         }
-                , width = Fill
+                , width = Layout.fill
                 , borderWidth = theme.borderWidth
                 , borderColor = theme.borderColor
                 , borderCorner = theme.borderCorner

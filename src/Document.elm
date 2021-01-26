@@ -12,11 +12,11 @@ module Document exposing
     , RowData
     , Template
     , TextData
-    , Viewport(..)
+    , Viewport(..), imageNode
     , appendNode
     , applyAlignX
     , applyAlignY
-    , applyBackgroud
+    , applyBackground
     , applyBackgroundColor
     , applyBackgroundUrl
     , applyBorderColor
@@ -28,7 +28,9 @@ module Document exposing
     , applyFontSize
     , applyFontWeight
     , applyHeight
+    , applyHeightWith
     , applyLabel
+    , applyLetterSpacing
     , applyOffset
     , applyPadding
     , applyPaddingLock
@@ -36,6 +38,7 @@ module Document exposing
     , applyText
     , applyTextAlign
     , applyWidth
+    , applyWidthWith
     , applyWrapRowItems
     , baseTemplate
     , canDropInto
@@ -60,7 +63,7 @@ module Document exposing
     , schemaVersion
     , selectNodeWith
     , selectParentOf
-    , viewports
+    , viewports, applyWordSpacing
     )
 
 import Css
@@ -74,7 +77,7 @@ import Palette exposing (orange)
 import SelectList exposing (SelectList)
 import Set exposing (Set)
 import Style.Background as Background exposing (Background)
-import Style.Border as Border exposing (..)
+import Style.Border as Border exposing (BorderCorner, BorderStyle(..), BorderWidth)
 import Style.Font as Font exposing (..)
 import Style.Layout as Layout exposing (..)
 import Style.Theme as Theme exposing (Theme)
@@ -85,7 +88,7 @@ import UUID exposing (Seeds, UUID)
 
 
 schemaVersion =
-    1
+    2
 
 
 {-| A serialized document.
@@ -120,10 +123,9 @@ type alias Node =
     , fontColor : Local Color
     , fontSize : Local Int
     , fontWeight : FontWeight
+    , letterSpacing : Float
+    , wordSpacing : Float
     , textAlignment : TextAlignment
-
-    -- , letterSpacing : Float
-    -- , wordSpacing : Float
     , borderColor : Color
     , borderStyle : BorderStyle
     , borderWidth : BorderWidth
@@ -149,6 +151,7 @@ type alias Template =
     , fontWeight : FontWeight
     , textAlignment : TextAlignment
 
+    -- TODO Needed?
     -- , letterSpacing : Float
     -- , wordSpacing : Float
     , borderColor : Color
@@ -179,9 +182,9 @@ type DropId
 baseTemplate : Template
 baseTemplate =
     { name = ""
-    , width = Auto
-    , height = Auto
-    , transformation = Layout.transformation
+    , width = Layout.fit
+    , height = Layout.fit
+    , transformation = Layout.untransformed
     , padding = Layout.padding 0
     , spacing = Layout.spacing 0
     , fontFamily = Inherit
@@ -191,8 +194,8 @@ baseTemplate =
     , textAlignment = TextLeft
     , borderColor = Palette.darkCharcoal
     , borderStyle = Solid
-    , borderWidth = borderWidth 0
-    , borderCorner = borderCorner 0
+    , borderWidth = Border.width 0
+    , borderCorner = Border.corner 0
     , backgroundColor = Nothing
     , background = Background.None
     , alignmentX = None
@@ -208,7 +211,7 @@ type NodeType
     | RowNode RowData
     | ColumnNode
     | TextColumnNode
-      --| ImageNode ImageData
+    | ImageNode ImageData
     | ButtonNode TextData
     | CheckboxNode LabelData
     | TextFieldNode LabelData
@@ -235,9 +238,12 @@ nodeType value =
 
         RowNode _ ->
             "Row"
-
+            
         TextColumnNode ->
             "Text Column"
+
+        ImageNode _ ->
+            "Image"
 
         ButtonNode _ ->
             "Button"
@@ -336,6 +342,8 @@ fromTemplate template seeds =
                     , fontColor = template_.fontColor
                     , fontSize = template_.fontSize
                     , fontWeight = template_.fontWeight
+                    , letterSpacing = 0
+                    , wordSpacing = 0
                     , textAlignment = template_.textAlignment
                     , borderColor = template_.borderColor
                     , borderStyle = template_.borderStyle
@@ -363,8 +371,8 @@ pageNode theme seeds children index =
         page =
             { id = uuid
             , name = "Page " ++ String.fromInt index
-            , width = Fill
-            , height = Fill
+            , width = Layout.fill
+            , height = Layout.fill
             , transformation = baseTemplate.transformation
             , padding = baseTemplate.padding
             , spacing = baseTemplate.spacing
@@ -372,6 +380,8 @@ pageNode theme seeds children index =
             , fontColor = Local theme.textColor
             , fontSize = Local theme.textSize
             , fontWeight = baseTemplate.fontWeight
+            , letterSpacing = 0
+            , wordSpacing = 0
             , textAlignment = baseTemplate.textAlignment
             , borderColor = baseTemplate.borderColor
             , borderStyle = baseTemplate.borderStyle
@@ -395,6 +405,22 @@ pageNode theme seeds children index =
 emptyPageNode : Seeds -> Int -> ( Seeds, Tree Node )
 emptyPageNode seeds index =
     pageNode Theme.defaultTheme seeds [] index
+
+
+{-| Images require the user to drop them _into_ the app workspace so we bypass the pick-from-library process here.
+-}
+imageNode : String -> Seeds -> ( Seeds, Tree Node )
+imageNode url seeds =
+    let
+        template =
+            T.singleton
+                { baseTemplate
+                    | type_ = ImageNode { src = url, description = "" }
+                    --, width = Fill
+                    , name = "Image"
+                }
+    in
+    fromTemplate template seeds
 
 
 
@@ -578,6 +604,9 @@ canDropSibling sibling { type_ } =
             True
 
         ( _, TextColumnNode ) ->
+            True
+
+        ( _, ImageNode _ ) ->
             True
 
         ( _, HeadingNode _ ) ->
@@ -792,8 +821,8 @@ applySpacing setter value zipper =
     let
         value_ =
             String.toInt value
+                |> Maybe.map (clamp 0 999)
                 |> Maybe.withDefault 0
-                |> clamp 0 999
     in
     Zipper.mapLabel (\node -> Layout.setSpacing (setter value_ node.spacing) node) zipper
 
@@ -803,8 +832,8 @@ applyPadding setter value zipper =
     let
         value_ =
             String.toInt value
+                |> Maybe.map (clamp 0 999)
                 |> Maybe.withDefault 0
-                |> clamp 0 999
     in
     Zipper.mapLabel (\node -> Layout.setPadding (setter value_ node.padding) node) zipper
 
@@ -820,20 +849,10 @@ applyBorderLock value zipper =
     Zipper.mapLabel
         (\node ->
             node
-                |> Border.setBorderWidth (setLock value node.borderWidth)
-                |> Border.setBorderCorner (setLock value node.borderCorner)
+                |> Border.setWidth (setLock value node.borderWidth)
+                |> Border.setCorner (setLock value node.borderCorner)
         )
         zipper
-
-
-applyWidth : Length -> Zipper Node -> Zipper Node
-applyWidth value zipper =
-    Zipper.mapLabel (\node -> { node | width = value }) zipper
-
-
-applyHeight : Length -> Zipper Node -> Zipper Node
-applyHeight value zipper =
-    Zipper.mapLabel (\node -> { node | height = value }) zipper
 
 
 applyAlignX : Alignment -> Zipper Node -> Zipper Node
@@ -857,6 +876,36 @@ applyOffset setter value zipper =
     Zipper.mapLabel (\node -> setTransformation (setter value_ node.transformation) node) zipper
 
 
+applyWidth : Length -> Zipper Node -> Zipper Node
+applyWidth value zipper =
+    Zipper.mapLabel (\node -> { node | width = value }) zipper
+
+
+applyWidthWith : (Maybe Int -> Length -> Length) -> String -> Zipper Node -> Zipper Node
+applyWidthWith setter value zipper =
+    let
+        value_ =
+            String.toInt value
+                |> Maybe.map (clamp 0 9999)
+    in
+    Zipper.mapLabel (\node -> { node | width = setter value_ node.width }) zipper
+
+
+applyHeight : Length -> Zipper Node -> Zipper Node
+applyHeight value zipper =
+    Zipper.mapLabel (\node -> { node | height = value }) zipper
+
+
+applyHeightWith : (Maybe Int -> Length -> Length) -> String -> Zipper Node -> Zipper Node
+applyHeightWith setter value zipper =
+    let
+        value_ =
+            String.toInt value
+                |> Maybe.map (clamp 0 9999)
+    in
+    Zipper.mapLabel (\node -> { node | height = setter value_ node.height }) zipper
+
+
 applyFontSize : String -> Zipper Node -> Zipper Node
 applyFontSize value zipper =
     let
@@ -874,6 +923,28 @@ applyFontSize value zipper =
 applyFontFamily : Local FontFamily -> Zipper Node -> Zipper Node
 applyFontFamily value zipper =
     Zipper.mapLabel (Font.setFontFamily value) zipper
+
+
+applyLetterSpacing : String -> Zipper Node -> Zipper Node
+applyLetterSpacing value zipper =
+    let
+        value_ =
+            String.toFloat value
+                |> Maybe.map (clamp -999 999)
+                |> Maybe.withDefault 0
+    in
+    Zipper.mapLabel (Font.setLetterSpacing value_) zipper
+
+
+applyWordSpacing : String -> Zipper Node -> Zipper Node
+applyWordSpacing value zipper =
+    let
+        value_ =
+            String.toFloat value
+                |> Maybe.map (clamp -999 999)
+                |> Maybe.withDefault 0
+    in
+    Zipper.mapLabel (Font.setWordSpacing value_) zipper
 
 
 applyBackgroundColor : String -> Zipper Node -> Zipper Node
@@ -902,8 +973,8 @@ applyBackgroundUrl value zipper =
     Zipper.mapLabel (Background.setBackground value_) zipper
 
 
-applyBackgroud : Background -> Zipper Node -> Zipper Node
-applyBackgroud value zipper =
+applyBackground : Background -> Zipper Node -> Zipper Node
+applyBackground value zipper =
     Zipper.mapLabel (Background.setBackground value) zipper
 
 
@@ -913,7 +984,7 @@ applyBorderColor value zipper =
         value_ =
             Css.stringToColor value
     in
-    Zipper.mapLabel (Border.setBorderColor value_) zipper
+    Zipper.mapLabel (Border.setColor value_) zipper
 
 
 applyBorderWidth : (Int -> BorderWidth -> BorderWidth) -> String -> Zipper Node -> Zipper Node
@@ -924,7 +995,7 @@ applyBorderWidth setter value zipper =
                 |> Maybe.map (clamp 0 999)
                 |> Maybe.withDefault 0
     in
-    Zipper.mapLabel (\node -> setBorderWidth (setter value_ node.borderWidth) node) zipper
+    Zipper.mapLabel (\node -> Border.setWidth (setter value_ node.borderWidth) node) zipper
 
 
 applyBorderCorner : (Int -> BorderCorner -> BorderCorner) -> String -> Zipper Node -> Zipper Node
@@ -935,7 +1006,7 @@ applyBorderCorner setter value zipper =
                 |> Maybe.map (clamp 0 999)
                 |> Maybe.withDefault 0
     in
-    Zipper.mapLabel (\node -> Border.setBorderCorner (setter value_ node.borderCorner) node) zipper
+    Zipper.mapLabel (\node -> Border.setCorner (setter value_ node.borderCorner) node) zipper
 
 
 applyFontColor : String -> Zipper Node -> Zipper Node

@@ -11,6 +11,7 @@ import Element.Events as Events
 import Element.Font as Font
 import Element.Input as Input exposing (Option)
 import Element.Region as Region
+import File exposing (File)
 import Html as H exposing (Html)
 import Html.Attributes as A
 import Html.Events
@@ -21,11 +22,12 @@ import Model exposing (..)
 import Palette
 import SelectList exposing (SelectList)
 import Style.Background as Background exposing (Background)
-import Style.Border as Border exposing (..)
+import Style.Border exposing (BorderCorner, BorderStyle(..), BorderWidth)
 import Style.Font as Font exposing (..)
 import Style.Layout as Layout exposing (..)
 import Tree as T exposing (Tree)
 import Tree.Zipper as Zipper exposing (Zipper)
+import Views.Common as Common
 
 
 type RenderedNode
@@ -42,7 +44,7 @@ render ctx tree =
                     el
 
                 RenderedOption _ ->
-                    -- We don't hae any radio option at top level
+                    -- We don't have any radio option at top level
                     E.none
     in
     T.restructure identity (renderNode ctx) tree
@@ -83,8 +85,9 @@ renderNode ctx node children =
         TextNode data ->
             renderText ctx node selected data
 
-        -- ImageNode image ->
-        --     renderImage ctx node image
+        ImageNode data ->
+            renderImage ctx node selected data
+
         HeadingNode data ->
             renderHeading ctx node selected data
 
@@ -135,6 +138,8 @@ renderTextColumn ctx node selected children =
             , elementId node
             , onClick (NodeSelected node.id)
             ]
+                |> makeDroppableIf (Common.canDropInto node ctx.dragDrop) (AppendTo node.id)
+                |> makeFileDroppableIf (not <| Common.isDragging ctx.dragDrop) node.id
                 |> applyAllStyles node
     in
     E.textColumn attrs newChildren
@@ -156,6 +161,8 @@ renderColumn ctx node selected children =
             , elementId node
             , onClick (NodeSelected node.id)
             ]
+                |> makeDroppableIf (Common.canDropInto node ctx.dragDrop) (AppendTo node.id)
+                |> makeFileDroppableIf (not <| Common.isDragging ctx.dragDrop) node.id
                 |> applyAllStyles node
     in
     E.column attrs newChildren
@@ -177,6 +184,8 @@ renderRow ctx node selected { wrapped } children =
             , elementId node
             , onClick (NodeSelected node.id)
             ]
+                |> makeDroppableIf (Common.canDropInto node ctx.dragDrop) (AppendTo node.id)
+                |> makeFileDroppableIf (not <| Common.isDragging ctx.dragDrop) node.id
                 |> applyAllStyles node
     in
     (if wrapped then
@@ -196,38 +205,55 @@ renderPage ctx node selected children =
         attrs =
             [ elementClasses ctx node selected
             , elementId node
-            , Events.onClick (NodeSelected node.id)
+            , onClick (NodeSelected node.id)
             ]
+                |> makeDroppableIf (Common.canDropInto node ctx.dragDrop) (AppendTo node.id)
+                |> makeFileDroppableIf (not <| Common.isDragging ctx.dragDrop) node.id
                 |> applyAllStyles node
     in
     RenderedElement
         (if List.isEmpty children then
-            renderEmptyPage ctx
+            renderEmptyPage attrs
 
          else
             E.column attrs (elements children)
         )
 
 
-renderEmptyPage ctx =
-    if isDragging ctx.dragDrop then
-        E.column
-            [ E.height E.fill
-            , E.width E.fill
+renderEmptyPage attrs =
+    E.column attrs
+        [ E.el
+            [ Font.size 18
+            , Font.color Palette.lightCharcoal
+            , Font.bold
+            , E.centerX
+            , E.centerY
+            , E.moveUp 8
             ]
-            [ E.row
-                [ E.centerX
-                , E.centerY
-                , Font.color Palette.lightCharcoal
-                , Font.size 21
-                ]
-                [ E.html Icons.arrowLeftAnim
-                , E.text "Drop elements on the left"
-                ]
+            (E.text "Page is empty")
+        , E.el
+            [ Font.size 14
+            , Font.color Palette.lightCharcoal
+            , E.centerX
+            , E.centerY
             ]
+            (E.text "Drop library elements here.")
+        ]
 
-    else
-        E.none
+
+renderImage : Context -> Node -> Bool -> ImageData -> RenderedNode
+renderImage ctx node selected image =
+    let
+        attrs =
+            [ elementClasses ctx node selected
+            , elementId node
+            , onClick (NodeSelected node.id)
+            ]
+                |> clipIf (Style.Border.isRounded node.borderCorner)
+                |> applyAllStyles node
+    in
+    E.image attrs image
+        |> RenderedElement
 
 
 renderParagraph : Context -> Node -> Bool -> TextData -> RenderedNode
@@ -237,6 +263,7 @@ renderParagraph ctx node selected { text } =
 
 renderHeading : Context -> Node -> Bool -> HeadingData -> RenderedNode
 renderHeading ctx node selected heading =
+    -- Use a paragraph here since it allows to wrap text and to set a line height
     renderParagraphHelper ctx node selected heading.text
 
 
@@ -262,7 +289,6 @@ renderParagraphHelper ctx node selected text =
                 |> RenderedElement
 
         _ ->
-            -- Use a paragraph here since it allows to wrap text and to set a line height
             E.paragraph
                 (onDoubleClick (TextEditingStarted node.id)
                     :: onClick (NodeSelected node.id)
@@ -322,35 +348,6 @@ renderText ctx node selected { text } =
                     E.text text
                 )
                 |> RenderedElement
-
-
-
--- renderImage : Context -> Node -> Image -> Element Msg
--- renderImage ctx node image =
---     let
---         dropId =
---             InsertAfter node.id
---         newImage =
---             { image
---                 | src =
---                     if image.src == "" then
---                         "/placeholder.svg"
---                     else
---                         image.src
---             }
---         classes =
---             A.classList
---                 [ ( "element", True )
---                 , ( "element--selected", Document.isSelected node.id ctx.currentNode )
---                 ]
---         attrs =
---             [ E.htmlAttribute classes
---             , elementId node
---             , onClick (NodeSelected node.id)
---             ]
---                 |> applyStandardStyles node
---     in
---     E.image attrs newImage
 
 
 renderTextField : Context -> Node -> Bool -> LabelData -> RenderedNode
@@ -515,6 +512,7 @@ renderRadio ctx node selected label children =
          , elementId node
          , onClick (NodeSelected node.id)
          ]
+            |> makeDroppableIf (Common.canDropInto node ctx.dragDrop) (AppendTo node.id)
             |> applyWidth node.width
             |> applyHeight node.height
             |> applyAlignX node.alignmentX
@@ -569,6 +567,8 @@ applyAllStyles node attrs =
         |> applyFontFamily node.fontFamily
         |> applyFontColor node.fontColor
         |> applyFontWeight node.fontWeight
+        |> applyLetterSpacing node.letterSpacing
+        |> applyWordSpacing node.wordSpacing
         |> applyTextAlign node.textAlignment
         |> applyAlignX node.alignmentX
         |> applyAlignY node.alignmentY
@@ -589,6 +589,8 @@ applyChildStyles node attrs =
         |> applyFontFamily node.fontFamily
         |> applyFontColor node.fontColor
         |> applyFontWeight node.fontWeight
+        |> applyLetterSpacing node.letterSpacing
+        |> applyWordSpacing node.wordSpacing
         |> applyTextAlign node.textAlignment
         |> applyBackground node.background
         |> applyBackgroundColor node.backgroundColor
@@ -650,28 +652,85 @@ applySpacing value attrs =
 
 applyWidth : Length -> List (E.Attribute Msg) -> List (E.Attribute Msg)
 applyWidth value attrs =
-    case value of
-        Shrink ->
-            E.width E.shrink :: attrs
+    -- TODO merge with applyHeight
+    case value.strategy of
+        Px value_ ->
+            (E.px value_
+                |> applyMinLength value.min
+                |> applyMaxLength value.max
+                |> E.width
+            )
+                :: attrs
 
-        Fill ->
-            E.width E.fill :: attrs
+        Content ->
+            (E.shrink
+                |> applyMinLength value.min
+                |> applyMaxLength value.max
+                |> E.width
+            )
+                :: attrs
 
-        _ ->
+        Fill portion ->
+            (E.fillPortion portion
+                |> applyMinLength value.min
+                |> applyMaxLength value.max
+                |> E.width
+            )
+                :: attrs
+
+        Unspecified ->
             attrs
 
 
 applyHeight : Length -> List (E.Attribute Msg) -> List (E.Attribute Msg)
 applyHeight value attrs =
-    case value of
-        Shrink ->
-            E.height E.shrink :: attrs
+    case value.strategy of
+        Px value_ ->
+            (E.px value_
+                |> applyMinLength value.min
+                |> applyMaxLength value.max
+                |> E.height
+            )
+                :: attrs
 
-        Fill ->
-            E.height E.fill :: attrs
+        Content ->
+            (E.shrink
+                |> applyMinLength value.min
+                |> applyMaxLength value.max
+                |> E.height
+            )
+                :: attrs
 
-        _ ->
+        Fill portion ->
+            (E.fillPortion portion
+                |> applyMinLength value.min
+                |> applyMaxLength value.max
+                |> E.height
+            )
+                :: attrs
+
+        Unspecified ->
             attrs
+
+
+applyMinLength : Maybe Int -> E.Length -> E.Length
+applyMinLength value length =
+    case value of
+        Just value_ ->
+            E.minimum value_ length
+
+        Nothing ->
+            length
+
+
+applyMaxLength : Maybe Int -> E.Length -> E.Length
+applyMaxLength value length =
+    case value of
+        Just value_ ->
+            E.maximum value_ length
+
+        Nothing ->
+            length
 
 
 applyAlignX : Alignment -> List (E.Attribute Msg) -> List (E.Attribute Msg)
@@ -742,6 +801,16 @@ applyPadding value attrs =
         , left = value.left
         }
         :: attrs
+
+
+applyLetterSpacing : Float -> List (E.Attribute Msg) -> List (E.Attribute Msg)
+applyLetterSpacing value attrs =
+    Font.letterSpacing value :: attrs
+
+
+applyWordSpacing : Float -> List (E.Attribute Msg) -> List (E.Attribute Msg)
+applyWordSpacing value attrs =
+    Font.wordSpacing value :: attrs
 
 
 applyTextAlign : TextAlignment -> List (E.Attribute Msg) -> List (E.Attribute Msg)
@@ -900,6 +969,14 @@ forceBackgroundColor value attrs =
 -- HELPERS
 
 
+clipIf pred attrs =
+    if pred then
+        E.clip :: attrs
+
+    else
+        attrs
+
+
 options : List RenderedNode -> List (Option NodeId Msg)
 options children =
     List.foldr
@@ -946,6 +1023,7 @@ elementClasses ctx node selected =
             [ ( "element", True )
             , ( "element--dropped", isDroppingInto dropId ctx.dragDrop )
             , ( "element--selected", selected )
+            , ( "dragging--file", isDroppingFileInto node.id ctx.fileDrop )
             ]
         )
 
@@ -960,16 +1038,21 @@ textEditor attrs text =
         }
 
 
-isDragging dragDrop =
-    DragDrop.getDragId dragDrop /= Nothing
-
-
 isDroppingInto dropId dragDrop =
     case DragDrop.getDropId dragDrop of
         Just dropId_ ->
             dropId_ == dropId
 
         Nothing ->
+            False
+
+
+isDroppingFileInto nodeId fileDrop =
+    case fileDrop of
+        DraggingOn nodeId_ ->
+            nodeId_ == nodeId
+
+        _ ->
             False
 
 
@@ -994,3 +1077,55 @@ onClick msg =
 
 onDoubleClick msg =
     E.htmlAttribute (Html.Events.stopPropagationOn "dblclick" (Decode.succeed ( msg, True )))
+
+
+makeDroppableIf pred dropId attrs =
+    if pred then
+        attrs
+            ++ (DragDrop.droppable DragDropMsg dropId
+                    |> List.map E.htmlAttribute
+               )
+
+    else
+        attrs
+
+
+makeFileDroppableIf pred nodeId attrs =
+    if pred then
+        attrs
+            ++ ([ on "dragenter" (Decode.succeed (FileDragging nodeId))
+                , on "dragover" (Decode.succeed (FileDragging nodeId))
+                , on "dragleave" (Decode.succeed FileDragCanceled)
+                , on "drop" (fileDropDecoder nodeId)
+                ]
+                    |> List.map E.htmlAttribute
+               )
+
+    else
+        attrs
+
+
+{-| Stop given event and prevent default behavior.
+
+    1. preventDefault does not allow browser to display dropped
+        image on viewport, replacing app UI altogether
+    2. stopPropagation allows to have any nested container to
+        handle its own drag events
+
+-}
+on : String -> Decoder msg -> H.Attribute msg
+on name decoder =
+    decoder
+        |> Decode.map
+            (\msg ->
+                { message = msg
+                , stopPropagation = True
+                , preventDefault = True
+                }
+            )
+        |> Html.Events.custom name
+
+
+fileDropDecoder : NodeId -> Decoder Msg
+fileDropDecoder nodeId =
+    Decode.at [ "dataTransfer", "files" ] (Decode.oneOrMore (FileDropped nodeId) File.decoder)

@@ -9,14 +9,16 @@ module Style.Font exposing
     , setFontFamily
     , setFontSize
     , setFontWeight
+    , setLetterSpacing
     , setTextAlignment
-    , weightName
+    , weightName, setWordSpacing
     )
 
 {-| Font properties.
 -}
 
 import Element exposing (Color)
+import Element.Font exposing (letterSpacing)
 
 
 minFontSizeAllowed =
@@ -63,6 +65,16 @@ setFontColor value node =
 setFontWeight : FontWeight -> { a | fontWeight : FontWeight } -> { a | fontWeight : FontWeight }
 setFontWeight value node =
     { node | fontWeight = value }
+
+
+setLetterSpacing : Float -> { b | letterSpacing : Float } -> { b | letterSpacing : Float }
+setLetterSpacing value node =
+    { node | letterSpacing = value }
+
+
+setWordSpacing : Float -> { b | wordSpacing : Float } -> { b | wordSpacing : Float }
+setWordSpacing value node =
+    { node | wordSpacing = value }
 
 
 {-| Unlike Elm UI a font weight tells more than how a font is lighter or darker.

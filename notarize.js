@@ -7,7 +7,7 @@ const appId = 'com.passiomatic.ElmDesigner'
 
 module.exports = async function (params) {
     // Only notarize the app on Mac OS only.
-    if (process.platform !== 'darwin') {
+    if (params.electronPlatformName !== 'darwin') {
         return;
     }
     
