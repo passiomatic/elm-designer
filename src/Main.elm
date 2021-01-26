@@ -607,6 +607,9 @@ update msg model =
         AlignmentYChanged value ->
             applyChangeAndFinish model Document.applyAlignY value
 
+        AlignmentChanged value -> 
+            applyChangeAndFinish model Document.applyAlign value
+
         HeightChanged value ->
             applyChangeAndFinish model Document.applyHeight value
 

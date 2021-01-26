@@ -1485,13 +1485,20 @@ alignmentView _ { alignmentX, alignmentY } =
 
         nextAlignBottom =
             nextAlignEndState alignmentY
+
+        nextAlign =
+            if alignmentX == None && alignmentY == None then
+                Center
+
+            else
+                None
     in
     H.div [ A.class "bg-white border rounded ml-auto w-33" ]
         -- Top align
         [ H.div [ A.class "d-flex justify-content-center" ]
             [ H.button
                 [ A.classList
-                    [ ( "bp-0 border-0 bg-white line-height-1 text-black-25", True )
+                    [ ( "bp-0 border-0 bg-white line-height-1 text-black-15", True )
                     , ( "text-primary", alignmentY == Start || alignmentY == Center )
                     ]
                 , E.onClick (AlignmentYChanged nextAlignTop)
@@ -1503,19 +1510,25 @@ alignmentView _ { alignmentX, alignmentY } =
             -- Left align
             [ H.button
                 [ A.classList
-                    [ ( "rotate-90 bp-0 border-0 bg-white line-height-1 text-black-25", True )
+                    [ ( "rotate-90 bp-0 border-0 bg-white line-height-1 text-black-15", True )
                     , ( "text-primary", alignmentX == Start || alignmentX == Center )
                     ]
                 , E.onClick (AlignmentXChanged nextAlignLeft)
                 , A.title "Align left"
                 ]
                 [ Icons.pipe ]
-            , H.div [ A.class "bg-light border rounded", A.style "width" "1.5rem", A.style "height" "1.5rem" ] []
+            , H.button
+                [ A.class "bg-light border rounded"
+                , A.style "width" "1.5rem"
+                , A.style "height" "1.5rem"
+                , E.onClick (AlignmentChanged nextAlign)
+                ]
+                []
 
             -- Right align
             , H.button
                 [ A.classList
-                    [ ( "rotate-90 bp-0 border-0 bg-white line-height-1 text-black-25", True )
+                    [ ( "rotate-90 bp-0 border-0 bg-white line-height-1 text-black-15", True )
                     , ( "text-primary", alignmentX == End || alignmentX == Center )
                     ]
                 , E.onClick (AlignmentXChanged nextAlignRight)
@@ -1528,7 +1541,7 @@ alignmentView _ { alignmentX, alignmentY } =
         , H.div [ A.class "d-flex justify-content-center" ]
             [ H.button
                 [ A.classList
-                    [ ( "bp-0 border-0 bg-white line-height-1 text-black-25", True )
+                    [ ( "bp-0 border-0 bg-white line-height-1 text-black-15", True )
                     , ( "text-primary", alignmentY == End || alignmentY == Center )
                     ]
                 , E.onClick (AlignmentYChanged nextAlignBottom)

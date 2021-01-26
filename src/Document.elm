@@ -12,8 +12,9 @@ module Document exposing
     , RowData
     , Template
     , TextData
-    , Viewport(..), imageNode
+    , Viewport(..)
     , appendNode
+    , applyAlign
     , applyAlignX
     , applyAlignY
     , applyBackground
@@ -39,6 +40,7 @@ module Document exposing
     , applyTextAlign
     , applyWidth
     , applyWidthWith
+    , applyWordSpacing
     , applyWrapRowItems
     , baseTemplate
     , canDropInto
@@ -48,6 +50,7 @@ module Document exposing
     , findDeviceInfo
     , fromTemplate
     , generateId
+    , imageNode
     , insertNode
     , insertNodeAfter
     , insertNodeBefore
@@ -63,7 +66,7 @@ module Document exposing
     , schemaVersion
     , selectNodeWith
     , selectParentOf
-    , viewports, applyWordSpacing
+    , viewports
     )
 
 import Css
@@ -238,7 +241,7 @@ nodeType value =
 
         RowNode _ ->
             "Row"
-            
+
         TextColumnNode ->
             "Text Column"
 
@@ -416,6 +419,7 @@ imageNode url seeds =
             T.singleton
                 { baseTemplate
                     | type_ = ImageNode { src = url, description = "" }
+
                     --, width = Fill
                     , name = "Image"
                 }
@@ -863,6 +867,15 @@ applyAlignX value zipper =
 applyAlignY : Alignment -> Zipper Node -> Zipper Node
 applyAlignY value zipper =
     Zipper.mapLabel (\node -> { node | alignmentY = value }) zipper
+
+
+applyAlign : Alignment -> Zipper Node -> Zipper Node
+applyAlign value zipper =
+    Zipper.mapLabel
+        (\node ->
+            { node | alignmentX = value, alignmentY = value }
+        )
+        zipper
 
 
 applyOffset : (Float -> Transformation -> Transformation) -> String -> Zipper Node -> Zipper Node
