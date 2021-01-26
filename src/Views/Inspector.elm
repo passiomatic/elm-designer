@@ -65,7 +65,8 @@ resolveStyleViews model zipper =
                     , bordersView model node
                     , backgroundView model node
                     ]
-                ImageNode data -> 
+
+                ImageNode data ->
                     [ sectionView "Layout"
                         [ positionView model node
                         , lengthView model node
@@ -116,7 +117,7 @@ resolveStyleViews model zipper =
                         ]
                     , sectionView "Text"
                         [ fontView model zipper
-                        ]                        
+                        ]
                     , bordersView model node
                     , backgroundView model node
                     ]
@@ -134,7 +135,7 @@ resolveStyleViews model zipper =
                     , sectionView "Text"
                         [ fontView model zipper
                         , textAlignmentView model node.textAlignment
-                        ]                        
+                        ]
                     , bordersView model node
                     , backgroundView model node
                     ]
@@ -1106,17 +1107,20 @@ lengthView model node =
 
 wrapRowOptionView : Bool -> Html Msg
 wrapRowOptionView wrapped =
-    H.div [ A.class "custom-control custom-checkbox mb-0" ]
+    H.div [ A.class "custom-control custom-switch" ]
         [ H.input
-            [ A.class "custom-control-input"
+            [ E.onCheck WrapRowItemsChanged
+            , A.checked wrapped
+            , A.class "custom-control-input"
             , A.id "wrap-row-items"
             , A.type_ "checkbox"
-            , A.checked wrapped
-            , E.onCheck WrapRowItemsChanged
             ]
             []
-        , H.label [ A.class "custom-control-label", A.for "wrap-row-items" ]
-            [ H.text "Wrap items" ]
+        , H.label
+            [ A.class "custom-control-label"
+            , A.for "wrap-row-items"
+            ]
+            [ H.text "Wrap row items" ]
         ]
 
 
