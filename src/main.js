@@ -51,11 +51,6 @@ function addImage(focusedWindow) {
     // User pressed cancel
     return
   }
-  //var fileName = fileNames[0];
-  //console.log(fileName)
-  // fs.readFile(fileName, 'utf-8', function (err, data) {
-  //   $editor.val(data);
-  // });
   focusedWindow.webContents.send("renderer", "InsertImage", fileNames)
 }
 

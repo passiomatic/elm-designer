@@ -208,7 +208,6 @@ window.onload = () => {
           })
           const elm = document.querySelector("main")
           const evt = new CustomEvent("files-selected", { detail: files })
-          console.log(evt)
           elm.dispatchEvent(evt)
       }
   })  
