@@ -43,6 +43,10 @@ view model =
             [ ( "h-100", True )
             , ( "dragging--element", Common.isDragging model.dragDrop )
             ]
+
+        -- Receive files from Electron. This is a workaround since
+        --   we cannot pass Files or Bytes to Elm via ports yet
+        , E.on "files-selected" (filesDecoder FileSelected)
         ]
         (case model.mode of
             PreviewMode ->
@@ -61,6 +65,10 @@ view model =
                     ]
                 ]
         )
+
+
+filesDecoder tagger =
+    Decode.field "detail" (Decode.map tagger (Decode.list File.decoder))
 
 
 workspaceView model =
@@ -90,7 +98,7 @@ uploadProgressView uploadState =
                 , A.style "z-index" "3"
                 ]
                 [ H.div [ A.class "w-50 mx-auto bg-light border rounded bpx-2 bpy-2" ]
-                    [ H.div [ A.class "label-sm" ] [ H.text ("Uploading image " ++ (File.name file) ++ "...") ]
+                    [ H.div [ A.class "label-sm" ] [ H.text ("Uploading image " ++ File.name file ++ "...") ]
                     , H.div [ A.class "mt-1 progress", A.style "height" "8px" ]
                         [ H.div
                             [ A.class "progress-bar progress-bar-striped progress-bar-animated"

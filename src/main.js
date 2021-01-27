@@ -1,5 +1,5 @@
 'use strict'
-const { screen, app, ipcMain, BrowserWindow, Menu, dialog, shell } = require('electron')
+const { screen, app, ipcMain, BrowserWindow, Menu, dialog, shell, fs } = require('electron')
 const appMenu = require('./menus');
 
 const isMac = process.platform === 'darwin'
@@ -35,6 +35,30 @@ function createWindow() {
 
 }
 
+/* Menu callbacks */ 
+
+const imageFiles = [
+  { name: 'Images', extensions: ['jpg', 'png', 'gif', 'svg'] }
+]
+
+function addImage(focusedWindow) {
+  const fileNames = dialog.showOpenDialogSync(focusedWindow,
+      { filters: imageFiles,        
+        properties: ["openFile", "multiSelections"],
+        //message : "Select one or more images"
+      })
+  if(fileNames===undefined) {
+    // User pressed cancel
+    return
+  }
+  //var fileName = fileNames[0];
+  //console.log(fileName)
+  // fs.readFile(fileName, 'utf-8', function (err, data) {
+  //   $editor.val(data);
+  // });
+  focusedWindow.webContents.send("renderer", "InsertImage", fileNames)
+}
+
 /* Setup app menu with passed 'Insert' menu items */
 
 ipcMain.on('setup-app-menu', (event, insertItems) => {
@@ -53,7 +77,7 @@ ipcMain.on('setup-app-menu', (event, insertItems) => {
     menu.push(item)
     return menu
   }, [])
-  const menu = appMenu(app, shell, isMac, menuItems);
+  const menu = appMenu(app, shell, isMac, menuItems, addImage);
   Menu.setApplicationMenu(Menu.buildFromTemplate(menu));
 })
 
