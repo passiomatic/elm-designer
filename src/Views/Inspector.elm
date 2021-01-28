@@ -1637,7 +1637,7 @@ fontView model zipper =
         theme =
             Theme.defaultTheme
 
-        ( inherited, fontSize_ ) =
+        ( inherited, resolvedFontSize ) =
             case model.inspector of
                 EditingField FontSizeField _ new ->
                     ( False, new )
@@ -1656,7 +1656,7 @@ fontView model zipper =
         resolvedFontFamily =
             Document.resolveInheritedFontFamily theme.textFontFamily zipper
 
-        fontColor_ =
+        resolvedFontColor =
             case node.fontColor of
                 Local value ->
                     value
@@ -1678,8 +1678,8 @@ fontView model zipper =
                         ]
                     , A.type_ "number"
                     , A.min (String.fromInt Font.minFontSizeAllowed)
-                    , A.value fontSize_
-                    , E.onFocus (FieldEditingStarted FontSizeField fontSize_)
+                    , A.value resolvedFontSize
+                    , E.onFocus (FieldEditingStarted FontSizeField resolvedFontSize)
                     , E.onBlur FieldEditingFinished
                     , E.onInput FieldChanged
                     ]
@@ -1690,7 +1690,7 @@ fontView model zipper =
                 [ fontWeightView resolvedFontFamily node.fontWeight
                 ]
             ]
-        , colorView model (Just fontColor_) FontColorField FontColorChanged
+        , colorView model (Just resolvedFontColor) FontColorField FontColorChanged
         , case node.type_ of
             ParagraphNode _ ->
                 liheHeightView model node.spacing

@@ -935,8 +935,25 @@ applyFontSize value zipper =
 
 applyFontFamily : Local FontFamily -> Zipper Node -> Zipper Node
 applyFontFamily value zipper =
-    Zipper.mapLabel (Font.setFontFamily value) zipper
+    let
+        -- First, apply the new family so the inheritance chain is consistent 
+        newZipper = 
+            Zipper.mapLabel (Font.setFontFamily value) zipper    
+    in
+    Zipper.mapLabel
+        (\node ->
+            let
+                resolvedFamily =
+                    resolveInheritedFontFamily Fonts.defaultFamily newZipper
 
+                -- While changing family adjust weight to the closest available
+                newWeight =
+                    Font.findClosestWeight node.fontWeight resolvedFamily.weights
+            in
+            node
+                |> Font.setFontWeight newWeight
+        )
+        newZipper            
 
 applyLetterSpacing : String -> Zipper Node -> Zipper Node
 applyLetterSpacing value zipper =

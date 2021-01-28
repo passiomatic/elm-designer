@@ -586,8 +586,8 @@ update msg model =
         FontSizeChanged value ->
             applyChangeAndFinish model Document.applyFontSize value
 
-        FontFamilyChanged value ->
-            applyChangeAndFinish model Document.applyFontFamily value
+        FontFamilyChanged family ->
+            applyChangeAndFinish model Document.applyFontFamily family
 
         BackgroundColorChanged value ->
             applyChangeAndFinish model Document.applyBackgroundColor value

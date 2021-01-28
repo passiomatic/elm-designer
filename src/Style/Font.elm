@@ -4,6 +4,7 @@ module Style.Font exposing
     , FontWeight(..)
     , Local(..)
     , TextAlignment(..)
+    , findClosestWeight
     , minFontSizeAllowed
     , setFontColor
     , setFontFamily
@@ -11,7 +12,8 @@ module Style.Font exposing
     , setFontWeight
     , setLetterSpacing
     , setTextAlignment
-    , weightName, setWordSpacing
+    , setWordSpacing
+    , weightName
     )
 
 {-| Font properties.
@@ -161,6 +163,79 @@ weightName value =
 
         HairlineItalic ->
             "Hairline Italic"
+
+
+findClosestWeight : FontWeight -> List FontWeight -> FontWeight
+findClosestWeight optimal weights =
+    weights
+        |> List.map
+            (\weight ->
+                ( weight, abs (weightNumber weight - weightNumber optimal) )
+            )
+        |> List.sortBy Tuple.second
+        |> List.head
+        |> Maybe.map Tuple.first
+        |> Maybe.withDefault Regular
+
+
+{-| Mapping between weight and CSS values.
+-}
+weightNumber : FontWeight -> Int
+weightNumber value =
+    case value of
+        Heavy ->
+            900
+
+        HeavyItalic ->
+            900
+
+        ExtraBold ->
+            800
+
+        ExtraBoldItalic ->
+            800
+
+        Bold ->
+            700
+
+        BoldItalic ->
+            700
+
+        SemiBold ->
+            600
+
+        SemiBoldItalic ->
+            600
+
+        Medium ->
+            500
+
+        MediumItalic ->
+            500
+
+        Regular ->
+            400
+
+        Italic ->
+            400
+
+        Light ->
+            300
+
+        LightItalic ->
+            300
+
+        ExtraLight ->
+            200
+
+        ExtraLightItalic ->
+            200
+
+        Hairline ->
+            100
+
+        HairlineItalic ->
+            100
 
 
 type TextAlignment
