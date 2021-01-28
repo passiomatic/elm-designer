@@ -65,7 +65,7 @@ items =
     , heading3
     , textSnippet
     , paragraph
-    , wrappedRow
+    , row
     , column
     , textColumn
     , button
@@ -220,8 +220,8 @@ textSnippet theme =
 -- LAYOUT
 
 
-wrappedRow : Theme -> LibraryItem msg
-wrappedRow theme =
+row : Theme -> LibraryItem msg
+row theme =
     { icon = Icons.layout
     , group = layoutLabel
     , description = ""
@@ -230,7 +230,7 @@ wrappedRow theme =
         T.singleton
             { baseTemplate
                 | name = "Row"
-                , type_ = RowNode { wrapped = True }
+                , type_ = RowNode { wrapped = False }
                 , width = Layout.fill
             }
     }
