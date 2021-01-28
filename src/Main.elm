@@ -42,8 +42,10 @@ import Views.Editor as Editor
 saveInterval =
     3
 
-appName = 
+
+appName =
     "Elm Designer"
+
 
 init : Flags -> ( Model, Cmd Msg )
 init flags =
@@ -79,6 +81,25 @@ update msg model =
             , Cmd.none
             )
 
+        FileSelected files ->
+            let
+                node =
+                    selectedPage model.pages
+                        |> Zipper.tree
+                        |> T.label
+
+                ( newUploadState, cmd ) =
+                    files
+                        |> acceptFiles
+                        |> Uploader.uploadNextFile model.uploadEndpoint
+            in
+            ( { model
+                | uploadState = newUploadState
+                , fileDrop = DroppedInto node.id -- Simulate a drag and drop operation
+              }
+            , cmd
+            )
+
         FileDropped nodeId file files ->
             let
                 ( newUploadState, cmd ) =
@@ -97,7 +118,7 @@ update msg model =
             case progress of
                 Sending sent ->
                     ( { model
-                        | uploadState = Uploading current others (Http.fractionSent sent) 
+                        | uploadState = Uploading current others (Http.fractionSent sent)
                       }
                     , Cmd.none
                     )
@@ -112,14 +133,14 @@ update msg model =
                         ( newSeeds, newNode ) =
                             Document.imageNode (String.trim url) model.seeds
 
-                        zipper = 
+                        zipper =
                             selectedPage model.pages
 
-                        newPage =                            
+                        newPage =
                             case model.fileDrop of
                                 DroppedInto parentId ->
                                     Document.selectNodeWith parentId zipper
-                                        |> Maybe.map (Document.appendNode newNode)
+                                        |> Maybe.map (Document.insertNode newNode)
                                         |> Maybe.withDefault zipper
 
                                 _ ->
@@ -135,7 +156,12 @@ update msg model =
                     in
                     ( { model
                         | uploadState = newUploadState
-                        , fileDrop = if newUploadState == Ready then Empty else model.fileDrop
+                        , fileDrop =
+                            if newUploadState == Ready then
+                                Empty
+
+                            else
+                                model.fileDrop
                         , pages = SelectList.replaceSelected newPage model.pages
                         , seeds = newSeeds
                         , saveState = Changed model.currentTime
@@ -285,7 +311,7 @@ update msg model =
                     --     _ = Debug.log "Error loading document:" (Decode.errorToString reason)
                     -- in
                     ( model
-                    , showErrorBox  "Error loading document (perhaps schema has changed?)"
+                    , showErrorBox "Error loading document (perhaps schema has changed?)"
                     )
 
         CollapseNodeClicked collapse id ->
@@ -607,7 +633,7 @@ update msg model =
         AlignmentYChanged value ->
             applyChangeAndFinish model Document.applyAlignY value
 
-        AlignmentChanged value -> 
+        AlignmentChanged value ->
             applyChangeAndFinish model Document.applyAlign value
 
         HeightChanged value ->

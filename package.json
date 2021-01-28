@@ -15,6 +15,7 @@
     "sass": "1.26.10"
   },
   "dependencies": {
+    "mime-types": "2.1.28",
     "parcel-bundler": "1.12.4"
   },
   "main": "./dist/main.js",

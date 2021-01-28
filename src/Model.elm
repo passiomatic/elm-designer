@@ -88,6 +88,7 @@ type Msg
     | Ticked Posix
     | ModeChanged Mode
     | FileDropped NodeId File (List File)
+    | FileSelected (List File)
     | FileDragging NodeId
     | FileDragCanceled
     | FileUploading File (List File) Progress

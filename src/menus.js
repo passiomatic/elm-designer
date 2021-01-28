@@ -1,4 +1,4 @@
-module.exports = function(app, shell, isMac, insertMenuItems) {
+module.exports = function(app, shell, isMac, insertMenuItems, insertImageCallback) {
   const template = [
       {
         label: 'Edit',
@@ -50,6 +50,15 @@ module.exports = function(app, shell, isMac, insertMenuItems) {
                 focusedWindow.webContents.send("command", "PageAdd", null)
             }            
 
+          },
+          {
+            type: 'separator'
+          },          
+          {
+            label: 'Image...',
+            click: function(item, focusedWindow) {
+              insertImageCallback(focusedWindow)
+            }
           },
         ].concat(insertMenuItems) 
       },
