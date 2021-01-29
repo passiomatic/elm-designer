@@ -930,7 +930,7 @@ applyFontSize value zipper =
                 Nothing ->
                     Inherit
     in
-    Zipper.mapLabel (Font.setFontSize value_) zipper
+    Zipper.mapLabel (Font.setSize value_) zipper
 
 
 applyFontFamily : Local FontFamily -> Zipper Node -> Zipper Node
@@ -938,7 +938,7 @@ applyFontFamily value zipper =
     let
         -- First, apply the new family so the inheritance chain is consistent 
         newZipper = 
-            Zipper.mapLabel (Font.setFontFamily value) zipper    
+            Zipper.mapLabel (Font.setFamily value) zipper    
     in
     Zipper.mapLabel
         (\node ->
@@ -951,7 +951,7 @@ applyFontFamily value zipper =
                     Font.findClosestWeight node.fontWeight resolvedFamily.weights
             in
             node
-                |> Font.setFontWeight newWeight
+                |> Font.setWeight newWeight
         )
         newZipper            
 
@@ -1045,9 +1045,9 @@ applyFontColor value zipper =
         value_ =
             Local (Css.stringToColor value)
     in
-    Zipper.mapLabel (Font.setFontColor value_) zipper
+    Zipper.mapLabel (Font.setColor value_) zipper
 
 
 applyFontWeight : FontWeight -> Zipper Node -> Zipper Node
 applyFontWeight value zipper =
-    Zipper.mapLabel (Font.setFontWeight value) zipper
+    Zipper.mapLabel (Font.setWeight value) zipper

@@ -6,10 +6,10 @@ module Style.Font exposing
     , TextAlignment(..)
     , findClosestWeight
     , minFontSizeAllowed
-    , setFontColor
-    , setFontFamily
-    , setFontSize
-    , setFontWeight
+    , setColor
+    , setFamily
+    , setSize
+    , setWeight
     , setLetterSpacing
     , setTextAlignment
     , setWordSpacing
@@ -49,23 +49,23 @@ type alias FontFamily =
     }
 
 
-setFontFamily : Local FontFamily -> { a | fontFamily : Local FontFamily } -> { a | fontFamily : Local FontFamily }
-setFontFamily value node =
+setFamily : Local FontFamily -> { a | fontFamily : Local FontFamily } -> { a | fontFamily : Local FontFamily }
+setFamily value node =
     { node | fontFamily = value }
 
 
-setFontSize : Local Int -> { a | fontSize : Local Int } -> { a | fontSize : Local Int }
-setFontSize value node =
+setSize : Local Int -> { a | fontSize : Local Int } -> { a | fontSize : Local Int }
+setSize value node =
     { node | fontSize = value }
 
 
-setFontColor : Local Color -> { a | fontColor : Local Color } -> { a | fontColor : Local Color }
-setFontColor value node =
+setColor : Local Color -> { a | fontColor : Local Color } -> { a | fontColor : Local Color }
+setColor value node =
     { node | fontColor = value }
 
 
-setFontWeight : FontWeight -> { a | fontWeight : FontWeight } -> { a | fontWeight : FontWeight }
-setFontWeight value node =
+setWeight : FontWeight -> { a | fontWeight : FontWeight } -> { a | fontWeight : FontWeight }
+setWeight value node =
     { node | fontWeight = value }
 
 
