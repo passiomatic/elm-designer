@@ -134,6 +134,7 @@ resolveStyleViews model zipper =
                         ]
                     , sectionView "Text"
                         [ fontView model zipper
+                        , fontSpacingView model node
                         , textAlignmentView model node.textAlignment
                         ]
                     , bordersView model node
@@ -152,6 +153,7 @@ resolveStyleViews model zipper =
                         ]
                     , sectionView "Text"
                         [ fontView model zipper
+                        , fontSpacingView model node
                         , textAlignmentView model node.textAlignment
                         ]
                     , bordersView model node
@@ -170,6 +172,7 @@ resolveStyleViews model zipper =
                         ]
                     , sectionView "Text"
                         [ fontView model zipper
+                        , fontSpacingView model node
                         , textAlignmentView model node.textAlignment
                         ]
                     , bordersView model node
@@ -187,6 +190,7 @@ resolveStyleViews model zipper =
                         ]
                     , sectionView "Text"
                         [ fontView model zipper
+                        , fontSpacingView model node
                         , textAlignmentView model node.textAlignment
                         ]
                     , bordersView model node
@@ -220,6 +224,7 @@ resolveStyleViews model zipper =
                         ]
                     , sectionView "Text"
                         [ fontView model zipper
+                        , fontSpacingView model node
                         ]
                     , bordersView model node
                     , backgroundView model node
@@ -238,6 +243,7 @@ commonViews zipper model node =
         ]
     , sectionView "Text"
         [ fontView model zipper
+        , fontSpacingView model node
         , textAlignmentView model node.textAlignment
         ]
     , bordersView model node
@@ -1669,7 +1675,7 @@ fontView model zipper =
             [ fontFamilyView node.fontFamily resolvedFontFamily (canInherit node)
             ]
         , H.div [ A.class "d-flex" ]
-            [ H.div [ A.class "form-group mr-2 w-25" ]
+            [ H.div [ A.class "form-group mr-1 w-25" ]
                 [ H.input
                     [ A.id (fieldId FontSizeField)
                     , A.classList
@@ -1690,16 +1696,7 @@ fontView model zipper =
                 [ fontWeightView resolvedFontFamily node.fontWeight
                 ]
             ]
-        , colorView model (Just resolvedFontColor) FontColorField FontColorChanged
-        , case node.type_ of
-            ParagraphNode _ ->
-                liheHeightView model node.spacing
-
-            HeadingNode _ ->
-                liheHeightView model node.spacing
-
-            _ ->
-                none
+        , colorView model (Just resolvedFontColor) FontColorField FontColorChanged        
         ]
 
 
@@ -1729,11 +1726,10 @@ fontSizeItems node =
             fontSizes
 
 
-liheHeightView : Model -> Spacing -> Html Msg
-liheHeightView model spacing =
+fontSpacingView model node =
     let
-        spacing_ =
-            case spacing of
+        lineSpacing =
+            case node.spacing of
                 Spacing ( _, y ) ->
                     case model.inspector of
                         EditingField SpacingYField _ new ->
@@ -1745,22 +1741,40 @@ liheHeightView model spacing =
                 SpaceEvenly ->
                     -- TODO figure out if it makes sense here
                     ""
+
+        wordSpacing =
+            case model.inspector of
+                EditingField WordSpacingField _ new ->
+                    new
+
+                _ ->
+                    String.fromFloat node.wordSpacing
+
+        letterSpacing =
+            case model.inspector of
+                EditingField LetterSpacingField _ new ->
+                    new
+
+                _ ->
+                    String.fromFloat node.letterSpacing
     in
-    H.div [ A.class "form-group row align-items-center mb-2" ]
-        [ H.label [ A.class "col-6 col-form-label-sm m-0 text-nowrap" ]
-            [ H.text "Line spacing" ]
-        , H.div [ A.class "col-6 btn-group", A.attribute "role" "group" ]
-            [ H.div [ A.class "form-group m-0" ]
-                [ H.input
-                    [ A.class "form-control form-control-sm"
-                    , A.type_ "number"
-                    , A.min "0"
-                    , A.value spacing_
-                    , E.onFocus (FieldEditingStarted SpacingYField spacing_)
-                    , E.onBlur FieldEditingFinished
-                    , E.onInput FieldChanged
-                    ]
-                    []
+    H.div [ A.class "form-group mb-2 row align-items-center" ]
+        [ H.label [ A.class "col-3 col-form-label-sm m-0 text-nowrap" ]
+            [ H.text "Spacing"
+            ]
+        , H.div [ A.class "col-9" ]
+            [ H.div [ A.class "d-flex justify-content-end", A.style "gap" ".25rem" ]
+                [ case node.type_ of
+                    ParagraphNode _ ->
+                        numericFieldView_ SpacingYField "Line" lineSpacing
+
+                    HeadingNode _ ->
+                        numericFieldView_ SpacingYField "Line" lineSpacing
+
+                    _ ->
+                        none
+                , numericFieldView_ WordSpacingField "Word" wordSpacing
+                , numericFieldView_ LetterSpacingField "Letter" letterSpacing
                 ]
             ]
         ]
@@ -1893,4 +1907,25 @@ numericFieldView field label value =
                 ]
                 []
             ]
+        ]
+
+
+numericFieldView_ : Field -> String -> String -> Html Msg
+numericFieldView_ field label value =
+    H.div [ A.class "w-33" ]
+        [ H.label [ A.class "col-form-label-sm m-0 p-0", A.for (fieldId field) ]
+            [ H.text label
+            ]
+        , H.input
+            [ A.id (fieldId field)
+            , A.class "form-control form-control-sm text-center"
+            , A.type_ "number"
+
+            --, A.min "0"
+            , A.value value
+            , E.onFocus (FieldEditingStarted field value)
+            , E.onBlur FieldEditingFinished
+            , E.onInput FieldChanged
+            ]
+            []
         ]
