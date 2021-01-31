@@ -50,6 +50,7 @@ families =
         , FontFamily "IBM Plex Sans" (External plexSansUrl) plexSansWeights
         , FontFamily "Roboto" (External robotoUrl) robotoWeights
         , FontFamily "Rubik" (External rubikUrl) rubikWeights
+        , FontFamily "Source Sans Pro" (External sourceSansProUrl) sourceSansProWeights
         , FontFamily "Work Sans" (External workSansUrl) workSansWeights
         ]
       )
@@ -59,6 +60,13 @@ families =
         , FontFamily "Eczar" (External eczarUrl) eczarWeights
         , FontFamily "Libre Baskerville" (External libreBaskervilleUrl) libreBaskervilleWeights
         , FontFamily "Lora" (External loraUrl) loraWeights
+        , FontFamily "Source Serif Pro" (External sourceSerifProUrl) sourceSerifProWeights
+        ]
+      )
+    , ( "Fixed-width/Google Fonts"
+      , [ FontFamily "Roboto Mono" (External robotoMonoUrl) robotoMonoWeights
+        , FontFamily "Space Mono" (External spaceMonoUrl) spaceMonoWeights
+        , FontFamily "Source Code Pro" (External sourceCodeProUrl) sourceCodeProWeights
         ]
       )
     ]
@@ -220,6 +228,26 @@ plexSansWeights =
     ]
 
 
+sourceSansProUrl =
+    baseUrl ++ "Source+Sans+Pro:ital,wght@0,200;0,300;0,400;0,600;0,700;0,900;1,200;1,300;1,400;1,600;1,700;1,900&display=swap"
+
+
+sourceSansProWeights =
+    [ ExtraLight
+    , ExtraLightItalic
+    , Light
+    , LightItalic
+    , Regular
+    , Italic
+    , SemiBold
+    , SemiBoldItalic
+    , Bold
+    , BoldItalic
+    , Heavy
+    , HeavyItalic
+    ]
+
+
 alegreyaSansUrl =
     baseUrl ++ "Alegreya+Sans:ital,wght@0,100;0,300;0,400;0,500;0,700;0,800;0,900;1,100;1,300;1,400;1,500;1,700;1,800;1,900&display=swap"
 
@@ -297,6 +325,82 @@ libreBaskervilleWeights =
     [ Regular
     , Italic
     , Bold
+    ]
+
+
+sourceSerifProUrl =
+    baseUrl ++ "Source+Serif+Pro:ital,wght@0,200;0,300;0,400;0,600;0,700;0,900;1,200;1,300;1,400;1,600;1,700;1,900&display=swap"
+
+
+sourceSerifProWeights =
+    [ ExtraLight
+    , ExtraLightItalic
+    , Light
+    , LightItalic
+    , Regular
+    , Italic
+    , SemiBold
+    , SemiBoldItalic
+    , Bold
+    , BoldItalic
+    , Heavy
+    , HeavyItalic
+    ]
+
+
+spaceMonoUrl =
+    baseUrl ++ "Space+Mono:ital,wght@0,400;0,700;1,400;1,700&display=swap"
+
+
+spaceMonoWeights =
+    [ Regular
+    , Italic
+    , Bold
+    , BoldItalic
+    ]
+
+
+robotoMonoUrl =
+    baseUrl ++ "Roboto+Mono:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;1,100;1,200;1,300;1,400;1,500;1,600;1,700&family=Space+Mono:ital,wght@0,400;0,700;1,400;1,700&display=swap"
+
+
+robotoMonoWeights =
+    [ Hairline
+    , HairlineItalic
+    , ExtraLight
+    , ExtraLightItalic
+    , Light
+    , LightItalic
+    , Regular
+    , Italic
+    , Medium
+    , MediumItalic
+    , SemiBold
+    , SemiBoldItalic
+    , Bold
+    , BoldItalic
+    ]
+
+
+sourceCodeProUrl =
+    baseUrl ++ "Source+Code+Pro:ital,wght@0,200;0,300;0,400;0,500;0,600;0,700;0,900;1,200;1,300;1,400;1,500;1,600;1,700;1,900&display=swap"
+
+
+sourceCodeProWeights =
+    [ ExtraLight
+    , ExtraLightItalic
+    , Light
+    , LightItalic
+    , Regular
+    , Italic
+    , Medium
+    , MediumItalic
+    , SemiBold
+    , SemiBoldItalic
+    , Bold
+    , BoldItalic
+    , Heavy
+    , HeavyItalic
     ]
 
 
