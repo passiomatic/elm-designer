@@ -14,15 +14,17 @@
 
 .tree .tree {
   // Indent second+ level 
-  padding-left: 0.75rem;
+  margin-left: 0.75rem;
+  border-left: 1px solid $gray-500;
 }
 
 .tree__label {
-  padding: 0 0.25rem;
+  padding: 0 .1125rem;
   border-radius: 3px;
   @extend .unselectable;
   display: flex;
   @include font-size($input-font-size-sm);
+  margin-left: .325rem;
   //transition: background-color 0.07s ease-out;
 }
 
