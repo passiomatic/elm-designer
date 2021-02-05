@@ -138,8 +138,9 @@ renderTextColumn ctx node selected children =
             , elementId node
             , onClick (NodeSelected node.id)
             ]
-                |> makeDroppableIf (Common.canDropInto node ctx.dragDrop) (AppendTo node.id)
-                |> makeFileDroppableIf (not <| Common.isDragging ctx.dragDrop) node.id
+                |> makeNodeDroppableIf (Common.canDropInto node ctx.nodeDragDrop) (AppendTo node.id)
+                |> makeFileDroppableIf (not <| isDragging ctx) node.id
+                |> makeBindableIf (Common.canBind node ctx.bindingDragDrop) node.id
                 |> applyAllStyles node
     in
     E.textColumn attrs newChildren
@@ -161,8 +162,9 @@ renderColumn ctx node selected children =
             , elementId node
             , onClick (NodeSelected node.id)
             ]
-                |> makeDroppableIf (Common.canDropInto node ctx.dragDrop) (AppendTo node.id)
-                |> makeFileDroppableIf (not <| Common.isDragging ctx.dragDrop) node.id
+                |> makeNodeDroppableIf (Common.canDropInto node ctx.nodeDragDrop) (AppendTo node.id)
+                |> makeFileDroppableIf (not <| isDragging ctx) node.id
+                |> makeBindableIf (Common.canBind node ctx.bindingDragDrop) node.id
                 |> applyAllStyles node
     in
     E.column attrs newChildren
@@ -184,8 +186,9 @@ renderRow ctx node selected { wrapped } children =
             , elementId node
             , onClick (NodeSelected node.id)
             ]
-                |> makeDroppableIf (Common.canDropInto node ctx.dragDrop) (AppendTo node.id)
-                |> makeFileDroppableIf (not <| Common.isDragging ctx.dragDrop) node.id
+                |> makeNodeDroppableIf (Common.canDropInto node ctx.nodeDragDrop) (AppendTo node.id)
+                |> makeFileDroppableIf (not <| isDragging ctx) node.id
+                |> makeBindableIf (Common.canBind node ctx.bindingDragDrop) node.id
                 |> applyAllStyles node
     in
     (if wrapped then
@@ -207,8 +210,9 @@ renderPage ctx node selected children =
             , elementId node
             , onClick (NodeSelected node.id)
             ]
-                |> makeDroppableIf (Common.canDropInto node ctx.dragDrop) (AppendTo node.id)
-                |> makeFileDroppableIf (not <| Common.isDragging ctx.dragDrop) node.id
+                |> makeNodeDroppableIf (Common.canDropInto node ctx.nodeDragDrop) (AppendTo node.id)
+                |> makeFileDroppableIf (not <| isDragging ctx) node.id
+                |> makeBindableIf (Common.canBind node ctx.bindingDragDrop) node.id
                 |> applyAllStyles node
     in
     RenderedElement
@@ -249,6 +253,7 @@ renderImage ctx node selected image =
             , elementId node
             , onClick (NodeSelected node.id)
             ]
+                |> makeBindableIf (Common.canBind node ctx.bindingDragDrop) node.id
                 |> clipIf (Style.Border.isRounded node.borderCorner)
                 |> applyAllStyles node
     in
@@ -274,6 +279,7 @@ renderParagraphHelper ctx node selected text =
             [ elementClasses ctx node selected
             , elementId node
             ]
+                |> makeBindableIf (Common.canBind node ctx.bindingDragDrop) node.id
                 |> applyAllStyles node
     in
     case ( ctx.inspector, selected ) of
@@ -321,6 +327,7 @@ renderText ctx node selected { text } =
             [ elementClasses ctx node selected
             , elementId node
             ]
+                |> makeBindableIf (Common.canBind node ctx.bindingDragDrop) node.id
                 |> applyAllStyles node
     in
     case ( ctx.inspector, selected ) of
@@ -358,6 +365,7 @@ renderTextField ctx node selected label =
             [ E.htmlAttribute (A.readonly (ctx.mode == DesignMode))
             , E.width E.fill
             ]
+                |> makeBindableIf (Common.canBind node ctx.bindingDragDrop) node.id
                 |> applyChildStyles node
     in
     E.el
@@ -391,6 +399,7 @@ renderTextFieldMultiline ctx node selected label =
             [ E.htmlAttribute (A.readonly (ctx.mode == DesignMode))
             , E.width E.fill
             ]
+                |> makeBindableIf (Common.canBind node ctx.bindingDragDrop) node.id
                 |> applyChildStyles node
     in
     E.el
@@ -446,6 +455,7 @@ renderButton ctx node selected { text } =
         attrs =
             [ E.width E.fill
             ]
+                |> makeBindableIf (Common.canBind node ctx.bindingDragDrop) node.id
                 |> applyChildStyles node
     in
     E.el
@@ -473,6 +483,7 @@ renderCheckbox ctx node selected label =
         attrs =
             [ E.width E.fill
             ]
+                |> makeBindableIf (Common.canBind node ctx.bindingDragDrop) node.id
                 |> applyChildStyles node
     in
     E.el
@@ -512,7 +523,8 @@ renderRadio ctx node selected label children =
          , elementId node
          , onClick (NodeSelected node.id)
          ]
-            |> makeDroppableIf (Common.canDropInto node ctx.dragDrop) (AppendTo node.id)
+            |> makeNodeDroppableIf (Common.canDropInto node ctx.nodeDragDrop) (AppendTo node.id)
+            |> makeBindableIf (Common.canBind node ctx.bindingDragDrop) node.id
             |> applyWidth node.width
             |> applyHeight node.height
             |> applyAlignX node.alignmentX
@@ -542,6 +554,7 @@ renderOption ctx node selected { text } =
             , elementId node
             , onClick (NodeSelected node.id)
             ]
+                |> makeBindableIf (Common.canBind node ctx.bindingDragDrop) node.id
                 |> applyAllStyles node
     in
     Input.option node.id (E.el attrs (E.text text))
@@ -1014,15 +1027,13 @@ elementId node =
 
 
 elementClasses ctx node selected =
-    let
-        dropId =
-            AppendTo node.id
-    in
     E.htmlAttribute
         (A.classList
             [ ( "element", True )
-            , ( "element--dropped", isDroppingInto dropId ctx.dragDrop )
+            , ( "element--dropped", isDroppingInto (AppendTo node.id) ctx.nodeDragDrop )
+            , ( "element--dropped", isBinding node.id ctx.bindingDragDrop )
             , ( "element--selected", selected )
+            , ( "element--bound", isBound node )
             , ( "dragging--file", isDroppingFileInto node.id ctx.fileDrop )
             ]
         )
@@ -1056,6 +1067,20 @@ isDroppingFileInto nodeId fileDrop =
             False
 
 
+isBinding nodeId dragDrop =
+    case DragDrop.getDropId dragDrop of
+        Just nodeId_ ->
+            nodeId_ == nodeId
+
+        Nothing ->
+            False
+
+
+isBound : Node -> Bool
+isBound node =
+    node.binding /= Unbound
+
+
 placeholderText label =
     -- Center to make it work for rows, columns and text columns
     E.el
@@ -1079,10 +1104,21 @@ onDoubleClick msg =
     E.htmlAttribute (Html.Events.stopPropagationOn "dblclick" (Decode.succeed ( msg, True )))
 
 
-makeDroppableIf pred dropId attrs =
+makeNodeDroppableIf pred dropId attrs =
     if pred then
         attrs
             ++ (DragDrop.droppable DragDropMsg dropId
+                    |> List.map E.htmlAttribute
+               )
+
+    else
+        attrs
+
+
+makeBindableIf pred nodeId attrs =
+    if pred then
+        attrs
+            ++ (DragDrop.droppable BindingDragDropMsg nodeId
                     |> List.map E.htmlAttribute
                )
 
@@ -1103,6 +1139,12 @@ makeFileDroppableIf pred nodeId attrs =
 
     else
         attrs
+
+
+{-| Is user either dragging nodes or binding fields?
+-}
+isDragging ctx =
+    Common.isDragging ctx.nodeDragDrop || Common.isDragging ctx.bindingDragDrop
 
 
 {-| Stop given event and prevent default behavior.

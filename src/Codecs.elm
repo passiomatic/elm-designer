@@ -118,6 +118,7 @@ nodeCodec =
         |> Codec.field "background" .background backgroundCodec
         |> Codec.field "alignmentX" .alignmentX alignmentCodec
         |> Codec.field "alignmentY" .alignmentY alignmentCodec
+        |> Codec.field "binding" .binding bindingCodec
         |> Codec.field "type" .type_ nodeTypeCodec
         |> Codec.buildObject
 
@@ -678,6 +679,22 @@ alignmentCodec =
         |> Codec.variant0 "Center" Center
         |> Codec.variant0 "End" End
         |> Codec.variant0 "None" None
+        |> Codec.buildCustom
+
+
+bindingCodec : Codec Binding
+bindingCodec =
+    Codec.custom
+        (\boundTo unbound value ->
+            case value of
+                BoundTo f ->
+                    boundTo f 
+
+                Unbound ->
+                    unbound
+        )
+        |> Codec.variant1 "BoundTo" BoundTo Codec.string
+        |> Codec.variant0 "Unbound" Unbound
         |> Codec.buildCustom
 
 

@@ -1,5 +1,7 @@
 module Document exposing
-    ( Document
+    ( BindId
+    , Binding(..)
+    , Document
     , DragId(..)
     , DropId(..)
     , HeadingData
@@ -43,6 +45,7 @@ module Document exposing
     , applyWordSpacing
     , applyWrapRowItems
     , baseTemplate
+    , bindNodeTo
     , canDropInto
     , canDropSibling
     , duplicateNode
@@ -59,6 +62,7 @@ module Document exposing
     , isSelected
     , nodeId
     , nodeType
+    , releaseNode
     , removeNode
     , resolveInheritedFontColor
     , resolveInheritedFontFamily
@@ -73,10 +77,8 @@ import Css
 import Dict exposing (Dict)
 import Element exposing (Color, Orientation(..))
 import Fonts
-import Icons
-import List.Extra
 import Maybe
-import Palette exposing (orange)
+import Palette
 import SelectList exposing (SelectList)
 import Set exposing (Set)
 import Style.Background as Background exposing (Background)
@@ -137,6 +139,7 @@ type alias Node =
     , background : Background
     , alignmentX : Alignment
     , alignmentY : Alignment
+    , binding : Binding
     , type_ : NodeType
     }
 
@@ -169,9 +172,18 @@ type alias Template =
     }
 
 
+type Binding
+    = BoundTo BindId
+    | Unbound
+
+
 type DragId
     = Move Node
     | Insert (Tree Template)
+
+
+type alias BindId =
+    String
 
 
 type DropId
@@ -356,6 +368,7 @@ fromTemplate template seeds =
                     , background = template_.background
                     , alignmentX = template_.alignmentX
                     , alignmentY = template_.alignmentY
+                    , binding = Unbound
                     , type_ = template_.type_
                     }
             in
@@ -394,6 +407,7 @@ pageNode theme seeds children index =
             , background = baseTemplate.background
             , alignmentX = baseTemplate.alignmentX
             , alignmentY = baseTemplate.alignmentY
+            , binding = Unbound
             , type_ = baseTemplate.type_
             }
     in
@@ -724,6 +738,26 @@ insertNodeBefore siblingId newTree zipper =
         |> Maybe.withDefault (Zipper.root zipper)
 
 
+bindNodeTo : BindId -> Zipper Node -> Zipper Node
+bindNodeTo bindId zipper =
+    Zipper.mapLabel
+        (\node ->
+            { node | binding = BoundTo bindId }
+        )
+        zipper
+
+
+{-| Break node binding to any user model field.
+-}
+releaseNode : Zipper Node -> Zipper Node
+releaseNode zipper =
+    Zipper.mapLabel
+        (\node ->
+            { node | binding = Unbound }
+        )
+        zipper
+
+
 
 -- NODE PROPERTIES
 
@@ -936,9 +970,9 @@ applyFontSize value zipper =
 applyFontFamily : Local FontFamily -> Zipper Node -> Zipper Node
 applyFontFamily value zipper =
     let
-        -- First, apply the new family so the inheritance chain is consistent 
-        newZipper = 
-            Zipper.mapLabel (Font.setFamily value) zipper    
+        -- First, apply the new family so the inheritance chain is consistent
+        newZipper =
+            Zipper.mapLabel (Font.setFamily value) zipper
     in
     Zipper.mapLabel
         (\node ->
@@ -953,7 +987,8 @@ applyFontFamily value zipper =
             node
                 |> Font.setWeight newWeight
         )
-        newZipper            
+        newZipper
+
 
 applyLetterSpacing : String -> Zipper Node -> Zipper Node
 applyLetterSpacing value zipper =

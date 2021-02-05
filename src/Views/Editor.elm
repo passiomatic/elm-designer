@@ -3,7 +3,6 @@ module Views.Editor exposing (view)
 {-| Main view for the app.
 -}
 
-import Array
 import Bootstrap.Tab as Tab
 import CodeGen
 import Codecs
@@ -31,7 +30,7 @@ import Tree.Zipper as Zipper exposing (Zipper)
 import Views.Common as Common exposing (none)
 import Views.ElmUI as ElmUI
 import Views.Inspector as Inspector
-
+import Views.UserModel as UserModel
 
 
 -- VIEW
@@ -296,6 +295,7 @@ leftPaneView model =
         [ pageListView model
         , outlineView model
         , libraryView model
+        , UserModel.view model
         ]
 
 

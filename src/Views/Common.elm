@@ -1,4 +1,11 @@
-module Views.Common exposing (canDropInto, canDropSibling, fieldId, none, isDragging)
+module Views.Common exposing
+    ( canBind
+    , canDropInto
+    , canDropSibling
+    , fieldId
+    , isDragging
+    , none
+    )
 
 import Document exposing (DragId(..))
 import Html as H exposing (Html)
@@ -21,6 +28,16 @@ canDropInto container dragDrop =
                 Insert template ->
                     Document.canDropInto container (T.label template)
 
+        Nothing ->
+            False
+
+
+canBind node dragDrop =
+    case DragDrop.getDragId dragDrop of
+        Just bindId ->
+            True
+
+        -- TODO More specific check
         Nothing ->
             False
 

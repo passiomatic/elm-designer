@@ -15,6 +15,10 @@
   //box-shadow: 0 0 0 1px $primary;
 }
 
+.page--design .element--selected.element--bound {
+  outline: 2px solid $success;
+}
+
 // ----------------------
 // Drag & drop
 

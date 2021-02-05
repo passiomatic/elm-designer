@@ -642,6 +642,36 @@ update msg model =
         WidthChanged value ->
             applyChangeAndFinish model Document.applyWidth value
 
+        BindingDragDropMsg msg_ ->
+            let
+                ( newDragDrop, dragDropResult ) =
+                    DragDrop.update msg_ model.bindingDragDrop
+
+                zipper =
+                    selectedPage model.pages
+
+                newZipper =
+                    case dragDropResult of
+                        Just ( bindId, nodeId, _ ) ->
+                            case Document.selectNodeWith nodeId zipper of
+                                Just zipper_ ->
+                                    Document.bindNodeTo bindId zipper_
+
+                                Nothing ->
+                                    zipper
+
+                        Nothing ->
+                            -- Ongoing/failed drag and drop operation
+                            zipper
+            in
+            ( { model
+                | bindingDragDrop = newDragDrop
+                , pages = SelectList.replaceSelected newZipper model.pages
+                , saveState = Changed model.currentTime
+              }
+            , Cmd.none
+            )
+
         DragDropMsg msg_ ->
             let
                 ( newDragDrop, dragDropResult ) =
@@ -662,7 +692,7 @@ update msg model =
                                     ( model.seeds, selectedPage model.pages )
 
                         Nothing ->
-                            -- Still going/failed drag and drop operation
+                            -- Ongoing/failed drag and drop operation
                             ( model.seeds, selectedPage model.pages )
             in
             ( { model
@@ -821,6 +851,7 @@ getDroppedNode model dragId =
 
 {-| Figure out _where_ user just dropped the node.
 -}
+addDroppedNode : Model -> DropId -> Tree Node -> Zipper Node -> Zipper Node
 addDroppedNode model dropId node zipper =
     case dropId of
         -- Insert new element just before the sibling

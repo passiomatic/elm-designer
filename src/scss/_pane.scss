@@ -50,6 +50,28 @@
   @extend .shadow-soft;  
 }
 
+.table-user-model {
+  @include font-size($input-font-size-sm);
+}
+
+.table-user-model:target {
+  background-color: white;
+}
+
+.field {
+  @extend .rounded;
+  transition: box-shadow 0.2s ease-out;
+  cursor: move;
+  cursor: grab; // Safari    
+  border: 1px solid $border-color;
+  background: #fff !important;
+  //color: $body-color !important;   
+}
+
+.field:hover {
+  @extend .shadow-soft;  
+}
+
 // Inspector
 
 #tab-code,

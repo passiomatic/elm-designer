@@ -17,6 +17,7 @@ module Icons exposing
     , image
     , info
     , layout
+    , link
     , lock
     , minusCircle
     , paragraph
@@ -51,6 +52,13 @@ mediumSize =
 
 largeSize =
     18
+
+
+link : Html msg
+link =
+    I.link2
+        |> I.withSize smallSize
+        |> I.toHtml []
 
 
 image : Html msg

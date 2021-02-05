@@ -20,11 +20,16 @@ module Model exposing
     )
 
 import Bootstrap.Tab as Tab
+import Demo
+import Dict exposing (Dict)
 import Document exposing (..)
+import Elm.Syntax.Declaration as Declaration exposing (Declaration)
+import Elm.Syntax.Node as Node
 import File exposing (File)
 import Html.Events.Extra.Wheel as Wheel
 import Html5.DragDrop as DragDrop
 import Http exposing (Error, Progress)
+import Loader
 import Random
 import Result exposing (Result(..))
 import SelectList exposing (SelectList)
@@ -62,7 +67,7 @@ type Msg
     | HeightChanged Length
     | AlignmentXChanged Alignment
     | AlignmentYChanged Alignment
-    | AlignmentChanged Alignment 
+    | AlignmentChanged Alignment
     | TextAlignChanged TextAlignment
     | FontFamilyChanged (Local FontFamily)
     | FontWeightChanged FontWeight
@@ -94,6 +99,7 @@ type Msg
     | FileUploading File (List File) Progress
     | FileUploaded (Result Error String)
     | NoOp
+    | BindingDragDropMsg (DragDrop.Msg BindId NodeId)
     | DragDropMsg (DragDrop.Msg DragId DropId)
     | TabMsg Tab.State
 
@@ -155,6 +161,7 @@ type Inspector
 type alias Model =
     { mode : Mode
     , uploadEndpoint : String
+    , types : Dict String (Node.Node Declaration)
 
     -- , workspaceScale : Float
     -- , workspaceX : Int
@@ -169,6 +176,7 @@ type alias Model =
     , viewport : Viewport
     , inspector : Inspector
     , dragDrop : DragDrop.Model DragId DropId
+    , bindingDragDrop : DragDrop.Model BindId NodeId
     , fileDrop : FileDrop
     , rightPaneTabState : Tab.State
     , seeds : Seeds
@@ -201,7 +209,8 @@ type DocumentState
 -}
 type alias Context =
     { currentNode : Zipper Node
-    , dragDrop : DragDrop.Model DragId DropId
+    , nodeDragDrop : DragDrop.Model DragId DropId
+    , bindingDragDrop : DragDrop.Model BindId NodeId
     , fileDrop : FileDrop
     , inspector : Inspector
     , mode : Mode
@@ -212,7 +221,8 @@ type alias Context =
 context : Model -> Context
 context model =
     { currentNode = SelectList.selected model.pages
-    , dragDrop = model.dragDrop
+    , nodeDragDrop = model.dragDrop
+    , bindingDragDrop = model.bindingDragDrop
     , fileDrop = model.fileDrop
     , inspector = model.inspector
     , mode = model.mode
@@ -266,9 +276,14 @@ initialModel { width, height, uploadEndpoint, seed1, seed2, seed3, seed4 } =
 
         ( newSeeds, emptyDocument ) =
             Document.emptyPageNode seeds 1
+
+        declarations =
+            loadDemo
+                |> Dict.fromList
     in
     { mode = DesignMode
     , uploadEndpoint = uploadEndpoint
+    , types = declarations
 
     -- , workspaceScale = 1.0
     -- , workspaceX = -workspaceWidth // 2 + width // 2
@@ -283,6 +298,7 @@ initialModel { width, height, uploadEndpoint, seed1, seed2, seed3, seed4 } =
     , viewport = Fluid
     , inspector = NotEdited
     , dragDrop = DragDrop.init
+    , bindingDragDrop = DragDrop.init
     , fileDrop = Empty
     , rightPaneTabState = Tab.customInitialState "tab-design"
     , seeds = newSeeds
@@ -299,3 +315,21 @@ initialModel { width, height, uploadEndpoint, seed1, seed2, seed3, seed4 } =
 page : SelectList (Zipper Node) -> Zipper Node
 page pages =
     SelectList.selected pages
+
+
+loadDemo : List ( String, Node.Node Declaration )
+loadDemo =
+    let
+        result =
+            Loader.parse Demo.source [ Demo.source2 ]
+    in
+    case result of
+        Ok file ->
+            Loader.declarations file
+
+        Err deadEnds ->
+            let
+                _ =
+                    Debug.log "Cannot parse Elm file." deadEnds
+            in
+            []
