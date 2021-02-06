@@ -6,22 +6,25 @@
 
 The application is in early stages of development and supports a subset of Elm UI.
 
-Version 0.1 goals are:
+Version 0.2 goals are:
 
-- Create and transform simple designs into Elm code
-- Auto-save designs into browser `localStorage`
-- Cover Elm UI `row`, `column`, `textColumn` layout primitives and most of the form widgets; support padding and spacing; allow fonts formatting with native and external web fonts (thanks to Google Fonts)  
+* Add JPEG, PNG, GIF and SVG images by picking them from local file system
+* Specify exact, minimun, and maximun elements dimensions
+* Drop library elements on the outline pane like before or directly on the page
 
 ## Download 
 
-Elm Designer is distributed as an Electron app. Right now there’s a [macOS binary available][d] to download and you can run Elm Designer sources on Windows and Linux systems via CLI.
+Elm Designer is distributed as an Electron app. Right now there are [macOS and Linux binaries][d] to download and you can run Elm Designer sources on Windows via CLI.
+
+## About images
+
+Images added to the page are automatically uploaded to [Null Pointer](https://0x0.st) service. According to Null Pointer terms of service uploaded images remain available up to one year (exact expiration time depends on file size). 
 
 ## Known issues
 
 - Color picker is quite limited at the moment since Elm Designer is using HTML 5 `input type=color`. Specifically you can't reset a color or specify `inherit`. See [#1][issue1]
 - When switching fonts the weight of the new font should match, or be closer as possible, to the old one. See [#2][issue2]
 - "Insert" menu allows to create non-renderable nodes. See [#20][issue20]
-- ~~Non-fluid pages larger than current workspace dimensions push right panel out of app window~~
 
 ## Build Elm Designer from sources
 
@@ -49,7 +52,7 @@ This will build the app assets with Parcel in production mode, copy the files in
 [2]: https://parceljs.org
 [3]: https://parceljs.org/getting_started.html
 [4]: https://www.electronjs.org
+[d]: https://github.com/passiomatic/elm-designer/releases/tag/v0.2.0
 [issue1]: https://github.com/passiomatic/elm-designer/issues/1 
 [issue2]: https://github.com/passiomatic/elm-designer/issues/2 
-[d]: https://github.com/passiomatic/elm-designer/releases/tag/v0.1.0
 [issue20]: https://github.com/passiomatic/elm-designer/issues/20
