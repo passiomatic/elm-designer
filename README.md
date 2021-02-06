@@ -10,7 +10,7 @@ Version 0.2 goals are:
 
 * Add JPEG, PNG, GIF and SVG images by picking them from local file system
 * Specify exact, minimun, and maximun elements dimensions
-* Drop library elements on the outline pane like before or directly on the page
+* Drop library elements directly on the page or on the outline pane like before 
 
 ## Download 
 
@@ -18,7 +18,9 @@ Elm Designer is distributed as an Electron app. Right now there are [macOS and L
 
 ## About images
 
-Images added to the page are automatically uploaded to [Null Pointer](https://0x0.st) service. According to Null Pointer terms of service uploaded images remain available up to one year (exact expiration time depends on file size). 
+Images added to the page are automatically uploaded to [Null Pointer](https://0x0.st) service. According to Null Pointer terms of service uploaded images remain available up to one year (exact expiration depends on file size). 
+
+By uploading images and referencing them by URL sidesteps a number of issues like: huge serialized JSON files, hit `localStorage` quota limits, and dealing with clumsy generated code.
 
 ## Known issues
 
