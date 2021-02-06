@@ -1,4 +1,4 @@
-# 0.2.0 2021-02-06
+# Version 0.2.0 • 2021-02-06
 
 ⚠️ **Document format is changed from previous version so you won't be able to load your existing designs.**
 
@@ -8,6 +8,7 @@
 * Added alignment button to toggle centering on/off
 * Added inspector settings to specify exact width and height pixel values
 * Added letter and word spacing styles to inspector
+* Drop library elements directly on the page or on outline pane
 * Use Electron API to show error messages
 * Added Source Sans Pro, Source Serif Pro, Source Mono Pro, Roboto Mono and Space Mono fonts
 * Show inherited font family and weight styles in gray and italic instead of showing them between parens
@@ -16,12 +17,12 @@
 ## Bugs fixed 
 
 * Better handling of font weight adjust while changing family  
-* Made the inline text editor to honor node text aligment
+* Made the inline text editor to honor node text alignment
 * Allow selection of left/right aligned (floated) elements within their container
 
 ---
 
-# 0.1.1 2021-01-09
+# Version 0.1.1 • 2021-01-09
 
 ## New features and tweaks
 
@@ -42,6 +43,6 @@
 
 ---
 
-# 0.1.0 2020-12-27
+# Version 0.1.0 • 2020-12-27
 
 First public version.
