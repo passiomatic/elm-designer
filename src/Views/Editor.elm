@@ -33,6 +33,10 @@ import Views.ElmUI as ElmUI
 import Views.Inspector as Inspector
 
 
+maxTreeLabelLength =
+    50
+
+
 
 -- VIEW
 
@@ -446,7 +450,51 @@ emptyPageNotice model node =
 
 
 treeLabel node =
-    H.span [ A.class "w-100", clickToSelectHandler node.id ] [ H.text node.name ]
+    let
+        label =
+            (case node.type_ of
+                ParagraphNode data ->
+                    data.text
+
+                HeadingNode data ->
+                    data.text
+
+                TextNode data ->
+                    data.text
+
+                ButtonNode data ->
+                    data.text
+
+                TextFieldNode data ->
+                    data.text
+
+                TextFieldMultilineNode data ->
+                    data.text
+
+                CheckboxNode data ->
+                    data.text
+
+                RadioNode data ->
+                    data.text
+
+                OptionNode data ->
+                    data.text
+
+                _ ->
+                    ""
+            )
+                |> String.trim
+                |> String.left maxTreeLabelLength
+    in
+    H.span [ A.class "w-100 text-truncate", clickToSelectHandler node.id ]
+        [ H.text
+            (if String.isEmpty label then
+                node.name
+
+             else
+                label
+            )
+        ]
 
 
 collapseIcon collapsed node siblings =
