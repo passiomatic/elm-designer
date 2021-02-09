@@ -52,7 +52,7 @@ families =
         , FontFamily "Rubik" (External rubikUrl) rubikWeights
         , FontFamily "Source Sans Pro" (External sourceSansProUrl) sourceSansProWeights
         , FontFamily "Work Sans" (External workSansUrl) workSansWeights
-        , FontFamily "Inter UI" (External interUrl) interWeights
+        , FontFamily "Inter" (External interUrl) interWeights
         ]
       )
     , ( "Serif/Google Fonts"
@@ -148,6 +148,7 @@ interWeights =
   , Light
   , Regular
   , Medium
+  , Bold
   , SemiBold
   , ExtraBold
   , Heavy
