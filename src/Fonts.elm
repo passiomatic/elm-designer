@@ -52,6 +52,7 @@ families =
         , FontFamily "Rubik" (External rubikUrl) rubikWeights
         , FontFamily "Source Sans Pro" (External sourceSansProUrl) sourceSansProWeights
         , FontFamily "Work Sans" (External workSansUrl) workSansWeights
+        , FontFamily "Inter UI" (External interUrl) interWeights
         ]
       )
     , ( "Serif/Google Fonts"
@@ -134,6 +135,23 @@ cormorantWeights =
     , Bold
     , BoldItalic
     ]
+
+
+interUrl =
+    baseUrl ++ "Inter:wght@100;200;300;400;500;600;700;800;900&display=swap"
+
+
+interWeights : List FontWeight
+interWeights =
+  [ Hairline
+  , ExtraLight
+  , Light
+  , Regular
+  , Medium
+  , SemiBold
+  , ExtraBold
+  , Heavy
+  ]
 
 
 workSansUrl =
