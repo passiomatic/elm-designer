@@ -48,11 +48,11 @@ families =
     , ( "Sans Serif/Google Fonts"
       , [ FontFamily "Alegreya Sans" (External alegreyaSansUrl) alegreyaSansWeights
         , FontFamily "IBM Plex Sans" (External plexSansUrl) plexSansWeights
+        , FontFamily "Inter" (External interUrl) interWeights
         , FontFamily "Roboto" (External robotoUrl) robotoWeights
         , FontFamily "Rubik" (External rubikUrl) rubikWeights
         , FontFamily "Source Sans Pro" (External sourceSansProUrl) sourceSansProWeights
         , FontFamily "Work Sans" (External workSansUrl) workSansWeights
-        , FontFamily "Inter" (External interUrl) interWeights
         ]
       )
     , ( "Serif/Google Fonts"
