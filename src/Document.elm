@@ -12,8 +12,9 @@ module Document exposing
     , RowData
     , Template
     , TextData
-    , Viewport(..), imageNode
+    , Viewport(..)
     , appendNode
+    , applyAlign
     , applyAlignX
     , applyAlignY
     , applyBackground
@@ -39,6 +40,7 @@ module Document exposing
     , applyTextAlign
     , applyWidth
     , applyWidthWith
+    , applyWordSpacing
     , applyWrapRowItems
     , baseTemplate
     , canDropInto
@@ -48,6 +50,7 @@ module Document exposing
     , findDeviceInfo
     , fromTemplate
     , generateId
+    , imageNode
     , insertNode
     , insertNodeAfter
     , insertNodeBefore
@@ -63,7 +66,7 @@ module Document exposing
     , schemaVersion
     , selectNodeWith
     , selectParentOf
-    , viewports, applyWordSpacing
+    , viewports
     )
 
 import Css
@@ -238,7 +241,7 @@ nodeType value =
 
         RowNode _ ->
             "Row"
-            
+
         TextColumnNode ->
             "Text Column"
 
@@ -416,6 +419,7 @@ imageNode url seeds =
             T.singleton
                 { baseTemplate
                     | type_ = ImageNode { src = url, description = "" }
+
                     --, width = Fill
                     , name = "Image"
                 }
@@ -865,6 +869,15 @@ applyAlignY value zipper =
     Zipper.mapLabel (\node -> { node | alignmentY = value }) zipper
 
 
+applyAlign : Alignment -> Zipper Node -> Zipper Node
+applyAlign value zipper =
+    Zipper.mapLabel
+        (\node ->
+            { node | alignmentX = value, alignmentY = value }
+        )
+        zipper
+
+
 applyOffset : (Float -> Transformation -> Transformation) -> String -> Zipper Node -> Zipper Node
 applyOffset setter value zipper =
     let
@@ -917,13 +930,30 @@ applyFontSize value zipper =
                 Nothing ->
                     Inherit
     in
-    Zipper.mapLabel (Font.setFontSize value_) zipper
+    Zipper.mapLabel (Font.setSize value_) zipper
 
 
 applyFontFamily : Local FontFamily -> Zipper Node -> Zipper Node
 applyFontFamily value zipper =
-    Zipper.mapLabel (Font.setFontFamily value) zipper
+    let
+        -- First, apply the new family so the inheritance chain is consistent 
+        newZipper = 
+            Zipper.mapLabel (Font.setFamily value) zipper    
+    in
+    Zipper.mapLabel
+        (\node ->
+            let
+                resolvedFamily =
+                    resolveInheritedFontFamily Fonts.defaultFamily newZipper
 
+                -- While changing family adjust weight to the closest available
+                newWeight =
+                    Font.findClosestWeight node.fontWeight resolvedFamily.weights
+            in
+            node
+                |> Font.setWeight newWeight
+        )
+        newZipper            
 
 applyLetterSpacing : String -> Zipper Node -> Zipper Node
 applyLetterSpacing value zipper =
@@ -1015,9 +1045,9 @@ applyFontColor value zipper =
         value_ =
             Local (Css.stringToColor value)
     in
-    Zipper.mapLabel (Font.setFontColor value_) zipper
+    Zipper.mapLabel (Font.setColor value_) zipper
 
 
 applyFontWeight : FontWeight -> Zipper Node -> Zipper Node
 applyFontWeight value zipper =
-    Zipper.mapLabel (Font.setFontWeight value) zipper
+    Zipper.mapLabel (Font.setWeight value) zipper

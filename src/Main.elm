@@ -87,6 +87,25 @@ update msg model =
             , Cmd.none
             )
 
+        FileSelected files ->
+            let
+                node =
+                    selectedPage model.pages.present
+                        |> Zipper.tree
+                        |> T.label
+
+                ( newUploadState, cmd ) =
+                    files
+                        |> acceptFiles
+                        |> Uploader.uploadNextFile model.uploadEndpoint
+            in
+            ( { model
+                | uploadState = newUploadState
+                , fileDrop = DroppedInto node.id -- Simulate a drag and drop operation
+              }
+            , cmd
+            )
+
         FileDropped nodeId file files ->
             let
                 ( newUploadState, cmd ) =
@@ -127,7 +146,7 @@ update msg model =
                             case model.fileDrop of
                                 DroppedInto parentId ->
                                     Document.selectNodeWith parentId zipper
-                                        |> Maybe.map (Document.appendNode newNode)
+                                        |> Maybe.map (Document.insertNode newNode)
                                         |> Maybe.withDefault zipper
 
                                 _ ->
@@ -602,8 +621,8 @@ update msg model =
         FontSizeChanged value ->
             applyChangeAndFinish model Document.applyFontSize value
 
-        FontFamilyChanged value ->
-            applyChangeAndFinish model Document.applyFontFamily value
+        FontFamilyChanged family ->
+            applyChangeAndFinish model Document.applyFontFamily family
 
         BackgroundColorChanged value ->
             applyChangeAndFinish model Document.applyBackgroundColor value
@@ -622,6 +641,9 @@ update msg model =
 
         AlignmentYChanged value ->
             applyChangeAndFinish model Document.applyAlignY value
+
+        AlignmentChanged value ->
+            applyChangeAndFinish model Document.applyAlign value
 
         HeightChanged value ->
             applyChangeAndFinish model Document.applyHeight value

@@ -33,6 +33,10 @@ import Views.ElmUI as ElmUI
 import Views.Inspector as Inspector
 
 
+maxTreeLabelLength =
+    50
+
+
 
 -- VIEW
 
@@ -43,6 +47,10 @@ view model =
             [ ( "h-100", True )
             , ( "dragging--element", Common.isDragging model.dragDrop )
             ]
+
+        -- Receive files from Electron. This is a workaround since
+        --   we cannot pass Files or Bytes to Elm via ports yet
+        , E.on "files-selected" (filesDecoder FileSelected)
         ]
         (case model.mode of
             PreviewMode ->
@@ -61,6 +69,10 @@ view model =
                     ]
                 ]
         )
+
+
+filesDecoder tagger =
+    Decode.field "detail" (Decode.map tagger (Decode.list File.decoder))
 
 
 workspaceView model =
@@ -90,7 +102,7 @@ uploadProgressView uploadState =
                 , A.style "z-index" "3"
                 ]
                 [ H.div [ A.class "w-50 mx-auto bg-light border rounded bpx-2 bpy-2" ]
-                    [ H.div [ A.class "label-sm" ] [ H.text ("Uploading image " ++ (File.name file) ++ "...") ]
+                    [ H.div [ A.class "label-sm" ] [ H.text ("Uploading image " ++ File.name file ++ "...") ]
                     , H.div [ A.class "mt-1 progress", A.style "height" "8px" ]
                         [ H.div
                             [ A.class "progress-bar progress-bar-striped progress-bar-animated"
@@ -438,7 +450,51 @@ emptyPageNotice model node =
 
 
 treeLabel node =
-    H.span [ A.class "w-100", clickToSelectHandler node.id ] [ H.text node.name ]
+    let
+        label =
+            (case node.type_ of
+                ParagraphNode data ->
+                    data.text
+
+                HeadingNode data ->
+                    data.text
+
+                TextNode data ->
+                    data.text
+
+                ButtonNode data ->
+                    data.text
+
+                TextFieldNode data ->
+                    data.text
+
+                TextFieldMultilineNode data ->
+                    data.text
+
+                CheckboxNode data ->
+                    data.text
+
+                RadioNode data ->
+                    data.text
+
+                OptionNode data ->
+                    data.text
+
+                _ ->
+                    ""
+            )
+                |> String.trim
+                |> String.left maxTreeLabelLength
+    in
+    H.span [ A.class "w-100 text-truncate", clickToSelectHandler node.id ]
+        [ H.text
+            (if String.isEmpty label then
+                node.name
+
+             else
+                label
+            )
+        ]
 
 
 collapseIcon collapsed node siblings =

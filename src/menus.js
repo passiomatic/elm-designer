@@ -1,4 +1,4 @@
-module.exports = function (app, shell, isMac, insertMenuItems) {
+module.exports = function (app, shell, isMac, insertMenuItems, insertImageCallback) {
   const template = [{
       label: 'Edit',
       submenu: [{
@@ -16,9 +16,6 @@ module.exports = function (app, shell, isMac, insertMenuItems) {
             if (focusedWindow)
               focusedWindow.webContents.send("command", "ReDo", null)
           }
-        },
-        {
-          type: 'separator'
         },
         {
           label: 'Cut',
@@ -39,20 +36,31 @@ module.exports = function (app, shell, isMac, insertMenuItems) {
           label: 'Select All',
           accelerator: 'CmdOrCtrl+A',
           role: 'selectall'
-        }
+        },
       ]
     },
     {
       label: 'Insert',
       //id: "INSERT",
       submenu: [{
-        label: 'New Page',
-        accelerator: 'CmdOrCtrl+Shift+Alt+N',
-        click: function (item, focusedWindow) {
-          if (focusedWindow)
-            focusedWindow.webContents.send("command", "PageAdd", null)
-        }
-      }].concat(insertMenuItems)
+          label: 'New Page',
+          accelerator: 'CmdOrCtrl+Shift+Alt+N',
+          click: function (item, focusedWindow) {
+            if (focusedWindow)
+              focusedWindow.webContents.send("command", "PageAdd", null)
+          }
+
+        },
+        {
+          type: 'separator'
+        },
+        {
+          label: 'Image...',
+          click: function (item, focusedWindow) {
+            insertImageCallback(focusedWindow)
+          }
+        },
+      ].concat(insertMenuItems)
     },
     {
       label: 'View',

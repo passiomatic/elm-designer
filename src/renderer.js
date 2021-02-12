@@ -3,8 +3,11 @@ import { Elm } from "./Main.elm"
 // https://github.com/electron/electron/issues/2288#issuecomment-611231970
 const isElectron = /electron/i.test(navigator.userAgent)
 
-let remote = null
+let remote, fs, path, mime = null
 if (isElectron) {
+  fs = window.require('fs')
+  path = window.require('path')
+  mime = window.require('mime-types')
   remote = window.require('electron').remote
 }
 
@@ -193,10 +196,25 @@ app.ports.showMessageBox.subscribe(function (options) {
   const buttonId = remote.dialog.showMessageBoxSync(focusedWindow, options)
 });
 
-// Forward all app menu commands to Elm
 
 window.onload = () => {
+  ipc.on('renderer', (event, message, values) => {
+      switch(message) {
+        case "InsertImage":
+          const files =  values.map(function(fileName) {
+            const data = fs.readFileSync(fileName)
+            const type = mime.lookup(fileName) || 'application/octet-stream'
+            return new File([data], path.basename(fileName), { type: type })
+          })
+          const elm = document.querySelector("main")
+          const evt = new CustomEvent("files-selected", { detail: files })
+          elm.dispatchEvent(evt)
+      }
+  })  
+  
+  // Forward all others app menu commands to Elm
+
   ipc.on('command', (event, message, value) => {
     app.ports[`on${message}`].send(value)
-  })
+  })  
 }

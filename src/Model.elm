@@ -63,6 +63,7 @@ type Msg
     | HeightChanged Length
     | AlignmentXChanged Alignment
     | AlignmentYChanged Alignment
+    | AlignmentChanged Alignment 
     | TextAlignChanged TextAlignment
     | FontFamilyChanged (Local FontFamily)
     | FontWeightChanged FontWeight
@@ -88,6 +89,7 @@ type Msg
     | Ticked Posix
     | ModeChanged Mode
     | FileDropped NodeId File (List File)
+    | FileSelected (List File)
     | FileDragging NodeId
     | FileDragCanceled
     | FileUploading File (List File) Progress

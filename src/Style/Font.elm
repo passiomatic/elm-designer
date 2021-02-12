@@ -4,14 +4,16 @@ module Style.Font exposing
     , FontWeight(..)
     , Local(..)
     , TextAlignment(..)
+    , findClosestWeight
     , minFontSizeAllowed
-    , setFontColor
-    , setFontFamily
-    , setFontSize
-    , setFontWeight
+    , setColor
+    , setFamily
+    , setSize
+    , setWeight
     , setLetterSpacing
     , setTextAlignment
-    , weightName, setWordSpacing
+    , setWordSpacing
+    , weightName
     )
 
 {-| Font properties.
@@ -47,23 +49,23 @@ type alias FontFamily =
     }
 
 
-setFontFamily : Local FontFamily -> { a | fontFamily : Local FontFamily } -> { a | fontFamily : Local FontFamily }
-setFontFamily value node =
+setFamily : Local FontFamily -> { a | fontFamily : Local FontFamily } -> { a | fontFamily : Local FontFamily }
+setFamily value node =
     { node | fontFamily = value }
 
 
-setFontSize : Local Int -> { a | fontSize : Local Int } -> { a | fontSize : Local Int }
-setFontSize value node =
+setSize : Local Int -> { a | fontSize : Local Int } -> { a | fontSize : Local Int }
+setSize value node =
     { node | fontSize = value }
 
 
-setFontColor : Local Color -> { a | fontColor : Local Color } -> { a | fontColor : Local Color }
-setFontColor value node =
+setColor : Local Color -> { a | fontColor : Local Color } -> { a | fontColor : Local Color }
+setColor value node =
     { node | fontColor = value }
 
 
-setFontWeight : FontWeight -> { a | fontWeight : FontWeight } -> { a | fontWeight : FontWeight }
-setFontWeight value node =
+setWeight : FontWeight -> { a | fontWeight : FontWeight } -> { a | fontWeight : FontWeight }
+setWeight value node =
     { node | fontWeight = value }
 
 
@@ -161,6 +163,79 @@ weightName value =
 
         HairlineItalic ->
             "Hairline Italic"
+
+
+findClosestWeight : FontWeight -> List FontWeight -> FontWeight
+findClosestWeight optimal weights =
+    weights
+        |> List.map
+            (\weight ->
+                ( weight, abs (weightNumber weight - weightNumber optimal) )
+            )
+        |> List.sortBy Tuple.second
+        |> List.head
+        |> Maybe.map Tuple.first
+        |> Maybe.withDefault Regular
+
+
+{-| Mapping between weight and CSS values.
+-}
+weightNumber : FontWeight -> Int
+weightNumber value =
+    case value of
+        Heavy ->
+            900
+
+        HeavyItalic ->
+            900
+
+        ExtraBold ->
+            800
+
+        ExtraBoldItalic ->
+            800
+
+        Bold ->
+            700
+
+        BoldItalic ->
+            700
+
+        SemiBold ->
+            600
+
+        SemiBoldItalic ->
+            600
+
+        Medium ->
+            500
+
+        MediumItalic ->
+            500
+
+        Regular ->
+            400
+
+        Italic ->
+            400
+
+        Light ->
+            300
+
+        LightItalic ->
+            300
+
+        ExtraLight ->
+            200
+
+        ExtraLightItalic ->
+            200
+
+        Hairline ->
+            100
+
+        HairlineItalic ->
+            100
 
 
 type TextAlignment
