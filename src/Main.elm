@@ -65,10 +65,6 @@ init flags =
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
-    let
-        pages =
-            model.pages
-    in
     case msg of
         -- ###########
         -- Image drag & drop from local filesystem
@@ -168,7 +164,7 @@ update msg model =
 
                             else
                                 model.fileDrop
-                        , pages = { pages | present = SelectList.replaceSelected newPage model.pages.present }
+                        , pages = UndoList.mapPresent (SelectList.replaceSelected newPage) model.pages
                         , seeds = newSeeds
                         , saveState = Changed model.currentTime
                       }
@@ -305,7 +301,7 @@ update msg model =
                         head :: rest ->
                             -- Select the first page of the list
                             ( { model
-                                | pages = { pages | present = SelectList.fromLists [] head rest }
+                                | pages = UndoList.mapPresent (\_ -> SelectList.fromLists [] head rest) model.pages
                                 , viewport = document.viewport
                                 , saveState = Original
                               }
@@ -349,18 +345,19 @@ update msg model =
             )
 
         PageSelected index ->
-            let
-                newPages =
-                    case SelectList.selectBy index pages.present of
-                        Just pages_ ->
-                            SelectList.updateSelected Zipper.root pages_
-
-                        Nothing ->
-                            -- Fall back to first page
-                            SelectList.selectHead pages.present
-            in
             ( { model
-                | pages = { pages | present = newPages }
+                | pages =
+                    UndoList.mapPresent
+                        (\pages ->
+                            case SelectList.selectBy index pages of
+                                Just pages_ ->
+                                    SelectList.updateSelected Zipper.root pages_
+
+                                Nothing ->
+                                    -- Fall back to first page
+                                    SelectList.selectHead pages
+                        )
+                        model.pages
 
                 -- Quit editing when user selects a new page
                 , inspector = NotEdited
@@ -369,18 +366,19 @@ update msg model =
             )
 
         NodeSelected id ->
-            let
-                newPages =
-                    SelectList.updateSelected
-                        (\page ->
-                            Document.selectNodeWith id page
-                                -- Fallback to root node if given node cannot be found
-                                |> Maybe.withDefault (Zipper.root page)
-                        )
-                        model.pages.present
-            in
             ( { model
-                | pages = UndoList.new newPages model.pages
+                | pages =
+                    UndoList.mapPresent
+                        (\pages ->
+                            SelectList.updateSelected
+                                (\page ->
+                                    Document.selectNodeWith id page
+                                        -- Fallback to root node if given node cannot be found
+                                        |> Maybe.withDefault (Zipper.root page)
+                                )
+                                pages
+                        )
+                        model.pages
 
                 -- Quit editing when user selects a new node
                 , inspector = NotEdited
@@ -656,7 +654,7 @@ update msg model =
                 ( newDragDrop, dragDropResult ) =
                     DragDrop.update msg_ model.dragDrop
 
-                ( newSeeds, newPages, newUndo ) =
+                ( newSeeds, newPages, hasNewUndo ) =
                     case dragDropResult of
                         Just ( dragId, dropId, _ ) ->
                             let
@@ -680,11 +678,11 @@ update msg model =
             ( { model
                 | dragDrop = newDragDrop
                 , pages =
-                    if newUndo then
+                    if hasNewUndo then
                         UndoList.new newPages_ model.pages
 
                     else
-                        { pages | present = newPages_ }
+                        UndoList.mapPresent (\_ -> newPages_) model.pages
                 , seeds = newSeeds
                 , saveState = Changed model.currentTime
               }
@@ -712,7 +710,7 @@ update msg model =
                 ( False, "Backspace", NotEdited ) ->
                     -- TODO remove node from model.collapsedTreeItems
                     ( { model
-                        | pages = UndoList.new (SelectList.updateSelected Document.removeNode model.pages.present) pages
+                        | pages = UndoList.new (SelectList.updateSelected Document.removeNode model.pages.present) model.pages
                         , saveState = Changed model.currentTime
                       }
                     , Cmd.none
@@ -750,11 +748,11 @@ update msg model =
             else
                 ( model, Cmd.none )
 
-        UnDo _ ->
-            ( { model | pages = UndoList.undo pages }, Cmd.none )
+        Undo _ ->
+            ( { model | pages = UndoList.undo model.pages }, Cmd.none )
 
-        ReDo _ ->
-            ( { model | pages = UndoList.redo pages }, Cmd.none )
+        Redo _ ->
+            ( { model | pages = UndoList.redo model.pages }, Cmd.none )
 
         -- MouseMoved mouse ->
         --     if model.isMouseButtonDown && model.mode == PanMode then
@@ -943,8 +941,8 @@ subscriptions model =
         , Ports.onPageAdd PageAddClicked
         , Ports.onPageDelete PageDeleteClicked
         , Ports.onInsertNode InsertNodeClicked
-        , Ports.onUnDo UnDo
-        , Ports.onReDo ReDo
+        , Ports.onUndo Undo
+        , Ports.onRedo Redo
         , Time.every 1000 Ticked
         , uploadSub
         ]

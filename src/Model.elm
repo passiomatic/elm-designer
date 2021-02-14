@@ -37,7 +37,7 @@ import Time exposing (Posix)
 import Tree exposing (Tree)
 import Tree.Zipper as Zipper exposing (Zipper)
 import UUID exposing (Seeds)
-import UndoList
+import UndoList exposing (UndoList)
 
 
 workspaceWidth =
@@ -63,7 +63,7 @@ type Msg
     | HeightChanged Length
     | AlignmentXChanged Alignment
     | AlignmentYChanged Alignment
-    | AlignmentChanged Alignment 
+    | AlignmentChanged Alignment
     | TextAlignChanged TextAlignment
     | FontFamilyChanged (Local FontFamily)
     | FontWeightChanged FontWeight
@@ -97,8 +97,8 @@ type Msg
     | NoOp
     | DragDropMsg (DragDrop.Msg DragId DropId)
     | TabMsg Tab.State
-    | UnDo ()
-    | ReDo ()
+    | Undo ()
+    | Redo ()
 
 
 {-| All editable text fields in the app.
@@ -168,7 +168,7 @@ type alias Model =
     , mouseY : Int
     , isMouseButtonDown : Bool
     , isAltDown : Bool
-    , pages : UndoList.UndoList (SelectList (Zipper Node))
+    , pages : UndoList (SelectList (Zipper Node))
     , viewport : Viewport
     , inspector : Inspector
     , dragDrop : DragDrop.Model DragId DropId

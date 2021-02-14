@@ -5,8 +5,8 @@ port module Ports exposing
     , onInsertNode
     , onPageAdd
     , onPageDelete
-    , onReDo
-    , onUnDo
+    , onRedo
+    , onUndo
     , saveDocument
     , selectText
     , setDragImage
@@ -85,7 +85,7 @@ port onPageDuplicate : (String -> msg) -> Sub msg
 port onInsertNode : (String -> msg) -> Sub msg
 
 
-port onUnDo : (() -> msg) -> Sub msg
+port onUndo : (() -> msg) -> Sub msg
 
 
-port onReDo : (() -> msg) -> Sub msg
+port onRedo : (() -> msg) -> Sub msg

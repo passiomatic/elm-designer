@@ -6,7 +6,7 @@ module.exports = function (app, shell, isMac, insertMenuItems, insertImageCallba
           accelerator: 'CmdOrCtrl+Z',
           click: function (item, focusedWindow) {
             if (focusedWindow)
-              focusedWindow.webContents.send("command", "UnDo", null)
+              focusedWindow.webContents.send("command", "Undo", null)
           }
         },
         {
@@ -14,9 +14,12 @@ module.exports = function (app, shell, isMac, insertMenuItems, insertImageCallba
           accelerator: 'Shift+CmdOrCtrl+Z',
           click: function (item, focusedWindow) {
             if (focusedWindow)
-              focusedWindow.webContents.send("command", "ReDo", null)
+              focusedWindow.webContents.send("command", "Redo", null)
           }
         },
+        {
+          type: 'separator'
+        },        
         {
           label: 'Cut',
           accelerator: 'CmdOrCtrl+X',
