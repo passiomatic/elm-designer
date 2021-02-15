@@ -357,6 +357,7 @@ renderTextField ctx node selected label =
             -- Deactivate field while in design mode
             [ E.htmlAttribute (A.readonly (ctx.mode == DesignMode))
             , E.width E.fill
+            , E.height E.fill
             ]
                 |> applyChildStyles node
     in
@@ -390,6 +391,7 @@ renderTextFieldMultiline ctx node selected label =
             -- Deactivate field while in design mode
             [ E.htmlAttribute (A.readonly (ctx.mode == DesignMode))
             , E.width E.fill
+            , E.height E.fill
             ]
                 |> applyChildStyles node
     in
@@ -445,6 +447,7 @@ renderButton ctx node selected { text } =
     let
         attrs =
             [ E.width E.fill
+            , E.height E.fill
             ]
                 |> applyChildStyles node
     in
@@ -472,6 +475,7 @@ renderCheckbox ctx node selected label =
     let
         attrs =
             [ E.width E.fill
+            , E.height E.fill
             ]
                 |> applyChildStyles node
     in
@@ -504,6 +508,7 @@ renderRadio ctx node selected label children =
     let
         attrs =
             [ E.width E.fill
+            , E.height E.fill
             ]
                 |> applyChildStyles node
     in
