@@ -34,7 +34,7 @@ view model =
         zipper =
             SelectList.selected model.pages
     in
-    [ H.form [ E.onSubmit FieldEditingFinished ]
+    [ H.form [ E.onSubmit FieldEditingConfirmed ]
         -- This makes onSubmit to work when hitting enter
         (H.button [ A.type_ "submit", A.class "sr-only" ] []
             :: resolveStyleViews model zipper
@@ -270,7 +270,7 @@ labelView { text } model { type_ } =
     let
         label_ =
             case model.inspector of
-                EditingField LabelField _ new ->
+                EditingField LabelField new ->
                     new
 
                 _ ->
@@ -300,7 +300,7 @@ imageView image model _ =
     let
         imageSrc =
             case model.inspector of
-                EditingField ImageSrcField _ new ->
+                EditingField ImageSrcField new ->
                     new
 
                 _ ->
@@ -334,25 +334,25 @@ paddingView model { padding } =
     let
         paddingTop =
             case model.inspector of
-                EditingField PaddingTopField _ new ->
+                EditingField PaddingTopField new ->
                     new
 
-                EditingField PaddingRightField old new ->
-                    if padding.locked && new /= old then
+                EditingField PaddingRightField new ->
+                    if padding.locked then
                         new
 
                     else
                         String.fromInt padding.top
 
-                EditingField PaddingBottomField old new ->
-                    if padding.locked && new /= old then
+                EditingField PaddingBottomField new ->
+                    if padding.locked then
                         new
 
                     else
                         String.fromInt padding.top
 
-                EditingField PaddingLeftField old new ->
-                    if padding.locked && new /= old then
+                EditingField PaddingLeftField new ->
+                    if padding.locked then
                         new
 
                     else
@@ -363,25 +363,25 @@ paddingView model { padding } =
 
         paddingRight =
             case model.inspector of
-                EditingField PaddingRightField _ new ->
+                EditingField PaddingRightField new ->
                     new
 
-                EditingField PaddingTopField old new ->
-                    if padding.locked && new /= old then
+                EditingField PaddingTopField new ->
+                    if padding.locked then
                         new
 
                     else
                         String.fromInt padding.right
 
-                EditingField PaddingBottomField old new ->
-                    if padding.locked && new /= old then
+                EditingField PaddingBottomField new ->
+                    if padding.locked then
                         new
 
                     else
                         String.fromInt padding.right
 
-                EditingField PaddingLeftField old new ->
-                    if padding.locked && new /= old then
+                EditingField PaddingLeftField new ->
+                    if padding.locked then
                         new
 
                     else
@@ -392,25 +392,25 @@ paddingView model { padding } =
 
         paddingBottom =
             case model.inspector of
-                EditingField PaddingBottomField _ new ->
+                EditingField PaddingBottomField new ->
                     new
 
-                EditingField PaddingTopField old new ->
-                    if padding.locked && new /= old then
+                EditingField PaddingTopField new ->
+                    if padding.locked then
                         new
 
                     else
                         String.fromInt padding.bottom
 
-                EditingField PaddingRightField old new ->
-                    if padding.locked && new /= old then
+                EditingField PaddingRightField new ->
+                    if padding.locked then
                         new
 
                     else
                         String.fromInt padding.bottom
 
-                EditingField PaddingLeftField old new ->
-                    if padding.locked && new /= old then
+                EditingField PaddingLeftField new ->
+                    if padding.locked then
                         new
 
                     else
@@ -421,25 +421,25 @@ paddingView model { padding } =
 
         paddingLeft =
             case model.inspector of
-                EditingField PaddingLeftField _ new ->
+                EditingField PaddingLeftField new ->
                     new
 
-                EditingField PaddingTopField old new ->
-                    if padding.locked && new /= old then
+                EditingField PaddingTopField new ->
+                    if padding.locked then
                         new
 
                     else
                         String.fromInt padding.left
 
-                EditingField PaddingRightField old new ->
-                    if padding.locked && new /= old then
+                EditingField PaddingRightField new ->
+                    if padding.locked then
                         new
 
                     else
                         String.fromInt padding.left
 
-                EditingField PaddingBottomField old new ->
-                    if padding.locked && new /= old then
+                EditingField PaddingBottomField new ->
+                    if padding.locked then
                         new
 
                     else
@@ -540,7 +540,7 @@ spacingXView model { spacing } =
             case spacing of
                 Spacing ( x_, _ ) ->
                     case model.inspector of
-                        EditingField SpacingXField _ new ->
+                        EditingField SpacingXField new ->
                             new
 
                         _ ->
@@ -576,7 +576,7 @@ spacingYView model { spacing } =
             case spacing of
                 Spacing ( _, y_ ) ->
                     case model.inspector of
-                        EditingField SpacingYField _ new ->
+                        EditingField SpacingYField new ->
                             new
 
                         _ ->
@@ -657,7 +657,7 @@ bordersView model { borderColor, borderWidth, borderCorner } =
         -- Corners
         topLeftCorner =
             case model.inspector of
-                EditingField BorderTopLeftCornerField _ new ->
+                EditingField BorderTopLeftCornerField new ->
                     new
 
                 _ ->
@@ -665,7 +665,7 @@ bordersView model { borderColor, borderWidth, borderCorner } =
 
         topRightCorner =
             case model.inspector of
-                EditingField BorderTopRightCornerField _ new ->
+                EditingField BorderTopRightCornerField new ->
                     new
 
                 _ ->
@@ -673,7 +673,7 @@ bordersView model { borderColor, borderWidth, borderCorner } =
 
         bottomRightCorner =
             case model.inspector of
-                EditingField BorderBottomRightCornerField _ new ->
+                EditingField BorderBottomRightCornerField new ->
                     new
 
                 _ ->
@@ -681,7 +681,7 @@ bordersView model { borderColor, borderWidth, borderCorner } =
 
         bottomLeftCorner =
             case model.inspector of
-                EditingField BorderBottomLeftCornerField _ new ->
+                EditingField BorderBottomLeftCornerField new ->
                     new
 
                 _ ->
@@ -690,7 +690,7 @@ bordersView model { borderColor, borderWidth, borderCorner } =
         -- Widths
         topWidth =
             case model.inspector of
-                EditingField BorderTopWidthField _ new ->
+                EditingField BorderTopWidthField new ->
                     new
 
                 _ ->
@@ -698,7 +698,7 @@ bordersView model { borderColor, borderWidth, borderCorner } =
 
         rightWidth =
             case model.inspector of
-                EditingField BorderRightWidthField _ new ->
+                EditingField BorderRightWidthField new ->
                     new
 
                 _ ->
@@ -706,7 +706,7 @@ bordersView model { borderColor, borderWidth, borderCorner } =
 
         bottomWidth =
             case model.inspector of
-                EditingField BorderBottomWidthField _ new ->
+                EditingField BorderBottomWidthField new ->
                     new
 
                 _ ->
@@ -714,7 +714,7 @@ bordersView model { borderColor, borderWidth, borderCorner } =
 
         leftWidth =
             case model.inspector of
-                EditingField BorderLeftWidthField _ new ->
+                EditingField BorderLeftWidthField new ->
                     new
 
                 _ ->
@@ -923,7 +923,7 @@ colorHexView model color field =
     let
         color_ =
             case model.inspector of
-                EditingField field_ _ new ->
+                EditingField field_ new ->
                     if field == field_ then
                         new
 
@@ -979,7 +979,7 @@ backgroundView model { backgroundColor, background } =
     let
         image_ =
             case model.inspector of
-                EditingField BackgroundImageField _ new ->
+                EditingField BackgroundImageField new ->
                     new
 
                 _ ->
@@ -1135,7 +1135,7 @@ widthView model { width } =
     let
         min =
             case model.inspector of
-                EditingField WidthMinField _ new ->
+                EditingField WidthMinField new ->
                     new
 
                 _ ->
@@ -1144,7 +1144,7 @@ widthView model { width } =
 
         max =
             case model.inspector of
-                EditingField WidthMaxField _ new ->
+                EditingField WidthMaxField new ->
                     new
 
                 _ ->
@@ -1215,7 +1215,7 @@ widthView model { width } =
                         let
                             value_ =
                                 case model.inspector of
-                                    EditingField WidthPxField _ new ->
+                                    EditingField WidthPxField new ->
                                         new
 
                                     _ ->
@@ -1230,7 +1230,7 @@ widthView model { width } =
                         let
                             value_ =
                                 case model.inspector of
-                                    EditingField WidthPxField _ new ->
+                                    EditingField WidthPxField new ->
                                         new
 
                                     _ ->
@@ -1250,7 +1250,7 @@ widthView model { width } =
                         let
                             value_ =
                                 case model.inspector of
-                                    EditingField WidthPortionField _ new ->
+                                    EditingField WidthPortionField new ->
                                         new
 
                                     _ ->
@@ -1270,7 +1270,7 @@ heightView model { height } =
     let
         min =
             case model.inspector of
-                EditingField HeightMinField _ new ->
+                EditingField HeightMinField new ->
                     new
 
                 _ ->
@@ -1279,7 +1279,7 @@ heightView model { height } =
 
         max =
             case model.inspector of
-                EditingField HeightMaxField _ new ->
+                EditingField HeightMaxField new ->
                     new
 
                 _ ->
@@ -1351,7 +1351,7 @@ heightView model { height } =
                             let
                                 value_ =
                                     case model.inspector of
-                                        EditingField HeightPxField _ new ->
+                                        EditingField HeightPxField new ->
                                             new
 
                                         _ ->
@@ -1366,7 +1366,7 @@ heightView model { height } =
                             let
                                 value_ =
                                     case model.inspector of
-                                        EditingField HeightPxField _ new ->
+                                        EditingField HeightPxField new ->
                                             new
 
                                         _ ->
@@ -1386,7 +1386,7 @@ heightView model { height } =
                             let
                                 value_ =
                                     case model.inspector of
-                                        EditingField HeightPortionField _ new ->
+                                        EditingField HeightPortionField new ->
                                             new
 
                                         _ ->
@@ -1428,7 +1428,7 @@ positionView model ({ transformation } as node) =
     let
         offsetX =
             case model.inspector of
-                EditingField OffsetXField _ new ->
+                EditingField OffsetXField new ->
                     new
 
                 _ ->
@@ -1436,7 +1436,7 @@ positionView model ({ transformation } as node) =
 
         offsetY =
             case model.inspector of
-                EditingField OffsetYField _ new ->
+                EditingField OffsetYField new ->
                     new
 
                 _ ->
@@ -1647,7 +1647,7 @@ fontView model zipper =
 
         ( inherited, resolvedFontSize ) =
             case model.inspector of
-                EditingField FontSizeField _ new ->
+                EditingField FontSizeField new ->
                     ( False, new )
 
                 _ ->
@@ -1734,7 +1734,7 @@ fontSpacingView model node =
             case node.spacing of
                 Spacing ( _, y ) ->
                     case model.inspector of
-                        EditingField SpacingYField _ new ->
+                        EditingField SpacingYField new ->
                             new
 
                         _ ->
@@ -1746,7 +1746,7 @@ fontSpacingView model node =
 
         wordSpacing =
             case model.inspector of
-                EditingField WordSpacingField _ new ->
+                EditingField WordSpacingField new ->
                     new
 
                 _ ->
@@ -1754,7 +1754,7 @@ fontSpacingView model node =
 
         letterSpacing =
             case model.inspector of
-                EditingField LetterSpacingField _ new ->
+                EditingField LetterSpacingField new ->
                     new
 
                 _ ->

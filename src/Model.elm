@@ -72,6 +72,7 @@ type Msg
     | BackgroundSizingChanged Background
     | BorderColorChanged String
     | FieldEditingStarted Field String
+    | FieldEditingConfirmed
     | FieldEditingFinished
     | FieldChanged String
     | TextChanged String
@@ -148,7 +149,7 @@ type Mode
 
 type Inspector
     = NotEdited
-    | EditingField Field String String
+    | EditingField Field String
     | EditingText
 
 

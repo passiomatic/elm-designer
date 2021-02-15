@@ -397,250 +397,83 @@ update msg model =
             applyChange model Document.applyText value
 
         PaddingLockChanged value ->
-            applyChangeAndFinish model Document.applyPaddingLock value
+            applyChange model Document.applyPaddingLock value
 
         BorderLockChanged value ->
-            applyChangeAndFinish model Document.applyBorderLock value
-
-        FieldEditingStarted field oldValue ->
-            ( { model
-                | inspector = EditingField field oldValue oldValue
-              }
-            , Cmd.none
-            )
+            applyChange model Document.applyBorderLock value
 
         FieldChanged newValue ->
             case model.inspector of
-                EditingField field oldValue _ ->
-                    ( { model | inspector = EditingField field oldValue newValue }
+                EditingField field _ ->
+                    ( { model | inspector = EditingField field newValue }
                     , Cmd.none
                     )
 
                 _ ->
                     ( model, Cmd.none )
 
+        FieldEditingStarted field oldValue ->
+            ( { model
+                | inspector = EditingField field oldValue
+              }
+            , Cmd.none
+            )
+
+        FieldEditingConfirmed ->
+            updateField model
+
         FieldEditingFinished ->
-            case model.inspector of
-                -- ###########
-                -- Label
-                -- ###########
-                EditingField LabelField oldValue newValue ->
-                    applyChangeAndFinish model Document.applyLabel newValue
-
-                -- ###########
-                -- Width
-                -- ###########
-                EditingField WidthPxField oldValue newValue ->
-                    applyChangeAndFinish model
-                        (Document.applyWidthWith
-                            (\value length ->
-                                case value of
-                                    Just value_ ->
-                                        Layout.setStrategy (Layout.px value_) length
-
-                                    Nothing ->
-                                        Layout.setStrategy Unspecified length
-                            )
-                        )
-                        newValue
-
-                EditingField WidthPortionField oldValue newValue ->
-                    applyChangeAndFinish model
-                        (Document.applyWidthWith
-                            (\value length ->
-                                case value of
-                                    Just value_ ->
-                                        Layout.setStrategy (Layout.portion value_) length
-
-                                    Nothing ->
-                                        Layout.setStrategy (Layout.portion 1) length
-                            )
-                        )
-                        newValue
-
-                EditingField WidthMinField oldValue newValue ->
-                    applyChangeAndFinish model (Document.applyWidthWith Layout.setMinLength) newValue
-
-                EditingField WidthMaxField oldValue newValue ->
-                    applyChangeAndFinish model (Document.applyWidthWith Layout.setMaxLength) newValue
-
-                -- ###########
-                -- Height
-                -- ###########
-                EditingField HeightPxField oldValue newValue ->
-                    applyChangeAndFinish model
-                        (Document.applyHeightWith
-                            (\value length ->
-                                case value of
-                                    Just value_ ->
-                                        Layout.setStrategy (Layout.px value_) length
-
-                                    Nothing ->
-                                        Layout.setStrategy Unspecified length
-                            )
-                        )
-                        newValue
-
-                EditingField HeightPortionField oldValue newValue ->
-                    applyChangeAndFinish model
-                        (Document.applyHeightWith
-                            (\value length ->
-                                case value of
-                                    Just value_ ->
-                                        Layout.setStrategy (Layout.portion value_) length
-
-                                    Nothing ->
-                                        Layout.setStrategy (Layout.portion 1) length
-                            )
-                        )
-                        newValue
-
-                EditingField HeightMinField oldValue newValue ->
-                    applyChangeAndFinish model (Document.applyHeightWith Layout.setMinLength) newValue
-
-                EditingField HeightMaxField oldValue newValue ->
-                    applyChangeAndFinish model (Document.applyHeightWith Layout.setMaxLength) newValue
-
-                -- ###########
-                -- Transformation
-                -- ###########
-                EditingField OffsetXField oldValue newValue ->
-                    applyChangeAndFinish model (Document.applyOffset Layout.setOffsetX) newValue
-
-                EditingField OffsetYField oldValue newValue ->
-                    applyChangeAndFinish model (Document.applyOffset Layout.setOffsetY) newValue
-
-                -- ###########
-                -- Font size
-                -- ###########
-                EditingField FontSizeField oldValue newValue ->
-                    applyChangeAndFinish model Document.applyFontSize newValue
-
-                -- ###########
-                -- Font color
-                -- ###########
-                EditingField FontColorField oldValue newValue ->
-                    applyChangeAndFinish model Document.applyFontColor newValue
-
-                -- ###########
-                -- Letter Spacing
-                -- ###########
-                EditingField LetterSpacingField oldValue newValue ->
-                    applyChangeAndFinish model Document.applyLetterSpacing newValue
-
-                -- ###########
-                -- Word Spacing
-                -- ###########
-                EditingField WordSpacingField oldValue newValue ->
-                    applyChangeAndFinish model Document.applyWordSpacing newValue
-
-                -- ###########
-                -- Background
-                -- ###########
-                EditingField BackgroundColorField oldValue newValue ->
-                    applyChangeAndFinish model Document.applyBackgroundColor newValue
-
-                EditingField BackgroundImageField oldValue newValue ->
-                    applyChangeAndFinish model Document.applyBackgroundUrl newValue
-
-                -- ###########
-                -- Borders
-                -- ###########
-                EditingField BorderColorField oldValue newValue ->
-                    applyChangeAndFinish model Document.applyBorderColor newValue
-
-                EditingField BorderTopLeftCornerField oldValue newValue ->
-                    applyChangeAndFinish model (Document.applyBorderCorner Border.setTopLeftCorner) newValue
-
-                EditingField BorderTopRightCornerField oldValue newValue ->
-                    applyChangeAndFinish model (Document.applyBorderCorner Border.setTopRightCorner) newValue
-
-                EditingField BorderBottomRightCornerField oldValue newValue ->
-                    applyChangeAndFinish model (Document.applyBorderCorner Border.setBottomRightCorner) newValue
-
-                EditingField BorderBottomLeftCornerField oldValue newValue ->
-                    applyChangeAndFinish model (Document.applyBorderCorner Border.setBottomLeftCorner) newValue
-
-                EditingField BorderTopWidthField oldValue newValue ->
-                    applyChangeAndFinish model (Document.applyBorderWidth Border.setTopWidth) newValue
-
-                EditingField BorderRightWidthField oldValue newValue ->
-                    applyChangeAndFinish model (Document.applyBorderWidth Border.setRightWidth) newValue
-
-                EditingField BorderBottomWidthField oldValue newValue ->
-                    applyChangeAndFinish model (Document.applyBorderWidth Border.setBottomWidth) newValue
-
-                EditingField BorderLeftWidthField oldValue newValue ->
-                    applyChangeAndFinish model (Document.applyBorderWidth Border.setLeftWidth) newValue
-
-                -- ###########
-                -- Padding
-                -- ###########
-                EditingField PaddingTopField oldValue newValue ->
-                    applyChangeAndFinish model (Document.applyPadding Layout.setPaddingTop) newValue
-
-                EditingField PaddingRightField oldValue newValue ->
-                    applyChangeAndFinish model (Document.applyPadding Layout.setPaddingRight) newValue
-
-                EditingField PaddingBottomField oldValue newValue ->
-                    applyChangeAndFinish model (Document.applyPadding Layout.setPaddingBottom) newValue
-
-                EditingField PaddingLeftField oldValue newValue ->
-                    applyChangeAndFinish model (Document.applyPadding Layout.setPaddingLeft) newValue
-
-                -- ###########
-                -- Spacing
-                -- ###########
-                EditingField SpacingXField oldValue newValue ->
-                    applyChangeAndFinish model (Document.applySpacing Layout.setSpacingX) newValue
-
-                EditingField SpacingYField oldValue newValue ->
-                    applyChangeAndFinish model (Document.applySpacing Layout.setSpacingY) newValue
-
-                _ ->
-                    ( model, Cmd.none )
+            let
+                ( newModel, cmd ) =
+                    updateField model
+            in
+            ( { newModel | inspector = NotEdited }, cmd )
 
         WrapRowItemsChanged value ->
-            applyChangeAndFinish model Document.applyWrapRowItems value
+            applyChange model Document.applyWrapRowItems value
 
         TextAlignChanged value ->
-            applyChangeAndFinish model Document.applyTextAlign value
+            applyChange model Document.applyTextAlign value
 
         FontWeightChanged value ->
-            applyChangeAndFinish model Document.applyFontWeight value
+            applyChange model Document.applyFontWeight value
 
         FontSizeChanged value ->
-            applyChangeAndFinish model Document.applyFontSize value
+            let
+                ( newModel, cmd ) =
+                    applyChange model Document.applyFontSize value
+            in
+            ( { newModel | dropDownState = Hidden }, cmd )
 
         FontFamilyChanged family ->
-            applyChangeAndFinish model Document.applyFontFamily family
+            applyChange model Document.applyFontFamily family
 
         BackgroundColorChanged value ->
-            applyChangeAndFinish model Document.applyBackgroundColor value
+            applyChange model Document.applyBackgroundColor value
 
         BackgroundSizingChanged value ->
-            applyChangeAndFinish model Document.applyBackground value
+            applyChange model Document.applyBackground value
 
         BorderColorChanged value ->
-            applyChangeAndFinish model Document.applyBorderColor value
+            applyChange model Document.applyBorderColor value
 
         FontColorChanged value ->
-            applyChangeAndFinish model Document.applyFontColor value
+            applyChange model Document.applyFontColor value
 
         AlignmentXChanged value ->
-            applyChangeAndFinish model Document.applyAlignX value
+            applyChange model Document.applyAlignX value
 
         AlignmentYChanged value ->
-            applyChangeAndFinish model Document.applyAlignY value
+            applyChange model Document.applyAlignY value
 
         AlignmentChanged value ->
-            applyChangeAndFinish model Document.applyAlign value
+            applyChange model Document.applyAlign value
 
         HeightChanged value ->
-            applyChangeAndFinish model Document.applyHeight value
+            applyChange model Document.applyHeight value
 
         WidthChanged value ->
-            applyChangeAndFinish model Document.applyWidth value
+            applyChange model Document.applyWidth value
 
         DragDropMsg msg_ ->
             let
@@ -712,7 +545,7 @@ update msg model =
                 -- ############
                 -- Stop field and inline editing
                 -- ############
-                ( False, "Escape", EditingField field _ _ ) ->
+                ( False, "Escape", EditingField field _ ) ->
                     ( { model | inspector = NotEdited }, unfocusElement (fieldId field) )
 
                 ( False, "Escape", EditingText ) ->
@@ -776,6 +609,188 @@ update msg model =
         --     ( newModel
         --     , Cmd.none
         --     )
+        _ ->
+            ( model, Cmd.none )
+
+
+updateField model =
+    case model.inspector of
+        -- ###########
+        -- Label
+        -- ###########
+        EditingField LabelField newValue ->
+            applyChange model Document.applyLabel newValue
+
+        -- ###########
+        -- Width
+        -- ###########
+        EditingField WidthPxField newValue ->
+            applyChange model
+                (Document.applyWidthWith
+                    (\value length ->
+                        case value of
+                            Just value_ ->
+                                Layout.setStrategy (Layout.px value_) length
+
+                            Nothing ->
+                                Layout.setStrategy Unspecified length
+                    )
+                )
+                newValue
+
+        EditingField WidthPortionField newValue ->
+            applyChange model
+                (Document.applyWidthWith
+                    (\value length ->
+                        case value of
+                            Just value_ ->
+                                Layout.setStrategy (Layout.portion value_) length
+
+                            Nothing ->
+                                Layout.setStrategy (Layout.portion 1) length
+                    )
+                )
+                newValue
+
+        EditingField WidthMinField newValue ->
+            applyChange model (Document.applyWidthWith Layout.setMinLength) newValue
+
+        EditingField WidthMaxField newValue ->
+            applyChange model (Document.applyWidthWith Layout.setMaxLength) newValue
+
+        -- ###########
+        -- Height
+        -- ###########
+        EditingField HeightPxField newValue ->
+            applyChange model
+                (Document.applyHeightWith
+                    (\value length ->
+                        case value of
+                            Just value_ ->
+                                Layout.setStrategy (Layout.px value_) length
+
+                            Nothing ->
+                                Layout.setStrategy Unspecified length
+                    )
+                )
+                newValue
+
+        EditingField HeightPortionField newValue ->
+            applyChange model
+                (Document.applyHeightWith
+                    (\value length ->
+                        case value of
+                            Just value_ ->
+                                Layout.setStrategy (Layout.portion value_) length
+
+                            Nothing ->
+                                Layout.setStrategy (Layout.portion 1) length
+                    )
+                )
+                newValue
+
+        EditingField HeightMinField newValue ->
+            applyChange model (Document.applyHeightWith Layout.setMinLength) newValue
+
+        EditingField HeightMaxField newValue ->
+            applyChange model (Document.applyHeightWith Layout.setMaxLength) newValue
+
+        -- ###########
+        -- Transformation
+        -- ###########
+        EditingField OffsetXField newValue ->
+            applyChange model (Document.applyOffset Layout.setOffsetX) newValue
+
+        EditingField OffsetYField newValue ->
+            applyChange model (Document.applyOffset Layout.setOffsetY) newValue
+
+        -- ###########
+        -- Font size
+        -- ###########
+        EditingField FontSizeField newValue ->
+            applyChange model Document.applyFontSize newValue
+
+        -- ###########
+        -- Font color
+        -- ###########
+        EditingField FontColorField newValue ->
+            applyChange model Document.applyFontColor newValue
+
+        -- ###########
+        -- Letter Spacing
+        -- ###########
+        EditingField LetterSpacingField newValue ->
+            applyChange model Document.applyLetterSpacing newValue
+
+        -- ###########
+        -- Word Spacing
+        -- ###########
+        EditingField WordSpacingField newValue ->
+            applyChange model Document.applyWordSpacing newValue
+
+        -- ###########
+        -- Background
+        -- ###########
+        EditingField BackgroundColorField newValue ->
+            applyChange model Document.applyBackgroundColor newValue
+
+        EditingField BackgroundImageField newValue ->
+            applyChange model Document.applyBackgroundUrl newValue
+
+        -- ###########
+        -- Borders
+        -- ###########
+        EditingField BorderColorField newValue ->
+            applyChange model Document.applyBorderColor newValue
+
+        EditingField BorderTopLeftCornerField newValue ->
+            applyChange model (Document.applyBorderCorner Border.setTopLeftCorner) newValue
+
+        EditingField BorderTopRightCornerField newValue ->
+            applyChange model (Document.applyBorderCorner Border.setTopRightCorner) newValue
+
+        EditingField BorderBottomRightCornerField newValue ->
+            applyChange model (Document.applyBorderCorner Border.setBottomRightCorner) newValue
+
+        EditingField BorderBottomLeftCornerField newValue ->
+            applyChange model (Document.applyBorderCorner Border.setBottomLeftCorner) newValue
+
+        EditingField BorderTopWidthField newValue ->
+            applyChange model (Document.applyBorderWidth Border.setTopWidth) newValue
+
+        EditingField BorderRightWidthField newValue ->
+            applyChange model (Document.applyBorderWidth Border.setRightWidth) newValue
+
+        EditingField BorderBottomWidthField newValue ->
+            applyChange model (Document.applyBorderWidth Border.setBottomWidth) newValue
+
+        EditingField BorderLeftWidthField newValue ->
+            applyChange model (Document.applyBorderWidth Border.setLeftWidth) newValue
+
+        -- ###########
+        -- Padding
+        -- ###########
+        EditingField PaddingTopField newValue ->
+            applyChange model (Document.applyPadding Layout.setPaddingTop) newValue
+
+        EditingField PaddingRightField newValue ->
+            applyChange model (Document.applyPadding Layout.setPaddingRight) newValue
+
+        EditingField PaddingBottomField newValue ->
+            applyChange model (Document.applyPadding Layout.setPaddingBottom) newValue
+
+        EditingField PaddingLeftField newValue ->
+            applyChange model (Document.applyPadding Layout.setPaddingLeft) newValue
+
+        -- ###########
+        -- Spacing
+        -- ###########
+        EditingField SpacingXField newValue ->
+            applyChange model (Document.applySpacing Layout.setSpacingX) newValue
+
+        EditingField SpacingYField newValue ->
+            applyChange model (Document.applySpacing Layout.setSpacingY) newValue
+
         _ ->
             ( model, Cmd.none )
 
@@ -854,22 +869,6 @@ applyChange model updater newValue =
     in
     ( { model
         | pages = pages
-        , saveState = Changed model.currentTime
-      }
-    , Cmd.none
-    )
-
-
-applyChangeAndFinish : Model -> (a -> Zipper Node -> Zipper Node) -> a -> ( Model, Cmd Msg )
-applyChangeAndFinish model updater newValue =
-    let
-        pages =
-            SelectList.updateSelected (updater newValue) model.pages
-    in
-    ( { model
-        | pages = pages
-        , dropDownState = Hidden
-        , inspector = NotEdited
         , saveState = Changed model.currentTime
       }
     , Cmd.none
