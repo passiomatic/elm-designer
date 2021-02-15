@@ -1062,18 +1062,22 @@ isDroppingFileInto nodeId fileDrop =
 
 
 placeholderText label =
-    -- Center to make it work for rows, columns and text columns
+    -- FIXME: textColumn seems to not honor E.height E.fill
     E.el
         [ Font.color Palette.lightCharcoal
-        , Font.center
-        , E.centerX
-        , E.padding 8
         , E.width E.fill
+        , E.height E.fill
         , Border.width 1
         , Border.dotted
         , Border.color Palette.lightCharcoal
         ]
-        (E.text label)
+        (E.el
+            [ E.centerX
+            , E.centerY
+            , E.padding 8
+            ]
+            (E.text label)
+        )
 
 
 onClick msg =
