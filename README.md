@@ -6,7 +6,7 @@
 
 The application is in early stages of development and supports a subset of Elm UI.
 
-Version 0.2 goals are:
+Version 0.2 main features are:
 
 * Add JPEG, PNG, GIF and SVG images by picking them from local file system
 * Specify exact, minimun, and maximun elements dimensions
@@ -50,11 +50,10 @@ Then run:
 
 This will build the app assets with Parcel in production mode, copy the files into the `electron-app` folder in the repo, and finally run Electron itself.
 
-[1]: https://github.com/electron/electron-packager
 [2]: https://parceljs.org
 [3]: https://parceljs.org/getting_started.html
 [4]: https://www.electronjs.org
-[d]: https://github.com/passiomatic/elm-designer/releases/tag/v0.2.0
+[d]: https://github.com/passiomatic/elm-designer/releases/tag/v0.2.1
 [issue1]: https://github.com/passiomatic/elm-designer/issues/1 
 [issue2]: https://github.com/passiomatic/elm-designer/issues/2 
 [issue20]: https://github.com/passiomatic/elm-designer/issues/20

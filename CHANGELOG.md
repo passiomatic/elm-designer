@@ -8,7 +8,7 @@
 ## Bugs fixed 
 
 * Honor height setting on form library elements
-* While on a inspector field and hitting backspace do not delete the selected element anymore
+* While on a inspector field hitting backspace do not delete the selected element anymore
 
 **Note**: document format is the same of the previous version so your designs will continue to work after the upgrade.
 
