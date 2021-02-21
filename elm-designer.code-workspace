@@ -6,7 +6,8 @@
 	],
 	"settings": {
 		"search.exclude": {
-			"**/electron-app": true
+			"**/dist": true,
+			"**/elm-stuff": true
 		}
 	}
 }
