@@ -4,7 +4,7 @@
 
 ## Current status
 
-The application is in early stages of development and supports a subset of Elm UI.
+The application is in early stages of development and supports a subset of [Elm UI][elmui].
 
 Version 0.2 main features are:
 
@@ -57,3 +57,4 @@ This will build the app assets with Parcel in production mode, copy the files in
 [issue1]: https://github.com/passiomatic/elm-designer/issues/1 
 [issue2]: https://github.com/passiomatic/elm-designer/issues/2 
 [issue20]: https://github.com/passiomatic/elm-designer/issues/20
+[elmui]: https://github.com/mdgriffith/elm-ui
