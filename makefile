@@ -1,6 +1,10 @@
 all: dev
 
 build:
+	parcel build src/index.html --target electron --public-url ./ --out-file app.html
+	parcel build src/main.js --target electron --public-url ./
+
+build-no-maps:
 	parcel build src/index.html --no-source-maps --target electron --public-url ./ --out-file app.html
 	parcel build src/main.js --no-source-maps --target electron --public-url ./
 
@@ -17,10 +21,10 @@ clean:
 run: clean build
 	npm run electron
 
-package-mac: clean build icon
+package-mac: clean build-no-maps icon
 	npm run package:mac
 
-package-linux: clean build icon
+package-linux: clean build-no-maps icon
 	npm run package:linux
 
 icon: 

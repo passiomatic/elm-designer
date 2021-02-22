@@ -47,7 +47,7 @@
     "afterSign": "./notarize.js"
   },
   "scripts": {
-    "electron": "electron ./dist/main.js",
+    "electron": "electron --inspect=5858 ./dist/main.js",
     "package:mac": "electron-builder -m",
     "package:linux": "electron-builder -l"
   }
