@@ -5,6 +5,8 @@ port module Ports exposing
     , onInsertNode
     , onPageAdd
     , onPageDelete
+    , onRedo
+    , onUndo
     , saveDocument
     , selectText
     , setDragImage
@@ -15,7 +17,7 @@ port module Ports exposing
     , showMessageBox
     )
 
-import Json.Decode as Decode exposing (Decoder, Value)
+import Json.Decode exposing (Value)
 import Library exposing (MenuItem)
 import Model exposing (..)
 
@@ -81,3 +83,9 @@ port onPageDuplicate : (String -> msg) -> Sub msg
 
 
 port onInsertNode : (String -> msg) -> Sub msg
+
+
+port onUndo : (() -> msg) -> Sub msg
+
+
+port onRedo : (() -> msg) -> Sub msg

@@ -17,6 +17,7 @@
             "elm/svg": "1.0.1",
             "elm/time": "1.0.0",
             "elm-community/list-extra": "8.2.2",
+            "elm-community/undo-redo": "3.0.0",
             "feathericons/elm-feather": "1.5.0",
             "joshforisha/elm-html-entities": "1.0.0",
             "justinmimbs/time-extra": "1.1.0",

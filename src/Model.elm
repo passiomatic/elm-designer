@@ -37,6 +37,7 @@ import Time exposing (Posix)
 import Tree exposing (Tree)
 import Tree.Zipper as Zipper exposing (Zipper)
 import UUID exposing (Seeds)
+import UndoList exposing (UndoList)
 
 
 workspaceWidth =
@@ -62,7 +63,7 @@ type Msg
     | HeightChanged Length
     | AlignmentXChanged Alignment
     | AlignmentYChanged Alignment
-    | AlignmentChanged Alignment 
+    | AlignmentChanged Alignment
     | TextAlignChanged TextAlignment
     | FontFamilyChanged (Local FontFamily)
     | FontWeightChanged FontWeight
@@ -97,6 +98,8 @@ type Msg
     | NoOp
     | DragDropMsg (DragDrop.Msg DragId DropId)
     | TabMsg Tab.State
+    | Undo ()
+    | Redo ()
 
 
 {-| All editable text fields in the app.
@@ -166,7 +169,7 @@ type alias Model =
     , mouseY : Int
     , isMouseButtonDown : Bool
     , isAltDown : Bool
-    , pages : SelectList (Zipper Node)
+    , pages : UndoList (SelectList (Zipper Node))
     , viewport : Viewport
     , inspector : Inspector
     , dragDrop : DragDrop.Model DragId DropId
@@ -212,7 +215,7 @@ type alias Context =
 
 context : Model -> Context
 context model =
-    { currentNode = SelectList.selected model.pages
+    { currentNode = SelectList.selected model.pages.present
     , dragDrop = model.dragDrop
     , fileDrop = model.fileDrop
     , inspector = model.inspector
@@ -280,7 +283,7 @@ initialModel { width, height, uploadEndpoint, seed1, seed2, seed3, seed4 } =
     , mouseY = 0
     , isMouseButtonDown = False
     , isAltDown = False
-    , pages = SelectList.singleton (Zipper.fromTree emptyDocument)
+    , pages = UndoList.fresh <| SelectList.singleton <| Zipper.fromTree emptyDocument
     , viewport = Fluid
     , inspector = NotEdited
     , dragDrop = DragDrop.init

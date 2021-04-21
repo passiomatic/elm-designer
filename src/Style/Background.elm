@@ -1,7 +1,7 @@
 module Style.Background exposing
     ( Background(..)
-    , setBackgroundColor
     , setBackground
+    , setBackgroundColor
     )
 
 {-| Background appearance properties.

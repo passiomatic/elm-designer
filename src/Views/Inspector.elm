@@ -32,7 +32,7 @@ view : Model -> List (Html Msg)
 view model =
     let
         zipper =
-            SelectList.selected model.pages
+            SelectList.selected model.pages.present
     in
     [ H.form [ E.onSubmit FieldEditingConfirmed ]
         -- This makes onSubmit to work when hitting enter
