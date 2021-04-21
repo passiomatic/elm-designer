@@ -18,7 +18,7 @@ clean:
 	rm -fR dist
 	rm -fR build
 
-run: clean build
+run: build
 	npm run electron
 
 package-mac: clean build-no-maps icon
