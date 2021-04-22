@@ -72,6 +72,7 @@ type Msg
     | BackgroundColorChanged String
     | BackgroundSizingChanged Background
     | BorderColorChanged String
+    | LabelPositionChanged LabelPosition
     | FieldEditingStarted Field String
     | FieldEditingConfirmed
     | FieldEditingFinished

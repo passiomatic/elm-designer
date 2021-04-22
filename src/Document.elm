@@ -31,6 +31,7 @@ module Document exposing
     , applyHeight
     , applyHeightWith
     , applyLabel
+    , applyLabelPosition
     , applyLetterSpacing
     , applyOffset
     , applyPadding
@@ -57,6 +58,7 @@ module Document exposing
     , isContainer
     , isPageNode
     , isSelected
+    , labelPositionName
     , nodeId
     , nodeType
     , removeNode
@@ -314,6 +316,24 @@ type LabelPosition
     | LabelLeft
     | LabelRight
     | LabelHidden
+
+
+labelPositionName position =
+    case position of
+        LabelAbove ->
+            "Above"
+
+        LabelBelow ->
+            "Below"
+
+        LabelLeft ->
+            "Left"
+
+        LabelRight ->
+            "Right"
+
+        LabelHidden ->
+            "Hidden"
 
 
 
@@ -733,10 +753,9 @@ setText value record =
     { record | text = value }
 
 
-
--- setWrapped : Bool -> { a | wrapped : Bool } -> { a | wrapped : Bool }
--- setWrapped value record =
---     { record | wrapped = value }
+setPosition : LabelPosition -> { a | position : LabelPosition } -> { a | position : LabelPosition }
+setPosition value record =
+    { record | position = value }
 
 
 applyLabel : String -> Zipper Node -> Zipper Node
@@ -1048,3 +1067,26 @@ applyFontColor value zipper =
 applyFontWeight : FontWeight -> Zipper Node -> Zipper Node
 applyFontWeight value zipper =
     Zipper.mapLabel (Font.setWeight value) zipper
+
+
+applyLabelPosition : LabelPosition -> Zipper Node -> Zipper Node
+applyLabelPosition value zipper =
+    Zipper.mapLabel
+        (\node ->
+            case node.type_ of
+                TextFieldNode data ->
+                    { node | type_ = TextFieldNode (setPosition value data) }
+
+                TextFieldMultilineNode data ->
+                    { node | type_ = TextFieldNode (setPosition value data) }
+
+                CheckboxNode data ->
+                    { node | type_ = CheckboxNode (setPosition value data) }
+
+                RadioNode data ->
+                    { node | type_ = RadioNode (setPosition value data) }
+
+                _ ->
+                    node
+        )
+        zipper

@@ -376,9 +376,7 @@ renderTextField ctx node selected label =
             { onChange = \s -> NoOp
             , text = ""
             , placeholder = Nothing
-
-            -- TODO Espose label.position in the inspector
-            , label = Input.labelAbove [ Font.color ctx.theme.labelColor ] (E.text label.text)
+            , label = labelPosition label.position [ Font.color ctx.theme.labelColor ] label.text
             }
         )
         |> RenderedElement
@@ -411,35 +409,11 @@ renderTextFieldMultiline ctx node selected label =
             , text = ""
             , placeholder = Nothing
             , spellcheck = False
-
-            -- TODO Espose label.position in the inspector
-            , label = Input.labelAbove [ Font.color ctx.theme.labelColor ] (E.text label.text)
+            , label =
+                labelPosition label.position [ Font.color ctx.theme.labelColor ] label.text
             }
         )
         |> RenderedElement
-
-
-
---renderLabel : Context -> Node -> Label ->  List (Element Msg) -> Label Msg
--- renderLabel ctx node label =
---     let
---         selected =
---             Document.isSelected node.id ctx.currentNode
---         classes =
---             A.classList
---                 [ ( "element", True )
---                 , ( "element--selected", selected )
---                 ]
---         attrs =
---             [ onClick (NodeSelected node.id)
---             --, E.htmlAttribute (A.readonly True)
---             , E.htmlAttribute classes
---             , elementId node
---             ]
---                 |> applyStandardStyles node
---     in
---     -- TODO Honor label.position
---     Input.labelAbove attrs (E.text label.text)
 
 
 renderButton : Context -> Node -> Bool -> TextData -> RenderedNode
@@ -494,10 +468,7 @@ renderCheckbox ctx node selected label =
             { onChange = \s -> NoOp
             , icon = Input.defaultCheckbox
             , checked = True
-            , label =
-                Input.labelRight
-                    [ Font.color ctx.theme.labelColor ]
-                    (E.text label.text)
+            , label = labelPosition label.position [ Font.color ctx.theme.labelColor ] label.text
             }
         )
         |> RenderedElement
@@ -527,11 +498,7 @@ renderRadio ctx node selected label children =
             attrs
             { onChange = \s -> NoOp
             , selected = Nothing
-            , label =
-                Input.labelAbove
-                    [ Font.color ctx.theme.labelColor
-                    ]
-                    (E.text label.text)
+            , label = labelPosition label.position [ Font.color ctx.theme.labelColor ] label.text
             , options =
                 options children
             }
@@ -972,6 +939,24 @@ forceBackgroundColor value attrs =
 
 
 -- HELPERS
+
+
+labelPosition position attrs text =
+    case position of
+        LabelAbove ->
+            Input.labelAbove attrs (E.text text)
+
+        LabelBelow ->
+            Input.labelBelow attrs (E.text text)
+
+        LabelLeft ->
+            Input.labelLeft attrs (E.text text)
+
+        LabelRight ->
+            Input.labelRight attrs (E.text text)
+
+        LabelHidden ->
+            Input.labelHidden text
 
 
 clipIf pred attrs =

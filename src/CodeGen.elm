@@ -407,7 +407,7 @@ emitCheckbox theme node label =
             , ( "checked", CodeGen.val "False" )
             , ( "label"
               , CodeGen.apply
-                    [ CodeGen.fqFun inputModule "labelRight"
+                    [ emitLabelPosition label.position
                     , CodeGen.list
                         []
                     , CodeGen.parens (CodeGen.apply [ CodeGen.fqFun elementModule "text", CodeGen.string label.text ])
@@ -431,7 +431,7 @@ emitTextField theme node label =
             , ( "placeholder", CodeGen.val "Nothing" )
             , ( "label"
               , CodeGen.apply
-                    [ CodeGen.fqFun inputModule "labelAbove"
+                    [ emitLabelPosition label.position
                     , CodeGen.list
                         [ CodeGen.apply [ CodeGen.fqFun fontModule "color", CodeGen.parens (emitColor theme.labelColor) ]
                         ]
@@ -457,7 +457,7 @@ emitTextFieldMultiline theme node label =
             , ( "spellcheck", CodeGen.val "False" )
             , ( "label"
               , CodeGen.apply
-                    [ CodeGen.fqFun inputModule "labelAbove"
+                    [ emitLabelPosition label.position
                     , CodeGen.list
                         [ CodeGen.apply [ CodeGen.fqFun fontModule "color", CodeGen.parens (emitColor theme.labelColor) ]
                         ]
@@ -481,7 +481,7 @@ emitRadio theme node label children =
             , ( "selected", CodeGen.val "Nothing" )
             , ( "label"
               , CodeGen.apply
-                    [ CodeGen.fqFun inputModule "labelAbove"
+                    [ emitLabelPosition label.position
                     , CodeGen.list
                         [ CodeGen.apply [ CodeGen.fqFun fontModule "color", CodeGen.parens (emitColor theme.labelColor) ]
                         ]
@@ -1005,6 +1005,27 @@ emitBackground value attrs =
 
         Background.None ->
             attrs
+
+
+emitLabelPosition : LabelPosition -> Expression
+emitLabelPosition position =
+    (case position of
+        LabelAbove ->
+            "labelAbove"
+
+        LabelBelow ->
+            "labelBelow"
+
+        LabelLeft ->
+            "labelLeft"
+
+        LabelRight ->
+            "labelRight"
+
+        LabelHidden ->
+            "labelHidden"
+    )
+        |> CodeGen.fqFun inputModule
 
 
 

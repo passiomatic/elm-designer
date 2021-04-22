@@ -123,8 +123,9 @@ resolveStyleViews model zipper =
                     ]
 
                 TextFieldNode label ->
-                    [ sectionView ""
-                        [ labelView label model node
+                    [ sectionView "Label"
+                        [ labelTextView label model node
+                        , labelPositionView label model node
                         , spacingYView model node
                         ]
                     , sectionView "Layout"
@@ -142,8 +143,9 @@ resolveStyleViews model zipper =
                     ]
 
                 TextFieldMultilineNode label ->
-                    [ sectionView ""
-                        [ labelView label model node
+                    [ sectionView "Label"
+                        [ labelTextView label model node
+                        , labelPositionView label model node
                         , spacingYView model node
                         ]
                     , sectionView "Layout"
@@ -161,8 +163,9 @@ resolveStyleViews model zipper =
                     ]
 
                 CheckboxNode label ->
-                    [ sectionView ""
-                        [ labelView label model node
+                    [ sectionView "Label"
+                        [ labelTextView label model node
+                        , labelPositionView label model node
                         , spacingXView model node
                         ]
                     , sectionView "Layout"
@@ -180,8 +183,8 @@ resolveStyleViews model zipper =
                     ]
 
                 ButtonNode button ->
-                    [ sectionView ""
-                        [ labelView button model node
+                    [ sectionView "Label"
+                        [ labelTextView button model node
                         ]
                     , sectionView "Layout"
                         [ positionView model node
@@ -198,8 +201,9 @@ resolveStyleViews model zipper =
                     ]
 
                 RadioNode label ->
-                    [ sectionView ""
-                        [ labelView label model node
+                    [ sectionView "Label"
+                        [ labelTextView label model node
+                        , labelPositionView label model node
                         ]
                     , sectionView "Layout"
                         [ positionView model node
@@ -214,8 +218,8 @@ resolveStyleViews model zipper =
                     ]
 
                 OptionNode option ->
-                    [ sectionView ""
-                        [ labelView option model node
+                    [ sectionView "Label"
+                        [ labelTextView option model node
                         ]
                     , sectionView "Layout"
                         [ positionView model node
@@ -265,8 +269,8 @@ sectionView title views =
         )
 
 
-labelView : { a | text : String } -> Model -> Node -> Html Msg
-labelView { text } model { type_ } =
+labelTextView : { a | text : String } -> Model -> Node -> Html Msg
+labelTextView { text } model { type_ } =
     let
         label_ =
             case model.inspector of
@@ -277,9 +281,9 @@ labelView { text } model { type_ } =
                     text
     in
     H.div [ A.class "form-group row align-items-center mb-2" ]
-        [ H.label [ A.class "col-3 col-form-label-sm m-0 text-nowrap" ]
-            [ H.text "Label" ]
-        , H.div [ A.class "col-9", A.attribute "role" "group" ]
+        [ H.label [ A.class "col-3 col-form-label-sm m-0" ]
+            [ H.text "Text" ]
+        , H.div [ A.class "col-9" ]
             [ H.input
                 [ A.id (fieldId LabelField)
                 , A.type_ "text"
@@ -293,6 +297,48 @@ labelView { text } model { type_ } =
                 []
             ]
         ]
+
+
+labelPositionView : { a | position : LabelPosition } -> Model -> Node -> Html Msg
+labelPositionView { position } model { type_ } =
+    let
+        setSelected other attrs =
+            A.selected (position == other) :: attrs
+    in
+    H.div [ A.class "form-group row align-items-center mb-2" ]
+        [ H.label [ A.class "col-3 col-form-label-sm m-0" ]
+            [ H.text "Position" ]
+        , H.div [ A.class "col-9" ]
+            [ Keyed.node "select"
+                [ onLabelPositionSelect LabelPositionChanged, A.class "custom-select custom-select-sm" ]
+                (List.map
+                    (\position_ ->
+                        let
+                            name =
+                                Document.labelPositionName position_
+                        in
+                        ( name
+                        , H.option (setSelected position_ [ labelPositionValue position_ ])
+                            [ H.text name ]
+                        )
+                    )
+                    labelPositions
+                )
+            ]
+        ]
+
+
+labelPositions =
+    [ LabelAbove, LabelBelow, LabelLeft, LabelRight, LabelHidden ]
+
+
+labelPositionValue : LabelPosition -> Attribute msg
+labelPositionValue value =
+    A.value (Codecs.encodeLabelPosition value)
+
+
+onLabelPositionSelect msg =
+    E.on "input" (Codecs.labelPositionDecoder msg)
 
 
 imageView : ImageData -> Model -> Node -> Html Msg

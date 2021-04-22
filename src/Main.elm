@@ -442,6 +442,9 @@ update msg model =
         TextAlignChanged value ->
             applyChange model Document.applyTextAlign value
 
+        LabelPositionChanged value ->
+            applyChange model Document.applyLabelPosition value
+
         FontWeightChanged value ->
             applyChange model Document.applyFontWeight value
 
