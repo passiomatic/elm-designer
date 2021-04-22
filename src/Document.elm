@@ -743,11 +743,7 @@ applyLabel : String -> Zipper Node -> Zipper Node
 applyLabel value zipper =
     let
         value_ =
-            if String.trim value == "" then
-                "Label"
-
-            else
-                value
+            String.trim value
     in
     Zipper.mapLabel
         (\node ->
@@ -936,9 +932,9 @@ applyFontSize value zipper =
 applyFontFamily : Local FontFamily -> Zipper Node -> Zipper Node
 applyFontFamily value zipper =
     let
-        -- First, apply the new family so the inheritance chain is consistent 
-        newZipper = 
-            Zipper.mapLabel (Font.setFamily value) zipper    
+        -- First, apply the new family so the inheritance chain is consistent
+        newZipper =
+            Zipper.mapLabel (Font.setFamily value) zipper
     in
     Zipper.mapLabel
         (\node ->
@@ -953,7 +949,8 @@ applyFontFamily value zipper =
             node
                 |> Font.setWeight newWeight
         )
-        newZipper            
+        newZipper
+
 
 applyLetterSpacing : String -> Zipper Node -> Zipper Node
 applyLetterSpacing value zipper =
