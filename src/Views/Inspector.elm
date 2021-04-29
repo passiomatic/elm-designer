@@ -25,7 +25,7 @@ import Style.Layout as Layout exposing (..)
 import Style.Theme as Theme
 import Tree as T exposing (Tree)
 import Tree.Zipper as Zipper exposing (Zipper)
-import Views.Common exposing (fieldId, none)
+import Views.Common as Common
 
 
 view : Model -> List (Html Msg)
@@ -259,7 +259,7 @@ sectionView : String -> List (Html Msg) -> Html Msg
 sectionView title views =
     H.section [ A.class "section bp-3 border-bottom" ]
         ((if String.isEmpty title then
-            none
+            Common.none
 
           else
             H.h2 [ A.class "section__title mb-2" ]
@@ -285,7 +285,7 @@ labelTextView { text } model { type_ } =
             [ H.text "Text" ]
         , H.div [ A.class "col-9" ]
             [ H.input
-                [ A.id (fieldId LabelField)
+                [ A.id (Common.fieldId LabelField)
                 , A.type_ "text"
                 , A.value label_
                 , A.placeholder ""
@@ -358,7 +358,7 @@ imageView image model _ =
         , H.div [ A.class "" ]
             [ H.div [ A.class "form-group m-0" ]
                 [ H.input
-                    [ A.id (fieldId ImageSrcField)
+                    [ A.id (Common.fieldId ImageSrcField)
                     , A.type_ "text"
                     , A.value imageSrc
                     , A.placeholder "https://domain.com/sample.jpg"
@@ -368,7 +368,7 @@ imageView image model _ =
                     , E.onInput FieldChanged
                     ]
                     []
-                , H.label [ A.for (fieldId ImageSrcField), A.class "small m-0" ]
+                , H.label [ A.for (Common.fieldId ImageSrcField), A.class "small m-0" ]
                     [ H.text "Image address" ]
                 ]
             ]
@@ -501,7 +501,7 @@ paddingView model { padding } =
             [ H.div [ A.class "d-flex justify-content-center mb-1" ]
                 [ H.div [ A.class "w-25" ]
                     [ H.input
-                        [ A.id (fieldId PaddingTopField)
+                        [ A.id (Common.fieldId PaddingTopField)
                         , A.type_ "number"
                         , A.min "0"
                         , A.value paddingTop
@@ -516,7 +516,7 @@ paddingView model { padding } =
             , H.div [ A.class "d-flex align-items-center mb-1" ]
                 [ H.div [ A.class "w-25" ]
                     [ H.input
-                        [ A.id (fieldId PaddingLeftField)
+                        [ A.id (Common.fieldId PaddingLeftField)
                         , A.type_ "number"
                         , A.min "0"
                         , A.value paddingLeft
@@ -548,7 +548,7 @@ paddingView model { padding } =
                     ]
                 , H.div [ A.class "w-25" ]
                     [ H.input
-                        [ A.id (fieldId PaddingRightField)
+                        [ A.id (Common.fieldId PaddingRightField)
                         , A.type_ "number"
                         , A.min "0"
                         , A.value paddingRight
@@ -563,7 +563,7 @@ paddingView model { padding } =
             , H.div [ A.class "d-flex justify-content-center" ]
                 [ H.div [ A.class "w-25" ]
                     [ H.input
-                        [ A.id (fieldId PaddingBottomField)
+                        [ A.id (Common.fieldId PaddingBottomField)
                         , A.type_ "number"
                         , A.min "0"
                         , A.value paddingBottom
@@ -685,7 +685,7 @@ addDropdown fieldId_ state items parent =
             , H.div
                 [ A.classList
                     [ ( "dropdown-menu", True )
-                    , ( fieldId fieldId_ ++ "-dropdown", True )
+                    , ( Common.fieldId fieldId_ ++ "-dropdown", True )
                     , ( "show", visible )
                     ]
                 ]
@@ -780,7 +780,7 @@ bordersView model { borderColor, borderWidth, borderCorner } =
                                 [ H.span [ A.class "input-group-text bpx-1" ] [ H.text Entity.ulcorner ]
                                 ]
                             , H.input
-                                [ A.id (fieldId BorderTopLeftCornerField)
+                                [ A.id (Common.fieldId BorderTopLeftCornerField)
                                 , A.type_ "number"
                                 , A.min "0"
                                 , A.value topLeftCorner
@@ -794,7 +794,7 @@ bordersView model { borderColor, borderWidth, borderCorner } =
                         ]
                     , H.div [ A.class "w-25 mr-1" ]
                         [ H.input
-                            [ A.id (fieldId BorderTopWidthField)
+                            [ A.id (Common.fieldId BorderTopWidthField)
                             , A.type_ "number"
                             , A.min "0"
                             , A.value topWidth
@@ -808,7 +808,7 @@ bordersView model { borderColor, borderWidth, borderCorner } =
                     , H.div [ A.class "w-25" ]
                         [ H.div [ A.class "input-group input-group-sm" ]
                             [ H.input
-                                [ A.id (fieldId BorderTopRightCornerField)
+                                [ A.id (Common.fieldId BorderTopRightCornerField)
                                 , A.type_ "number"
                                 , A.min "0"
                                 , A.value topRightCorner
@@ -827,7 +827,7 @@ bordersView model { borderColor, borderWidth, borderCorner } =
                 , H.div [ A.class "d-flex justify-content-between align-items-center mb-1" ]
                     [ H.div [ A.class "w-25" ]
                         [ H.input
-                            [ A.id (fieldId BorderLeftWidthField)
+                            [ A.id (Common.fieldId BorderLeftWidthField)
                             , A.type_ "number"
                             , A.min "0"
                             , A.value leftWidth
@@ -857,7 +857,7 @@ bordersView model { borderColor, borderWidth, borderCorner } =
                         ]
                     , H.div [ A.class "w-25" ]
                         [ H.input
-                            [ A.id (fieldId BorderRightWidthField)
+                            [ A.id (Common.fieldId BorderRightWidthField)
                             , A.type_ "number"
                             , A.min "0"
                             , A.value rightWidth
@@ -878,7 +878,7 @@ bordersView model { borderColor, borderWidth, borderCorner } =
                                 [ H.span [ A.class "input-group-text bpx-1" ] [ H.text Entity.llcorner ]
                                 ]
                             , H.input
-                                [ A.id (fieldId BorderBottomLeftCornerField)
+                                [ A.id (Common.fieldId BorderBottomLeftCornerField)
                                 , A.type_ "number"
                                 , A.min "0"
                                 , A.value bottomLeftCorner
@@ -894,7 +894,7 @@ bordersView model { borderColor, borderWidth, borderCorner } =
                         ]
                     , H.div [ A.class "w-25 mr-1" ]
                         [ H.input
-                            [ A.id (fieldId BorderBottomWidthField)
+                            [ A.id (Common.fieldId BorderBottomWidthField)
                             , A.type_ "number"
                             , A.min "0"
                             , A.value bottomWidth
@@ -910,7 +910,7 @@ bordersView model { borderColor, borderWidth, borderCorner } =
                     , H.div [ A.class "w-25" ]
                         [ H.div [ A.class "input-group input-group-sm" ]
                             [ H.input
-                                [ A.id (fieldId BorderBottomRightCornerField)
+                                [ A.id (Common.fieldId BorderBottomRightCornerField)
                                 , A.type_ "number"
                                 , A.min "0"
                                 , A.value bottomRightCorner
@@ -930,94 +930,8 @@ bordersView model { borderColor, borderWidth, borderCorner } =
                     ]
                 ]
             ]
-        , colorView model (Just borderColor) BorderColorField BorderColorChanged
+        , Common.colorView model (Just borderColor) BorderColorField BorderColorChanged
         ]
-
-
-colorView : Model -> Maybe Color -> Field -> (String -> Msg) -> Html Msg
-colorView model color field msg =
-    H.div [ A.class "form-group row align-items-center mb-2" ]
-        [ H.label [ A.class "col-3 col-form-label-sm m-0" ]
-            [ H.text "Color" ]
-        , H.div [ A.class "col-9 d-flex" ]
-            [ colorPickerView model color msg
-            , colorHexView model color field
-            ]
-        ]
-
-
-colorPickerView : Model -> Maybe Color -> (String -> Msg) -> Html Msg
-colorPickerView _ value msg =
-    let
-        value_ =
-            Maybe.withDefault Palette.transparent value
-    in
-    H.input
-        [ A.type_ "color"
-        , A.value (Css.colorToStringWithHash value_)
-        , E.onInput msg
-        , A.classList
-            [ ( "form-control form-control-sm mr-1", True )
-            , ( "transparent", value == Nothing )
-            ]
-        ]
-        []
-
-
-colorHexView : Model -> Maybe Color -> Field -> Html Msg
-colorHexView model color field =
-    let
-        color_ =
-            case model.inspector of
-                EditingField field_ new ->
-                    if field == field_ then
-                        new
-
-                    else
-                        Maybe.map Css.colorToString color
-                            |> Maybe.withDefault ""
-
-                _ ->
-                    Maybe.map Css.colorToString color
-                        |> Maybe.withDefault ""
-    in
-    H.div [ A.class "input-group input-group-sm" ]
-        [ H.div [ A.class "input-group-prepend" ]
-            [ H.span [ A.class "input-group-text bpx-1" ] [ H.text "#" ]
-            ]
-        , H.input
-            [ A.id (fieldId field)
-            , A.type_ "text"
-            , A.value color_
-            , E.onFocus (FieldEditingStarted field color_)
-            , E.onBlur FieldEditingFinished
-            , E.onInput FieldChanged
-            , A.class "form-control"
-            ]
-            []
-        ]
-
-
-
--- colorAlphaView : Model -> String -> Color -> Html Msg
--- colorAlphaView _ name color =
---     H.div [ A.class "form-group m-0 w-33" ]
---         [ H.label [ A.for (fieldId BorderColorField), A.class "small m-0" ]
---             [ H.text "Opacity" ]
---         , H.div [ A.class "input-group input-group-sm" ]
---             [ H.input
---                 [ A.id name
---                 , A.type_ "text"
---                 , A.value "100"
---                 , A.class "form-control form-control-sm"
---                 --, A.title "Color opacity"
---                 ]
---                 []
---             , H.div [ A.class "input-group-append" ] [ H.span [ A.class "input-group-text bpx-1" ] [ H.text "%" ] ]
---             ]
---         -- , H.label [ A.for name, A.class "small m-0" ]
---         --     [ H.text "Opacity" ]
---         ]
 
 
 backgroundView : Model -> Node -> Html Msg
@@ -1034,13 +948,13 @@ backgroundView model { backgroundColor, background } =
     H.section [ A.class "section bp-3 border-bottom" ]
         [ H.h2 [ A.class "section__title mb-2" ]
             [ H.text "Background" ]
-        , colorView model backgroundColor BackgroundColorField BackgroundColorChanged
+        , Common.colorView model backgroundColor BackgroundColorField BackgroundColorChanged
         , H.div [ A.class "form-group row align-items-center mb-2" ]
-            [ H.label [ A.for (fieldId BackgroundImageField), A.class "col-3 col-form-label-sm m-0 text-nowrap" ]
+            [ H.label [ A.for (Common.fieldId BackgroundImageField), A.class "col-3 col-form-label-sm m-0 text-nowrap" ]
                 [ H.text "Image URL" ]
             , H.div [ A.class "col-9" ]
                 [ H.input
-                    [ A.id (fieldId BackgroundImageField)
+                    [ A.id (Common.fieldId BackgroundImageField)
                     , A.type_ "text"
                     , A.value image_
                     , A.placeholder ""
@@ -1060,7 +974,7 @@ backgroundView model { backgroundColor, background } =
 backgroundSizingView : Model -> Background -> Html Msg
 backgroundSizingView model value =
     if value == Background.None then
-        none
+        Common.none
 
     else
         let
@@ -1267,9 +1181,9 @@ widthView model { width } =
                                     _ ->
                                         String.fromInt value
                         in
-                        [ numericFieldView WidthPxField "Exact" value_
-                        , numericFieldView WidthMinField "Min." min
-                        , numericFieldView WidthMaxField "Max." max
+                        [ Common.numericFieldView WidthPxField "Exact" value_
+                        , Common.numericFieldView WidthMinField "Min." min
+                        , Common.numericFieldView WidthMaxField "Max." max
                         ]
 
                     Unspecified ->
@@ -1282,14 +1196,14 @@ widthView model { width } =
                                     _ ->
                                         ""
                         in
-                        [ numericFieldView WidthPxField "Exact" value_
-                        , numericFieldView WidthMinField "Min." min
-                        , numericFieldView WidthMaxField "Max." max
+                        [ Common.numericFieldView WidthPxField "Exact" value_
+                        , Common.numericFieldView WidthMinField "Min." min
+                        , Common.numericFieldView WidthMaxField "Max." max
                         ]
 
                     Content ->
-                        [ numericFieldView WidthMinField "Min." min
-                        , numericFieldView WidthMaxField "Max." max
+                        [ Common.numericFieldView WidthMinField "Min." min
+                        , Common.numericFieldView WidthMaxField "Max." max
                         ]
 
                     Fill value ->
@@ -1302,9 +1216,9 @@ widthView model { width } =
                                     _ ->
                                         String.fromInt value
                         in
-                        [ numericFieldView WidthPortionField "Portion" value_
-                        , numericFieldView WidthMinField "Min." min
-                        , numericFieldView WidthMaxField "Max." max
+                        [ Common.numericFieldView WidthPortionField "Portion" value_
+                        , Common.numericFieldView WidthMinField "Min." min
+                        , Common.numericFieldView WidthMaxField "Max." max
                         ]
                 )
             ]
@@ -1403,9 +1317,9 @@ heightView model { height } =
                                         _ ->
                                             String.fromInt value
                             in
-                            [ numericFieldView HeightPxField "Exact" value_
-                            , numericFieldView HeightMinField "Min." min
-                            , numericFieldView HeightMaxField "Max." max
+                            [ Common.numericFieldView HeightPxField "Exact" value_
+                            , Common.numericFieldView HeightMinField "Min." min
+                            , Common.numericFieldView HeightMaxField "Max." max
                             ]
 
                         Unspecified ->
@@ -1418,14 +1332,14 @@ heightView model { height } =
                                         _ ->
                                             ""
                             in
-                            [ numericFieldView HeightPxField "Exact" value_
-                            , numericFieldView HeightMinField "Min." min
-                            , numericFieldView HeightMaxField "Max." max
+                            [ Common.numericFieldView HeightPxField "Exact" value_
+                            , Common.numericFieldView HeightMinField "Min." min
+                            , Common.numericFieldView HeightMaxField "Max." max
                             ]
 
                         Content ->
-                            [ numericFieldView HeightMinField "Min." min
-                            , numericFieldView HeightMaxField "Max." max
+                            [ Common.numericFieldView HeightMinField "Min." min
+                            , Common.numericFieldView HeightMaxField "Max." max
                             ]
 
                         Fill value ->
@@ -1438,9 +1352,9 @@ heightView model { height } =
                                         _ ->
                                             String.fromInt value
                             in
-                            [ numericFieldView HeightPortionField "Portion" value_
-                            , numericFieldView HeightMinField "Min." min
-                            , numericFieldView HeightMaxField "Max." max
+                            [ Common.numericFieldView HeightPortionField "Portion" value_
+                            , Common.numericFieldView HeightMinField "Min." min
+                            , Common.numericFieldView HeightMaxField "Max." max
                             ]
                     )
                 ]
@@ -1496,7 +1410,7 @@ positionView model ({ transformation } as node) =
                 [ alignmentView model node
                 , H.div [ A.class "w-33 ml-1" ]
                     [ H.input
-                        [ A.id (fieldId OffsetXField)
+                        [ A.id (Common.fieldId OffsetXField)
                         , A.class "form-control form-control-sm text-center mx-auto"
                         , A.type_ "number"
                         , A.value offsetX
@@ -1510,7 +1424,7 @@ positionView model ({ transformation } as node) =
                 ]
             , H.div [ A.class "mr-1" ]
                 [ H.input
-                    [ A.id (fieldId OffsetYField)
+                    [ A.id (Common.fieldId OffsetYField)
                     , A.class "form-control form-control-sm text-center mx-auto w-33"
                     , A.type_ "number"
                     , A.value offsetY
@@ -1725,7 +1639,7 @@ fontView model zipper =
         , H.div [ A.class "d-flex" ]
             [ H.div [ A.class "form-group mr-1 w-25" ]
                 [ H.input
-                    [ A.id (fieldId FontSizeField)
+                    [ A.id (Common.fieldId FontSizeField)
                     , A.classList
                         [ ( "form-control form-control-sm text-center", True )
                         , ( "text-muted font-italic", inherited )
@@ -1741,10 +1655,10 @@ fontView model zipper =
                     |> addDropdown FontSizeField model.dropDownState (fontSizeItems node)
                 ]
             , H.div [ A.class "form-group w-75" ]
-                [ fontWeightView resolvedFontFamily node.fontWeight
+                [ Common.fontWeightView resolvedFontFamily node.fontWeight FontWeightChanged
                 ]
             ]
-        , colorView model (Just resolvedFontColor) FontColorField FontColorChanged
+        , Common.colorView model (Just resolvedFontColor) FontColorField FontColorChanged
         ]
 
 
@@ -1764,7 +1678,7 @@ fontSizeItems node =
             [ H.text "Inherit" ]
 
      else
-        none
+        Common.none
     )
         :: List.map
             (\value ->
@@ -1814,15 +1728,15 @@ fontSpacingView model node =
             [ H.div [ A.class "d-flex justify-content-end", A.style "gap" ".25rem" ]
                 [ case node.type_ of
                     ParagraphNode _ ->
-                        numericFieldView SpacingYField "Line" lineSpacing
+                        Common.numericFieldView SpacingYField "Line" lineSpacing
 
                     HeadingNode _ ->
-                        numericFieldView SpacingYField "Line" lineSpacing
+                        Common.numericFieldView SpacingYField "Line" lineSpacing
 
                     _ ->
-                        none
-                , numericFieldView WordSpacingField "Word" wordSpacing
-                , numericFieldView LetterSpacingField "Letter" letterSpacing
+                        Common.none
+                , Common.numericFieldView WordSpacingField "Word" wordSpacing
+                , Common.numericFieldView LetterSpacingField "Letter" letterSpacing
                 ]
             ]
         ]
@@ -1849,7 +1763,7 @@ fontFamilyView fontFamily resolvedFontFamily inherit =
                         )
 
                     else
-                        ( "", none )
+                        ( "", Common.none )
 
                 Inherit ->
                     -- Generate a unique enough key to avoid VDOM quirks
@@ -1889,11 +1803,11 @@ fontFamilyView fontFamily resolvedFontFamily inherit =
 
 fontFamilyValue : Local FontFamily -> Attribute msg
 fontFamilyValue value =
-    A.value (Codecs.encodeFontFamily value)
+    A.value (Codecs.encodeLocalFontFamily value)
 
 
 onFontFamilySelect msg =
-    E.on "input" (Codecs.fontFamilyDecoder msg)
+    E.on "input" (Codecs.fontLocalFamilyDecoder msg)
 
 
 fontWeightView : FontFamily -> FontWeight -> Html Msg
@@ -1935,24 +1849,3 @@ canInherit node =
 emptyView : Model -> a -> Html Msg
 emptyView _ _ =
     H.div [] []
-
-
-numericFieldView : Field -> String -> String -> Html Msg
-numericFieldView field label value =
-    H.div [ A.class "w-33" ]
-        [ H.label [ A.class "col-form-label-sm m-0 p-0", A.for (fieldId field) ]
-            [ H.text label
-            ]
-        , H.input
-            [ A.id (fieldId field)
-            , A.class "form-control form-control-sm text-center"
-            , A.type_ "number"
-
-            --, A.min "0"
-            , A.value value
-            , E.onFocus (FieldEditingStarted field value)
-            , E.onBlur FieldEditingFinished
-            , E.onInput FieldChanged
-            ]
-            []
-        ]

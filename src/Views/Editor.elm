@@ -30,8 +30,8 @@ import Tree as T exposing (Tree)
 import Tree.Zipper as Zipper exposing (Zipper)
 import Views.Common as Common exposing (none)
 import Views.ElmUI as ElmUI
-import Views.Inspector as Inspector
-
+import Views.Inspector
+import Views.Theme
 
 maxTreeLabelLength =
     50
@@ -246,12 +246,25 @@ rightPaneView model =
                         Tab.pane [ A.class "scroll-y" ]
                             (case Tab.activeTab model.rightPaneTabState of
                                 Just "tab-design" ->
-                                    Inspector.view model
+                                    Views.Inspector.view model
 
                                 _ ->
                                     []
                             )
                     }
+                , Tab.item
+                    { id = "tab-theme"
+                    , link = Tab.link [] [ H.text "Theme" ]
+                    , pane =
+                        Tab.pane [ A.class "scroll-y" ]
+                            (case Tab.activeTab model.rightPaneTabState of
+                                Just "tab-theme" ->
+                                    Views.Theme.view model
+
+                                _ ->
+                                    []
+                            )
+                    }                    
                 , Tab.item
                     { id = "tab-code"
                     , link = Tab.link [] [ H.text "Code" ]

@@ -1,8 +1,10 @@
 module Style.Theme exposing
     ( Theme
+    , ThemeValue(..)
     , defaultTheme
     , large
     , regular
+    , setTextSize
     , small
     , xlarge
     , xsmall
@@ -16,18 +18,58 @@ import Style.Font as Font exposing (..)
 import Style.Layout as Layout exposing (..)
 
 
+{-| A style value can either be defined in the theme or in the node.
+-}
+type ThemeValue a
+    = ThemeValue (Theme -> a)
+    | NodeValue a
+
+
+{-| Theme variables are logically grouped like this:
+
+    Page
+        - textColor
+        - textSize
+        - textFontFamily
+        - textFontWeight
+        - paragraphSpacing
+        - backgroundColor
+
+    Headings
+        - headingColor
+        - heading1Size
+        - heading2Size
+        - heading3Size
+        - headingFontFamily
+        - headingFontWeight
+        - headingSpacing
+
+    Brand Colors
+        - primaryColor
+        - accentColor
+        - mutedColor
+
+    Form elements
+        - labelColor
+        - borderWidth
+        - borderColor
+        - borderCorner
+
+-}
 type alias Theme =
-    { textColor : Color
+    { name : String
+    , textColor : Color
     , headingColor : Color
     , labelColor : Color
     , backgroundColor : Color
     , primaryColor : Color
     , accentColor : Color
     , mutedColor : Color
-    , infoColor : Color
-    , dangerColor : Color
-    , warningColor : Color
-    , successColor : Color
+
+    -- , infoColor : Color
+    -- , dangerColor : Color
+    -- , warningColor : Color
+    -- , successColor : Color
     , textFontFamily : FontFamily
     , headingFontFamily : FontFamily
     , textSize : Int
@@ -46,17 +88,19 @@ type alias Theme =
 
 defaultTheme : Theme
 defaultTheme =
-    { textColor = Palette.darkCharcoal
+    { name = "Default"
+    , textColor = Palette.darkCharcoal
     , headingColor = Palette.darkCharcoal
     , labelColor = Palette.darkCharcoal
     , backgroundColor = Palette.white
     , primaryColor = Palette.blue
     , accentColor = Palette.orange
     , mutedColor = Palette.lightGray
-    , infoColor = Palette.lightBlue
-    , dangerColor = Palette.lightRed
-    , warningColor = Palette.lightYellow
-    , successColor = Palette.lightGreen
+
+    -- , infoColor = Palette.lightBlue
+    -- , dangerColor = Palette.lightRed
+    -- , warningColor = Palette.lightYellow
+    -- , successColor = Palette.lightGreen
     , textSize = 16
     , heading1Size = 36
     , heading2Size = 24
@@ -91,3 +135,7 @@ large theme =
 
 xlarge theme =
     theme.textSize * 3
+
+
+setTextSize value theme =
+    { theme | textSize = value }

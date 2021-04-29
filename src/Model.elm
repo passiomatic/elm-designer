@@ -78,6 +78,10 @@ type Msg
     | FieldEditingFinished
     | FieldChanged String
     | TextChanged String
+    | ThemeTextSizeChanged String
+    | ThemeTextColorChanged String
+    | ThemeTextFontFamilyChanged FontFamily
+    | ThemeTextFontWeightChanged FontWeight
     | ViewportChanged Viewport
     | WrapRowItemsChanged Bool
     | ClipboardCopyClicked
@@ -86,7 +90,6 @@ type Msg
     | PageDeleteClicked String
     | InsertNodeClicked String
     | DropDownChanged WidgetState
-      --| LoadDocument
     | DocumentLoaded String
     | Ticked Posix
     | ModeChanged Mode
@@ -139,6 +142,8 @@ type Field
     | HeightMaxField
     | HeightPxField
     | HeightPortionField
+    | ThemeTextFontSizeField
+    | ThemeTextColorField
 
 
 type WidgetState
@@ -173,6 +178,7 @@ type alias Model =
     , pages : UndoList (SelectList (Zipper Node))
     , viewport : Viewport
     , inspector : Inspector
+    , theme : Theme
     , dragDrop : DragDrop.Model DragId DropId
     , fileDrop : FileDrop
     , rightPaneTabState : Tab.State
@@ -287,6 +293,7 @@ initialModel { width, height, uploadEndpoint, seed1, seed2, seed3, seed4 } =
     , pages = UndoList.fresh <| SelectList.singleton <| Zipper.fromTree emptyDocument
     , viewport = Fluid
     , inspector = NotEdited
+    , theme = Theme.defaultTheme
     , dragDrop = DragDrop.init
     , fileDrop = Empty
     , rightPaneTabState = Tab.customInitialState "tab-design"

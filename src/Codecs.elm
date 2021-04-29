@@ -2,8 +2,10 @@ module Codecs exposing
     ( encodeFontFamily
     , encodeFontWeight
     , encodeLabelPosition
+    , encodeLocalFontFamily
     , encodeViewport
     , fontFamilyDecoder
+    , fontLocalFamilyDecoder
     , fontWeightDecoder
     , fromString
     , labelPositionDecoder
@@ -259,13 +261,25 @@ fontFamilyCodec =
             )
 
 
-encodeFontFamily : Local FontFamily -> String
+encodeFontFamily : FontFamily -> String
 encodeFontFamily value =
+    Codec.encodeToString 0 fontFamilyCodec value
+
+
+encodeLocalFontFamily : Local FontFamily -> String
+encodeLocalFontFamily value =
     Codec.encodeToString 0 (localCodec fontFamilyCodec) value
 
 
-fontFamilyDecoder : (Local FontFamily -> msg) -> Decoder msg
+fontFamilyDecoder : (FontFamily -> msg) -> Decoder msg
 fontFamilyDecoder tagger =
+    E.targetValue
+        |> D.andThen (fromResult << Codec.decodeString fontFamilyCodec)
+        |> D.map tagger
+
+
+fontLocalFamilyDecoder : (Local FontFamily -> msg) -> Decoder msg
+fontLocalFamilyDecoder tagger =
     E.targetValue
         |> D.andThen (fromResult << Codec.decodeString (localCodec fontFamilyCodec))
         |> D.map tagger

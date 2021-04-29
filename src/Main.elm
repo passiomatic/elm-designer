@@ -485,6 +485,16 @@ update msg model =
         WidthChanged value ->
             applyChange model Document.applyWidth value
 
+        -- ###########
+        -- Theme
+        -- ###########
+        -- ThemeTextSizeChanged value ->
+        --     let
+        --         ( newModel, cmd ) =
+        --             applyChange model Document.applyFontSize value
+        --     in
+        --     ( { newModel | dropDownState = Hidden }, cmd )
+
         DragDropMsg msg_ ->
             let
                 ( newDragDrop, dragDropResult ) =
