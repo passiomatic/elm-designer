@@ -70,7 +70,7 @@ type Msg
     | FontSizeChanged String
     | FontColorChanged String
     | BackgroundColorChanged String
-    | BackgroundSizingChanged Background
+    | BackgroundChanged Background
     | BorderColorChanged String
     | LabelPositionChanged LabelPosition
     | FieldEditingStarted Field String
@@ -113,7 +113,6 @@ type Field
     | FontColorField
     | LetterSpacingField
     | WordSpacingField
-    | BackgroundColorField
     | PaddingTopField
     | PaddingRightField
     | PaddingBottomField
@@ -121,6 +120,7 @@ type Field
     | SpacingXField
     | SpacingYField
     | ImageSrcField
+    | BackgroundColorField
     | BackgroundImageField
     | BorderColorField
     | BorderTopWidthField

@@ -283,7 +283,7 @@ renderParagraphHelper ctx node selected text =
                 (onDoubleClick NoOp
                     :: onClick NoOp
                     :: attrs
-                    |> forceBackgroundColor node.backgroundColor
+                    |> forceBackgroundColor node.background
                 )
                 text
                 |> RenderedElement
@@ -330,7 +330,7 @@ renderText ctx node selected { text } =
                 (onDoubleClick NoOp
                     :: onClick NoOp
                     :: attrs
-                    |> forceBackgroundColor node.backgroundColor
+                    |> forceBackgroundColor node.background
                 )
                 text
                 |> RenderedElement
@@ -545,7 +545,6 @@ applyAllStyles node attrs =
         |> applyAlignX node.alignmentX
         |> applyAlignY node.alignmentY
         |> applyBackground node.background
-        |> applyBackgroundColor node.backgroundColor
 
 
 applyChildStyles : Node -> List (E.Attribute Msg) -> List (E.Attribute Msg)
@@ -564,9 +563,7 @@ applyChildStyles node attrs =
         |> applyLetterSpacing node.letterSpacing
         |> applyWordSpacing node.wordSpacing
         |> applyTextAlign node.textAlignment
-        |> applyBackground node.background
-        |> applyBackgroundColor node.backgroundColor
-
+        |> applyBackground node.background        
 
 
 -- applyExplain attrs =
@@ -903,38 +900,29 @@ applyFontWeight value attrs =
 applyBackground : Background -> List (E.Attribute Msg) -> List (E.Attribute Msg)
 applyBackground value attrs =
     case value of
-        Background.Cropped url ->
-            Background.image url :: attrs
+        Background.Image value_ ->
+            if value_ /= "" then
+                Background.image value_ :: attrs
+            else 
+                attrs 
 
-        Background.Uncropped url ->
-            Background.uncropped url :: attrs
-
-        Background.Tiled url ->
-            Background.tiled url :: attrs
-
-        Background.None ->
-            attrs
-
-
-applyBackgroundColor : Maybe Color -> List (E.Attribute Msg) -> List (E.Attribute Msg)
-applyBackgroundColor value attrs =
-    case value of
-        Just value_ ->
+        Background.Solid value_ ->
             Background.color value_ :: attrs
 
-        Nothing ->
+        Background.None ->
             attrs
 
 
 forceBackgroundColor value attrs =
     -- When we use in-place text editor we want to override Elm UI white background
     --   color for multiline input if and only if the element being edited
-    --   doesn't have a specified background color
-    if value == Nothing then
-        applyBackgroundColor (Just Palette.transparent) attrs
+    --   doesn't have a background color already
+    case value of
+        Background.None ->
+            applyBackground (Background.Solid Palette.transparent) attrs
 
-    else
-        attrs
+        _ ->
+            attrs
 
 
 

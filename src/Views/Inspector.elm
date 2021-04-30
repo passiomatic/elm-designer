@@ -935,128 +935,99 @@ bordersView model { borderColor, borderWidth, borderCorner } =
 
 
 backgroundView : Model -> Node -> Html Msg
-backgroundView model { backgroundColor, background } =
-    let
-        image_ =
-            case model.inspector of
-                EditingField BackgroundImageField new ->
-                    new
-
-                _ ->
-                    backgroundImageUrl background
-    in
+backgroundView model { background } =
     H.section [ A.class "section bp-3 border-bottom" ]
         [ H.h2 [ A.class "section__title mb-2" ]
             [ H.text "Background" ]
-        , Common.colorView model backgroundColor BackgroundColorField BackgroundColorChanged
-        , H.div [ A.class "form-group row align-items-center mb-2" ]
-            [ H.label [ A.for (Common.fieldId BackgroundImageField), A.class "col-3 col-form-label-sm m-0 text-nowrap" ]
-                [ H.text "Image URL" ]
-            , H.div [ A.class "col-9" ]
-                [ H.input
-                    [ A.id (Common.fieldId BackgroundImageField)
-                    , A.type_ "text"
-                    , A.value image_
-                    , A.placeholder ""
-                    , A.autocomplete False
-                    , A.class "form-control form-control-sm"
-                    , E.onFocus (FieldEditingStarted BackgroundImageField image_)
-                    , E.onBlur FieldEditingFinished
-                    , E.onInput FieldChanged
+        , H.div [ A.class "btn-group w-100 mb-2", A.attribute "role" "group" ]
+            [ H.button
+                [ A.classList
+                    [ ( "btn btn-light btn-sm", True )
+                    , ( "active", isNone background )
                     ]
-                    []
+                , E.onClick (BackgroundChanged Background.None)
+                , A.type_ "button"
                 ]
+                [ H.text "None" ]
+            , H.button
+                [ A.classList
+                    [ ( "btn btn-light btn-sm", True )
+                    , ( "active", isSolid background )
+                    ]
+                , E.onClick (BackgroundChanged (Background.Solid Palette.white))
+                , A.type_ "button"
+                ]
+                [ H.text "Color" ]
+            , H.button
+                [ A.classList
+                    [ ( "btn btn-light btn-sm", True )
+                    , ( "active", isImage background )
+                    ]
+                , E.onClick (BackgroundChanged (Background.Image ""))
+                , A.type_ "button"
+                ]
+                [ H.text "Image" ]
             ]
-        , backgroundSizingView model background
+        , case background of
+            Background.Image value ->
+                let
+                    value_ =
+                        case model.inspector of
+                            EditingField BackgroundImageField new ->
+                                new
+
+                            _ ->
+                                value
+                in
+                H.div [ A.class "form-group row align-items-center mb-2" ]
+                    [ H.label [ A.for (Common.fieldId BackgroundImageField), A.class "col-3 col-form-label-sm m-0 text-nowrap" ]
+                        [ H.text "Image URL" ]
+                    , H.div [ A.class "col-9" ]
+                        [ H.input
+                            [ A.id (Common.fieldId BackgroundImageField)
+                            , A.type_ "text"
+                            , A.value value_
+                            , A.placeholder ""
+                            , A.autocomplete False
+                            , A.class "form-control form-control-sm"
+                            , E.onFocus (FieldEditingStarted BackgroundImageField value_)
+                            , E.onBlur FieldEditingFinished
+                            , E.onInput FieldChanged
+                            ]
+                            []
+                        ]
+                    ]
+
+            Background.Solid value ->
+                Common.colorView model (Just value) BackgroundColorField BackgroundColorChanged
+
+            Background.None ->
+                Common.none
         ]
 
 
-backgroundSizingView : Model -> Background -> Html Msg
-backgroundSizingView model value =
-    if value == Background.None then
-        Common.none
 
-    else
-        let
-            url =
-                backgroundImageUrl value
-        in
-        H.div [ A.class "form-group row align-items-center mb-2" ]
-            [ H.label [ A.class "col-3 col-form-label-sm m-0 text-nowrap" ]
-                [ H.text "Sizing" ]
-            , H.div [ A.class "col-9 btn-group", A.attribute "role" "group" ]
-                [ H.button
-                    [ A.classList
-                        [ ( "btn btn-light btn-sm w-33", True )
-                        , ( "active", isCropped value )
-                        ]
-                    , A.type_ "button"
-                    , A.title "Fit the containing element by cropping the image"
-                    , E.onClick (BackgroundSizingChanged (Background.Cropped url))
-                    ]
-                    [ H.text "Crop" ]
-                , H.button
-                    [ A.classList
-                        [ ( "btn btn-light btn-sm w-33", True )
-                        , ( "active", isUncropped value )
-                        ]
-                    , A.type_ "button"
-                    , A.title "Fit the containing element by scaling the image"
-                    , E.onClick (BackgroundSizingChanged (Background.Uncropped url))
-                    ]
-                    [ H.text "Uncrop" ]
-                , H.button
-                    [ A.classList
-                        [ ( "btn btn-light btn-sm w-33", True )
-                        , ( "active", isTiled value )
-                        ]
-                    , A.type_ "button"
-                    , A.title "Tile the image along the X and Y axes"
-                    , E.onClick (BackgroundSizingChanged (Background.Tiled url))
-                    ]
-                    [ H.text "Tile" ]
-                ]
-            ]
-
-
-backgroundImageUrl : Background -> String
-backgroundImageUrl value =
+isSolid value =
     case value of
-        Background.Cropped value_ ->
-            value_
+        Background.Solid _ ->
+            True
 
-        Background.Uncropped value_ ->
-            value_
+        _ ->
+            False
 
-        Background.Tiled value_ ->
-            value_
 
+isImage value =
+    case value of
+        Background.Image _ ->
+            True
+
+        _ ->
+            False
+
+
+isNone value =
+    case value of
         Background.None ->
-            ""
-
-
-isCropped : Background -> Bool
-isCropped value =
-    case value of
-        Background.Cropped value_ ->
-            True
-
-        _ ->
-            False
-
-
-isUncropped value =
-    case value of
-        Background.Uncropped value_ ->
-            True
-
-        _ ->
-            False
-
-
-isTiled value =
-    case value of
-        Background.Tiled value_ ->
             True
 
         _ ->

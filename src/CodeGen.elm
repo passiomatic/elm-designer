@@ -564,7 +564,6 @@ emitAllStyles node attrs =
         |> emitAlignX node.alignmentX
         |> emitAlignY node.alignmentY
         |> emitBackground node.background
-        |> emitBackgroundColor node.backgroundColor
 
 
 emitPadding : Padding -> List Expression -> List Expression
@@ -658,21 +657,6 @@ emitCorner borderCorner attrs =
                 ]
             ]
             :: attrs
-
-
-emitBackgroundColor : Maybe Color -> List Expression -> List Expression
-emitBackgroundColor value attrs =
-    case value of
-        Just value_ ->
-            CodeGen.apply
-                [ CodeGen.fqFun backgroundModule "color"
-                , CodeGen.parens
-                    (emitColor value_)
-                ]
-                :: attrs
-
-        Nothing ->
-            attrs
 
 
 emitColor value =
@@ -994,14 +978,16 @@ emitTextAlign value attrs =
 emitBackground : Background -> List Expression -> List Expression
 emitBackground value attrs =
     case value of
-        Background.Cropped image ->
-            CodeGen.apply [ CodeGen.fqFun backgroundModule "image", CodeGen.string image ] :: attrs
+        Background.Image value_ ->
+            CodeGen.apply [ CodeGen.fqFun backgroundModule "image", CodeGen.string value_ ] :: attrs
 
-        Background.Uncropped image ->
-            CodeGen.apply [ CodeGen.fqFun backgroundModule "uncropped", CodeGen.string image ] :: attrs
-
-        Background.Tiled image ->
-            CodeGen.apply [ CodeGen.fqFun backgroundModule "tiled", CodeGen.string image ] :: attrs
+        Background.Solid value_ ->
+            CodeGen.apply
+                [ CodeGen.fqFun backgroundModule "color"
+                , CodeGen.parens
+                    (emitColor value_)
+                ]
+                :: attrs
 
         Background.None ->
             attrs
