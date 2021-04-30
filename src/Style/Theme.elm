@@ -1,13 +1,14 @@
 module Style.Theme exposing
     ( Theme
     , ThemeValue(..)
+    , applyTextFontFamily
+    , applyTextSize
     , defaultTheme
     , large
     , regular
-    , setTextSize
     , small
     , xlarge
-    , xsmall
+    , xsmall, applyTextFontWeight
     )
 
 import Element exposing (Color)
@@ -25,24 +26,45 @@ type ThemeValue a
     | NodeValue a
 
 
+type alias FontApperance =
+    { fontFamily : Local FontFamily
+    , fontColor : Local Color
+    , fontSize : Local Int
+    , fontWeight : FontWeight
+    , letterSpacing : Float
+    , wordSpacing : Float
+    }
+
+
+type alias BorderAppearance =
+    { borderColor : Color
+    , borderStyle : BorderStyle
+    , borderWidth : BorderWidth
+    , borderCorner : BorderCorner
+    }
+
+
+-- type Appearance a
+--     = FromTheme String (Theme2 -> a) a
+--     | FromNode a
+
+
 {-| Theme variables are logically grouped like this:
 
     Page
-        - textColor
-        - textSize
-        - textFontFamily
-        - textFontWeight
-        - paragraphSpacing
-        - backgroundColor
+        - textColor*
+        - textSize*
+        - textFontFamily*
+        - textFontWeight*
+        - backgroundColor*
 
     Headings
-        - headingColor
-        - heading1Size
-        - heading2Size
-        - heading3Size
-        - headingFontFamily
-        - headingFontWeight
-        - headingSpacing
+        - headingColor*
+        - heading1Size*
+        - heading2Size*
+        - heading3Size*
+        - headingFontFamily*
+        - headingFontWeight*
 
     Brand Colors
         - primaryColor
@@ -50,10 +72,10 @@ type ThemeValue a
         - mutedColor
 
     Form elements
-        - labelColor
-        - borderWidth
-        - borderColor
-        - borderCorner
+        - labelColor*
+        - borderWidth*
+        - borderColor*
+        - borderCorner*
 
 -}
 type alias Theme =
@@ -65,11 +87,6 @@ type alias Theme =
     , primaryColor : Color
     , accentColor : Color
     , mutedColor : Color
-
-    -- , infoColor : Color
-    -- , dangerColor : Color
-    -- , warningColor : Color
-    -- , successColor : Color
     , textFontFamily : FontFamily
     , headingFontFamily : FontFamily
     , textSize : Int
@@ -85,6 +102,20 @@ type alias Theme =
     , borderCorner : BorderCorner
     }
 
+
+-- type alias Theme2 =
+--     { name : String
+--     --, pagePackground: Background
+--     , text: FontAppearance
+--     , heading1: FontAppearance  
+--     , heading2: FontAppearance  
+--     , heading3: FontAppearance  
+--     , label:  FontAppearance
+--     , border: BorderAppearance  
+--     , primaryColor: Color 
+--     , accentColor: Color 
+--     , mutedColor: Color
+--     }
 
 defaultTheme : Theme
 defaultTheme =
@@ -137,5 +168,26 @@ xlarge theme =
     theme.textSize * 3
 
 
-setTextSize value theme =
-    { theme | textSize = value }
+applyTextSize : String -> Theme -> Theme
+applyTextSize value theme =
+    let
+        value_ =
+            case String.toInt value of
+                Just v ->
+                    clamp Font.minFontSizeAllowed 999 v
+
+                Nothing ->
+                    -- TODO do not hardcode default here
+                    16
+    in
+    { theme | textSize = value_ }
+
+
+applyTextFontFamily : FontFamily -> Theme -> Theme
+applyTextFontFamily value theme =
+    { theme | textFontFamily = value }
+
+
+applyTextFontWeight : FontWeight -> Theme -> Theme
+applyTextFontWeight value theme =
+    { theme | textFontWeight = value }

@@ -488,12 +488,15 @@ update msg model =
         -- ###########
         -- Theme
         -- ###########
-        -- ThemeTextSizeChanged value ->
-        --     let
-        --         ( newModel, cmd ) =
-        --             applyChange model Document.applyFontSize value
-        --     in
-        --     ( { newModel | dropDownState = Hidden }, cmd )
+        ThemeTextSizeChanged value ->
+            ( { model | theme = Theme.applyTextSize value model.theme }, Cmd.none )
+
+        ThemeTextFontFamilyChanged value ->
+            ( { model | theme = Theme.applyTextFontFamily value model.theme }, Cmd.none )
+
+        ThemeTextFontWeightChanged value ->
+            ( { model | theme = Theme.applyTextFontWeight value model.theme }, Cmd.none )
+
 
         DragDropMsg msg_ ->
             let
@@ -574,7 +577,7 @@ update msg model =
                 -- Stop field and inline editing
                 -- ############
                 ( False, "Escape", EditingField field _ ) ->
-                    ( { model | inspector = NotEdited }, unfocusElement (fieldId field) )
+                    ( { model | inspector = NotEdited }, unfocusElement (Common.fieldId field) )
 
                 ( False, "Escape", EditingText ) ->
                     ( { model | inspector = NotEdited }, Cmd.none )

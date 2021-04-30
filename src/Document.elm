@@ -116,27 +116,66 @@ nodeId value =
     UUID.toString value
 
 
+type alias FontApperance =
+    { fontFamily : Local FontFamily
+    , fontColor : Local Color
+    , fontSize : Local Int
+    , fontWeight : FontWeight
+    , letterSpacing : Float
+    , wordSpacing : Float
+    }
+
+
+type alias BorderAppearance =
+    { borderColor : Color
+    , borderStyle : BorderStyle
+    , borderWidth : BorderWidth
+    , borderCorner : BorderCorner
+    }
+
+
+type Appearance a
+    = FromTheme (Theme -> a) a
+    | FromNode a
+
+
 type alias Node =
     { id : NodeId
     , name : String
     , width : Length
     , height : Length
     , transformation : Transformation
+
+    -- Padding Style Group
     , padding : Padding
+
+    -- /Padding Style Group
     , spacing : Spacing
+
+    -- Font Style Group
     , fontFamily : Local FontFamily
     , fontColor : Local Color
     , fontSize : Local Int
     , fontWeight : FontWeight
     , letterSpacing : Float
     , wordSpacing : Float
+
+    -- fontStyle:  Appearance FontApperance
+    -- /Font Style Group
     , textAlignment : TextAlignment
+
+    -- Border Style Group
     , borderColor : Color
     , borderStyle : BorderStyle
     , borderWidth : BorderWidth
     , borderCorner : BorderCorner
+
+    -- /Border Style Group
+    -- Background Style group
     , backgroundColor : Maybe Color
     , background : Background
+
+    -- /Background Style group
     , alignmentX : Alignment
     , alignmentY : Alignment
     , type_ : NodeType
@@ -155,10 +194,6 @@ type alias Template =
     , fontSize : Local Int
     , fontWeight : FontWeight
     , textAlignment : TextAlignment
-
-    -- TODO Needed?
-    -- , letterSpacing : Float
-    -- , wordSpacing : Float
     , borderColor : Color
     , borderStyle : BorderStyle
     , borderWidth : BorderWidth
@@ -207,9 +242,6 @@ baseTemplate =
     , alignmentY = None
     , type_ = PageNode
     }
-
-
-
 
 
 type NodeType
