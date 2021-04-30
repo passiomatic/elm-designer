@@ -19,7 +19,7 @@ module Document exposing
     , applyAlignY
     , applyBackground
     , applyBackgroundColor
-    , applyBackgroundUrl
+    , applyBackgroundImage
     , applyBorderColor
     , applyBorderCorner
     , applyBorderLock
@@ -135,7 +135,6 @@ type alias Node =
     , borderStyle : BorderStyle
     , borderWidth : BorderWidth
     , borderCorner : BorderCorner
-    , backgroundColor : Maybe Color
     , background : Background
     , alignmentX : Alignment
     , alignmentY : Alignment
@@ -163,7 +162,6 @@ type alias Template =
     , borderStyle : BorderStyle
     , borderWidth : BorderWidth
     , borderCorner : BorderCorner
-    , backgroundColor : Maybe Color
     , background : Background
     , alignmentX : Alignment
     , alignmentY : Alignment
@@ -201,7 +199,6 @@ baseTemplate =
     , borderStyle = Solid
     , borderWidth = Border.width 0
     , borderCorner = Border.corner 0
-    , backgroundColor = Nothing
     , background = Background.None
     , alignmentX = None
     , alignmentY = None
@@ -372,7 +369,8 @@ fromTemplate template seeds =
                     , borderStyle = template_.borderStyle
                     , borderWidth = template_.borderWidth
                     , borderCorner = template_.borderCorner
-                    , backgroundColor = template_.backgroundColor
+
+                    --, backgroundColor = template_.backgroundColor
                     , background = template_.background
                     , alignmentX = template_.alignmentX
                     , alignmentY = template_.alignmentY
@@ -410,7 +408,8 @@ pageNode theme seeds children index =
             , borderStyle = baseTemplate.borderStyle
             , borderWidth = baseTemplate.borderWidth
             , borderCorner = baseTemplate.borderCorner
-            , backgroundColor = Just theme.backgroundColor
+
+            --, backgroundColor = Just theme.backgroundColor
             , background = baseTemplate.background
             , alignmentX = baseTemplate.alignmentX
             , alignmentY = baseTemplate.alignmentY
@@ -997,21 +996,21 @@ applyBackgroundColor : String -> Zipper Node -> Zipper Node
 applyBackgroundColor value zipper =
     let
         value_ =
-            if String.trim value == "" then
-                Nothing
+            if String.trim value /= "" then
+                Background.Solid (Css.stringToColor value)
 
             else
-                Just (Css.stringToColor value)
+                Background.None
     in
-    Zipper.mapLabel (Background.setBackgroundColor value_) zipper
+    Zipper.mapLabel (Background.setBackground value_) zipper
 
 
-applyBackgroundUrl : String -> Zipper Node -> Zipper Node
-applyBackgroundUrl value zipper =
+applyBackgroundImage : String -> Zipper Node -> Zipper Node
+applyBackgroundImage value zipper =
     let
         value_ =
             if String.trim value /= "" then
-                Background.Cropped value
+                Background.Image value
 
             else
                 Background.None

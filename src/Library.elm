@@ -24,6 +24,7 @@ import Html as H exposing (Html)
 import Icons
 import List.Extra
 import Palette
+import Style.Background as Background exposing (Background(..))
 import Style.Font as Font exposing (..)
 import Style.Layout as Layout exposing (..)
 import Style.Theme as Theme exposing (Theme)
@@ -351,7 +352,7 @@ buttonHelper theme name border background =
                 , borderWidth = theme.borderWidth
                 , borderColor = border
                 , borderCorner = theme.borderCorner
-                , backgroundColor = Just background
+                , background = Solid background
                 , fontColor = Local (contrastColor background theme.textColor Palette.white)
                 , textAlignment = TextCenter
                 , type_ = ButtonNode { text = "Button Label" }

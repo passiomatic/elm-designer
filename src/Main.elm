@@ -458,10 +458,10 @@ update msg model =
         FontFamilyChanged family ->
             applyChange model Document.applyFontFamily family
 
-        BackgroundColorChanged value ->
+        BackgroundColorChanged value ->            
             applyChange model Document.applyBackgroundColor value
 
-        BackgroundSizingChanged value ->
+        BackgroundChanged value ->
             applyChange model Document.applyBackground value
 
         BorderColorChanged value ->
@@ -759,7 +759,7 @@ updateField model =
             applyChange model Document.applyBackgroundColor newValue
 
         EditingField BackgroundImageField newValue ->
-            applyChange model Document.applyBackgroundUrl newValue
+            applyChange model Document.applyBackgroundImage newValue
 
         -- ###########
         -- Borders

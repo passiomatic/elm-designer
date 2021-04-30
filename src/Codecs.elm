@@ -116,7 +116,6 @@ nodeCodec =
         |> Codec.field "borderStyle" .borderStyle borderStyleCodec
         |> Codec.field "borderWidth" .borderWidth borderWidthCodec
         |> Codec.field "borderCorner" .borderCorner borderCornerCodec
-        |> Codec.field "backgroundColor" .backgroundColor (Codec.maybe colorCodec)
         |> Codec.field "background" .background backgroundCodec
         |> Codec.field "alignmentX" .alignmentX alignmentCodec
         |> Codec.field "alignmentY" .alignmentY alignmentCodec
@@ -390,23 +389,19 @@ textAlignmentCodec =
 backgroundCodec : Codec Background
 backgroundCodec =
     Codec.custom
-        (\cropped uncropped tiled none value ->
+        (\image solid none value ->
             case value of
-                Background.Cropped i ->
-                    cropped i
+                Background.Image value_ ->
+                    image value_
 
-                Background.Uncropped i ->
-                    uncropped i
-
-                Background.Tiled i ->
-                    tiled i
+                Background.Solid value_ ->
+                    solid value_
 
                 Background.None ->
                     none
         )
-        |> Codec.variant1 "Cropped" Background.Cropped Codec.string
-        |> Codec.variant1 "Uncropped" Background.Uncropped Codec.string
-        |> Codec.variant1 "Tiled" Background.Tiled Codec.string
+        |> Codec.variant1 "Image" Background.Image Codec.string
+        |> Codec.variant1 "Solid" Background.Solid colorCodec
         |> Codec.variant0 "None" Background.None
         |> Codec.buildCustom
 
