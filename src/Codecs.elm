@@ -101,7 +101,11 @@ nodeCodec =
         |> Codec.field "id" .id nodeIdCodec
         |> Codec.field "name" .name Codec.string
         |> Codec.field "width" .width lengthCodec
+        |> Codec.field "widthMin" .widthMin (Codec.maybe Codec.int)
+        |> Codec.field "widthMax" .widthMax (Codec.maybe Codec.int)
         |> Codec.field "height" .height lengthCodec
+        |> Codec.field "heightMin" .heightMin (Codec.maybe Codec.int)
+        |> Codec.field "heightMax" .heightMax (Codec.maybe Codec.int)
         |> Codec.field "transformation" .transformation transformationCodec
         |> Codec.field "padding" .padding paddingCodec
         |> Codec.field "spacing" .spacing spacingCodec
@@ -158,15 +162,6 @@ localCodec codec =
 
 lengthCodec : Codec Length
 lengthCodec =
-    Codec.object Length
-        |> Codec.field "strategy" .strategy strategyCodec
-        |> Codec.field "min" .min (Codec.maybe Codec.int)
-        |> Codec.field "max" .max (Codec.maybe Codec.int)
-        |> Codec.buildObject
-
-
-strategyCodec : Codec Strategy
-strategyCodec =
     Codec.custom
         (\px content fill auto value_ ->
             case value_ of

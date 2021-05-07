@@ -1221,7 +1221,7 @@ wrapRowOptionView wrapped =
 
 
 widthView : Model -> Node -> Html Msg
-widthView model { width } =
+widthView model { width, widthMin, widthMax } =
     let
         min =
             case model.inspector of
@@ -1229,7 +1229,7 @@ widthView model { width } =
                     new
 
                 _ ->
-                    Maybe.map String.fromInt width.min
+                    Maybe.map String.fromInt widthMin
                         |> Maybe.withDefault ""
 
         max =
@@ -1238,7 +1238,7 @@ widthView model { width } =
                     new
 
                 _ ->
-                    Maybe.map String.fromInt width.max
+                    Maybe.map String.fromInt widthMax
                         |> Maybe.withDefault ""
     in
     H.div [ A.class "form-group row align-items-center mb-3" ]
@@ -1249,20 +1249,20 @@ widthView model { width } =
                 [ H.button
                     [ A.classList
                         [ ( "btn btn-light btn-sm", True )
-                        , ( "active", isContent width.strategy )
+                        , ( "active", isContent width )
                         ]
-                    , E.onClick (WidthChanged (Length Content width.min width.max))
+                    , E.onClick (WidthChanged Layout.fit)
                     , A.type_ "button"
                     ]
                     [ H.text "Fit" ]
-                , case width.strategy of
+                , case width of
                     Fill value ->
                         H.button
                             [ A.classList
                                 [ ( "btn btn-light btn-sm", True )
                                 , ( "active", True )
                                 ]
-                            , E.onClick (WidthChanged (Length (Fill value) width.min width.max))
+                            , E.onClick (WidthChanged (Layout.portion value))
                             , A.type_ "button"
                             ]
                             [ H.text "Fill" ]
@@ -1272,18 +1272,18 @@ widthView model { width } =
                             [ A.classList
                                 [ ( "btn btn-light btn-sm", True )
                                 ]
-                            , E.onClick (WidthChanged (Length (Fill 1) width.min width.max))
+                            , E.onClick (WidthChanged Layout.fill)
                             , A.type_ "button"
                             ]
                             [ H.text "Fill" ]
-                , case width.strategy of
+                , case width of
                     Px value ->
                         H.button
                             [ A.classList
                                 [ ( "btn btn-light btn-sm", True )
-                                , ( "active", isPxOrUnspecified width.strategy )
+                                , ( "active", isPxOrUnspecified width )
                                 ]
-                            , E.onClick (WidthChanged (Length (Px value) width.min width.max))
+                            , E.onClick (WidthChanged (Layout.px value))
                             , A.type_ "button"
                             ]
                             [ H.text "Px" ]
@@ -1292,15 +1292,15 @@ widthView model { width } =
                         H.button
                             [ A.classList
                                 [ ( "btn btn-light btn-sm", True )
-                                , ( "active", isPxOrUnspecified width.strategy )
+                                , ( "active", isPxOrUnspecified width )
                                 ]
-                            , E.onClick (WidthChanged (Length Unspecified width.min width.max))
+                            , E.onClick (WidthChanged Layout.unspecified)
                             , A.type_ "button"
                             ]
                             [ H.text "Px" ]
                 ]
             , H.div [ A.class "d-flex justify-content-end", A.style "gap" ".25rem" ]
-                (case width.strategy of
+                (case width of
                     Px value ->
                         let
                             value_ =
@@ -1356,7 +1356,7 @@ widthView model { width } =
 
 
 heightView : Model -> Node -> Html Msg
-heightView model { height } =
+heightView model { height, heightMin, heightMax } =
     let
         min =
             case model.inspector of
@@ -1364,7 +1364,7 @@ heightView model { height } =
                     new
 
                 _ ->
-                    Maybe.map String.fromInt height.min
+                    Maybe.map String.fromInt heightMin
                         |> Maybe.withDefault ""
 
         max =
@@ -1373,7 +1373,7 @@ heightView model { height } =
                     new
 
                 _ ->
-                    Maybe.map String.fromInt height.max
+                    Maybe.map String.fromInt heightMax
                         |> Maybe.withDefault ""
     in
     H.div []
@@ -1385,20 +1385,20 @@ heightView model { height } =
                     [ H.button
                         [ A.classList
                             [ ( "btn btn-light btn-sm", True )
-                            , ( "active", isContent height.strategy )
+                            , ( "active", isContent height )
                             ]
-                        , E.onClick (HeightChanged (Length Content height.min height.max))
+                        , E.onClick (HeightChanged Layout.fit)
                         , A.type_ "button"
                         ]
                         [ H.text "Fit" ]
-                    , case height.strategy of
+                    , case height of
                         Fill value ->
                             H.button
                                 [ A.classList
                                     [ ( "btn btn-light btn-sm", True )
                                     , ( "active", True )
                                     ]
-                                , E.onClick (HeightChanged (Length (Fill value) height.min height.max))
+                                , E.onClick (HeightChanged (Layout.portion value))
                                 , A.type_ "button"
                                 ]
                                 [ H.text "Fill" ]
@@ -1408,18 +1408,18 @@ heightView model { height } =
                                 [ A.classList
                                     [ ( "btn btn-light btn-sm", True )
                                     ]
-                                , E.onClick (HeightChanged (Length (Fill 1) height.min height.max))
+                                , E.onClick (HeightChanged Layout.fill)
                                 , A.type_ "button"
                                 ]
                                 [ H.text "Fill" ]
-                    , case height.strategy of
+                    , case height of
                         Px value ->
                             H.button
                                 [ A.classList
                                     [ ( "btn btn-light btn-sm", True )
-                                    , ( "active", isPxOrUnspecified height.strategy )
+                                    , ( "active", isPxOrUnspecified height )
                                     ]
-                                , E.onClick (HeightChanged (Length (Px value) height.min height.max))
+                                , E.onClick (HeightChanged (Layout.px value))
                                 , A.type_ "button"
                                 ]
                                 [ H.text "Px" ]
@@ -1428,15 +1428,15 @@ heightView model { height } =
                             H.button
                                 [ A.classList
                                     [ ( "btn btn-light btn-sm", True )
-                                    , ( "active", isPxOrUnspecified height.strategy )
+                                    , ( "active", isPxOrUnspecified height )
                                     ]
-                                , E.onClick (HeightChanged (Length Unspecified height.min height.max))
+                                , E.onClick (HeightChanged Layout.unspecified)
                                 , A.type_ "button"
                                 ]
                                 [ H.text "Px" ]
                     ]
                 , H.div [ A.class "d-flex justify-content-end", A.style "gap" ".25rem" ]
-                    (case height.strategy of
+                    (case height of
                         Px value ->
                             let
                                 value_ =

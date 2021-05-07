@@ -12,7 +12,7 @@ import Set exposing (Set)
 import Style.Background as Background exposing (Background)
 import Style.Border as Border exposing (BorderCorner, BorderStyle(..), BorderWidth)
 import Style.Font as Font exposing (..)
-import Style.Layout as Layout exposing (Alignment(..), Length, Padding, Spacing(..), Strategy(..), Transformation)
+import Style.Layout as Layout exposing (Alignment(..), Length, Padding, Spacing(..), Length(..), Transformation)
 import Style.Theme as Theme exposing (Theme)
 import Tree as T exposing (Tree)
 
@@ -551,8 +551,8 @@ emitAllStyles node attrs =
         |> emitBorder node.borderColor node.borderStyle node.borderWidth
         |> emitCorner node.borderCorner
         |> emitPadding node.padding
-        |> emitWidth node.width
-        |> emitHeight node.height
+        |> emitWidth node.width node.widthMin node.widthMax
+        |> emitHeight node.height node.heightMin node.heightMax
         |> emitSpacing node.spacing
         |> emitFontSize node.fontSize
         |> emitFontFamily node.fontFamily
@@ -805,27 +805,27 @@ emitSpacing value attrs =
                 CodeGen.apply [ CodeGen.fqFun elementModule "spacingXY", CodeGen.int x, CodeGen.int y ] :: attrs
 
 
-emitWidth : Length -> List Expression -> List Expression
-emitWidth value attrs =
-    emitLength value (CodeGen.fqFun elementModule "width") attrs
+emitWidth : Length ->  Maybe Int -> Maybe Int -> List Expression -> List Expression
+emitWidth value min max attrs =
+    emitLength value min max (CodeGen.fqFun elementModule "width") attrs
 
 
-emitHeight : Length -> List Expression -> List Expression
-emitHeight value attrs =
-    emitLength value (CodeGen.fqFun elementModule "height") attrs
+emitHeight : Length -> Maybe Int -> Maybe Int -> List Expression -> List Expression
+emitHeight value min max attrs =
+    emitLength value min max (CodeGen.fqFun elementModule "height") attrs
 
 
-emitLength : Length -> Expression -> List Expression -> List Expression
-emitLength value fun attrs =
-    case value.strategy of
+emitLength : Length ->  Maybe Int -> Maybe Int -> Expression -> List Expression -> List Expression
+emitLength value min max fun attrs =
+    case value of
         Px px ->
             CodeGen.apply
                 [ fun
                 , CodeGen.parens
                     (CodeGen.pipe (CodeGen.apply [ CodeGen.fqFun elementModule "px", CodeGen.int px ])
                         ([]
-                            |> emitMinLength value.min
-                            |> emitMaxLength value.max
+                            |> emitMinLength min
+                            |> emitMaxLength max
                         )
                     )
                 ]
@@ -837,8 +837,8 @@ emitLength value fun attrs =
                 , CodeGen.parens
                     (CodeGen.pipe (CodeGen.fqFun elementModule "shrink")
                         ([]
-                            |> emitMinLength value.min
-                            |> emitMaxLength value.max
+                            |> emitMinLength min
+                            |> emitMaxLength max
                         )
                     )
                 ]
@@ -851,8 +851,8 @@ emitLength value fun attrs =
                     , CodeGen.parens
                         (CodeGen.pipe (CodeGen.fqFun elementModule "fill")
                             ([]
-                                |> emitMinLength value.min
-                                |> emitMaxLength value.max
+                                |> emitMinLength min
+                                |> emitMaxLength max
                             )
                         )
                     ]
@@ -863,8 +863,8 @@ emitLength value fun attrs =
                     , CodeGen.parens
                         (CodeGen.pipe (CodeGen.apply [ CodeGen.fqFun elementModule "fillPortion", CodeGen.int portion ])
                             ([]
-                                |> emitMinLength value.min
-                                |> emitMaxLength value.max
+                                |> emitMinLength min
+                                |> emitMaxLength max
                             )
                         )
                     ]

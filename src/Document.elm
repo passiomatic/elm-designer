@@ -29,6 +29,8 @@ module Document exposing
     , applyFontSize
     , applyFontWeight
     , applyHeight
+    , applyHeightMax
+    , applyHeightMin
     , applyHeightWith
     , applyLabel
     , applyLabelPosition
@@ -40,6 +42,8 @@ module Document exposing
     , applyText
     , applyTextAlign
     , applyWidth
+    , applyWidthMax
+    , applyWidthMin
     , applyWidthWith
     , applyWordSpacing
     , applyWrapRowItems
@@ -75,10 +79,8 @@ import Css
 import Dict exposing (Dict)
 import Element exposing (Color, Orientation(..))
 import Fonts
-import Icons
-import List.Extra
 import Maybe
-import Palette exposing (orange)
+import Palette
 import SelectList exposing (SelectList)
 import Set exposing (Set)
 import Style.Background as Background exposing (Background)
@@ -93,7 +95,7 @@ import UUID exposing (Seeds, UUID)
 
 
 schemaVersion =
-    2
+    3
 
 
 {-| A serialized document.
@@ -120,7 +122,11 @@ type alias Node =
     { id : NodeId
     , name : String
     , width : Length
+    , widthMin : Maybe Int
+    , widthMax : Maybe Int
     , height : Length
+    , heightMin : Maybe Int
+    , heightMax : Maybe Int
     , transformation : Transformation
     , padding : Padding
     , spacing : Spacing
@@ -354,7 +360,11 @@ fromTemplate template seeds =
                     { id = uuid
                     , name = template_.name
                     , width = template_.width
+                    , widthMin = Nothing
+                    , widthMax = Nothing
                     , height = template_.height
+                    , heightMin = Nothing
+                    , heightMax = Nothing
                     , transformation = template_.transformation
                     , padding = template_.padding
                     , spacing = template_.spacing
@@ -369,8 +379,6 @@ fromTemplate template seeds =
                     , borderStyle = template_.borderStyle
                     , borderWidth = template_.borderWidth
                     , borderCorner = template_.borderCorner
-
-                    --, backgroundColor = template_.backgroundColor
                     , background = template_.background
                     , alignmentX = template_.alignmentX
                     , alignmentY = template_.alignmentY
@@ -393,7 +401,11 @@ pageNode theme seeds children index =
             { id = uuid
             , name = "Page " ++ String.fromInt index
             , width = Layout.fill
+            , widthMin = Nothing
+            , widthMax = Nothing
             , height = Layout.fill
+            , heightMin = Nothing
+            , heightMax = Nothing
             , transformation = baseTemplate.transformation
             , padding = baseTemplate.padding
             , spacing = baseTemplate.spacing
@@ -408,8 +420,6 @@ pageNode theme seeds children index =
             , borderStyle = baseTemplate.borderStyle
             , borderWidth = baseTemplate.borderWidth
             , borderCorner = baseTemplate.borderCorner
-
-            --, backgroundColor = Just theme.backgroundColor
             , background = baseTemplate.background
             , alignmentX = baseTemplate.alignmentX
             , alignmentY = baseTemplate.alignmentY
@@ -918,6 +928,26 @@ applyWidthWith setter value zipper =
     Zipper.mapLabel (\node -> { node | width = setter value_ node.width }) zipper
 
 
+applyWidthMin : String -> Zipper Node -> Zipper Node
+applyWidthMin value zipper =
+    let
+        value_ =
+            String.toInt value
+                |> Maybe.map (clamp 0 9999)
+    in
+    Zipper.mapLabel (\node -> { node | widthMin = value_ }) zipper
+
+
+applyWidthMax : String -> Zipper Node -> Zipper Node
+applyWidthMax value zipper =
+    let
+        value_ =
+            String.toInt value
+                |> Maybe.map (clamp 0 9999)
+    in
+    Zipper.mapLabel (\node -> { node | widthMax = value_ }) zipper
+
+
 applyHeight : Length -> Zipper Node -> Zipper Node
 applyHeight value zipper =
     Zipper.mapLabel (\node -> { node | height = value }) zipper
@@ -931,6 +961,26 @@ applyHeightWith setter value zipper =
                 |> Maybe.map (clamp 0 9999)
     in
     Zipper.mapLabel (\node -> { node | height = setter value_ node.height }) zipper
+
+
+applyHeightMin : String -> Zipper Node -> Zipper Node
+applyHeightMin value zipper =
+    let
+        value_ =
+            String.toInt value
+                |> Maybe.map (clamp 0 9999)
+    in
+    Zipper.mapLabel (\node -> { node | heightMin = value_ }) zipper
+
+
+applyHeightMax : String -> Zipper Node -> Zipper Node
+applyHeightMax value zipper =
+    let
+        value_ =
+            String.toInt value
+                |> Maybe.map (clamp 0 9999)
+    in
+    Zipper.mapLabel (\node -> { node | heightMax = value_ }) zipper
 
 
 applyFontSize : String -> Zipper Node -> Zipper Node

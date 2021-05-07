@@ -366,8 +366,8 @@ renderTextField ctx node selected label =
          , elementId node
          , onClick (NodeSelected node.id)
          ]
-            |> applyWidth node.width
-            |> applyHeight node.height
+            |> applyWidth node.width node.widthMin node.widthMax
+            |> applyHeight node.height node.heightMin node.heightMax
             |> applyAlignX node.alignmentX
             |> applyAlignY node.alignmentY
         )
@@ -398,8 +398,8 @@ renderTextFieldMultiline ctx node selected label =
          , elementId node
          , onClick (NodeSelected node.id)
          ]
-            |> applyWidth node.width
-            |> applyHeight node.height
+            |> applyWidth node.width node.widthMin node.widthMax
+            |> applyHeight node.height node.heightMin node.heightMax
             |> applyAlignX node.alignmentX
             |> applyAlignY node.alignmentY
         )
@@ -430,8 +430,8 @@ renderButton ctx node selected { text } =
          , elementId node
          , onClick (NodeSelected node.id)
          ]
-            |> applyWidth node.width
-            |> applyHeight node.height
+            |> applyWidth node.width node.widthMin node.widthMax
+            |> applyHeight node.height node.heightMin node.heightMax
             |> applyAlignX node.alignmentX
             |> applyAlignY node.alignmentY
         )
@@ -458,8 +458,8 @@ renderCheckbox ctx node selected label =
          , elementId node
          , onClick (NodeSelected node.id)
          ]
-            |> applyWidth node.width
-            |> applyHeight node.height
+            |> applyWidth node.width node.widthMin node.widthMax
+            |> applyHeight node.height node.heightMin node.heightMax
             |> applyAlignX node.alignmentX
             |> applyAlignY node.alignmentY
         )
@@ -489,8 +489,8 @@ renderRadio ctx node selected label children =
          , onClick (NodeSelected node.id)
          ]
             |> makeDroppableIf (Common.canDropInto node ctx.dragDrop) (AppendTo node.id)
-            |> applyWidth node.width
-            |> applyHeight node.height
+            |> applyWidth node.width node.widthMin node.widthMax
+            |> applyHeight node.height node.heightMin node.heightMax
             |> applyAlignX node.alignmentX
             |> applyAlignY node.alignmentY
         )
@@ -531,8 +531,8 @@ applyAllStyles node attrs =
         |> applyBorderWidth node.borderWidth
         |> applyBorderColor node.borderColor
         |> applyPadding node.padding
-        |> applyWidth node.width
-        |> applyHeight node.height
+        |> applyWidth node.width node.widthMin node.widthMax
+        |> applyHeight node.height node.heightMin node.heightMax
         |> applySpacing node.spacing
         |> applyTransformation node.transformation
         |> applyFontSize node.fontSize
@@ -563,7 +563,8 @@ applyChildStyles node attrs =
         |> applyLetterSpacing node.letterSpacing
         |> applyWordSpacing node.wordSpacing
         |> applyTextAlign node.textAlignment
-        |> applyBackground node.background        
+        |> applyBackground node.background
+
 
 
 -- applyExplain attrs =
@@ -619,62 +620,38 @@ applySpacing value attrs =
             E.spacingXY x y :: attrs
 
 
-applyWidth : Length -> List (E.Attribute Msg) -> List (E.Attribute Msg)
-applyWidth value attrs =
-    -- TODO merge with applyHeight
-    case value.strategy of
+applyWidth =
+    applyLength E.width
+
+
+applyHeight =
+    applyLength E.height
+
+
+applyLength : (E.Length -> E.Attribute Msg) -> Length -> Maybe Int -> Maybe Int -> List (E.Attribute Msg) -> List (E.Attribute Msg)
+applyLength fn value min max attrs =
+    case value of
         Px value_ ->
             (E.px value_
-                |> applyMinLength value.min
-                |> applyMaxLength value.max
-                |> E.width
+                |> applyMinLength min
+                |> applyMaxLength max
+                |> fn
             )
                 :: attrs
 
         Content ->
             (E.shrink
-                |> applyMinLength value.min
-                |> applyMaxLength value.max
-                |> E.width
+                |> applyMinLength min
+                |> applyMaxLength max
+                |> fn
             )
                 :: attrs
 
         Fill portion ->
             (E.fillPortion portion
-                |> applyMinLength value.min
-                |> applyMaxLength value.max
-                |> E.width
-            )
-                :: attrs
-
-        Unspecified ->
-            attrs
-
-
-applyHeight : Length -> List (E.Attribute Msg) -> List (E.Attribute Msg)
-applyHeight value attrs =
-    case value.strategy of
-        Px value_ ->
-            (E.px value_
-                |> applyMinLength value.min
-                |> applyMaxLength value.max
-                |> E.height
-            )
-                :: attrs
-
-        Content ->
-            (E.shrink
-                |> applyMinLength value.min
-                |> applyMaxLength value.max
-                |> E.height
-            )
-                :: attrs
-
-        Fill portion ->
-            (E.fillPortion portion
-                |> applyMinLength value.min
-                |> applyMaxLength value.max
-                |> E.height
+                |> applyMinLength min
+                |> applyMaxLength max
+                |> fn
             )
                 :: attrs
 
@@ -903,8 +880,9 @@ applyBackground value attrs =
         Background.Image value_ ->
             if value_ /= "" then
                 Background.image value_ :: attrs
-            else 
-                attrs 
+
+            else
+                attrs
 
         Background.Solid value_ ->
             Background.color value_ :: attrs

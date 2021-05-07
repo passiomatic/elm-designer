@@ -86,7 +86,6 @@ type Msg
     | PageDeleteClicked String
     | InsertNodeClicked String
     | DropDownChanged WidgetState
-      --| LoadDocument
     | DocumentLoaded String
     | Ticked Posix
     | ModeChanged Mode

@@ -458,7 +458,7 @@ update msg model =
         FontFamilyChanged family ->
             applyChange model Document.applyFontFamily family
 
-        BackgroundColorChanged value ->            
+        BackgroundColorChanged value ->
             applyChange model Document.applyBackgroundColor value
 
         BackgroundChanged value ->
@@ -651,13 +651,13 @@ updateField model =
         EditingField WidthPxField newValue ->
             applyChange model
                 (Document.applyWidthWith
-                    (\value length ->
+                    (\value _ ->
                         case value of
                             Just value_ ->
-                                Layout.setStrategy (Layout.px value_) length
+                                Layout.px value_
 
                             Nothing ->
-                                Layout.setStrategy Unspecified length
+                                Unspecified
                     )
                 )
                 newValue
@@ -665,22 +665,22 @@ updateField model =
         EditingField WidthPortionField newValue ->
             applyChange model
                 (Document.applyWidthWith
-                    (\value length ->
+                    (\value _ ->
                         case value of
                             Just value_ ->
-                                Layout.setStrategy (Layout.portion value_) length
+                                Layout.portion value_
 
                             Nothing ->
-                                Layout.setStrategy (Layout.portion 1) length
+                                Layout.portion 1
                     )
                 )
                 newValue
 
         EditingField WidthMinField newValue ->
-            applyChange model (Document.applyWidthWith Layout.setMinLength) newValue
+            applyChange model Document.applyWidthMin newValue
 
         EditingField WidthMaxField newValue ->
-            applyChange model (Document.applyWidthWith Layout.setMaxLength) newValue
+            applyChange model Document.applyWidthMax newValue
 
         -- ###########
         -- Height
@@ -688,13 +688,13 @@ updateField model =
         EditingField HeightPxField newValue ->
             applyChange model
                 (Document.applyHeightWith
-                    (\value length ->
+                    (\value _ ->
                         case value of
                             Just value_ ->
-                                Layout.setStrategy (Layout.px value_) length
+                                Layout.px value_
 
                             Nothing ->
-                                Layout.setStrategy Unspecified length
+                                Unspecified
                     )
                 )
                 newValue
@@ -702,22 +702,22 @@ updateField model =
         EditingField HeightPortionField newValue ->
             applyChange model
                 (Document.applyHeightWith
-                    (\value length ->
+                    (\value _ ->
                         case value of
                             Just value_ ->
-                                Layout.setStrategy (Layout.portion value_) length
+                                Layout.portion value_
 
                             Nothing ->
-                                Layout.setStrategy (Layout.portion 1) length
+                                Layout.portion 1
                     )
                 )
                 newValue
 
         EditingField HeightMinField newValue ->
-            applyChange model (Document.applyHeightWith Layout.setMinLength) newValue
+            applyChange model Document.applyHeightMin newValue
 
         EditingField HeightMaxField newValue ->
-            applyChange model (Document.applyHeightWith Layout.setMaxLength) newValue
+            applyChange model Document.applyHeightMax newValue
 
         -- ###########
         -- Transformation
