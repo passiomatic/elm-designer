@@ -27,7 +27,7 @@ module Style.Layout exposing
     , spacing
     , spacingXY
     , unspecified
-    , untransformed
+    , untransformed, Position(..)
     )
 
 {-| These types mirrors the Elm UI ones as much as possible.
@@ -83,6 +83,19 @@ setWidthMax : Maybe Int -> { a | widthMax : Maybe Int } -> { a | widthMax : Mayb
 setWidthMax value node =
     { node | widthMax = value }
 
+
+
+-- POSITION
+
+
+type Position
+    = Above
+    | Below
+    | OnStart
+    | OnEnd
+    | InFront
+    | BehindContent
+    | Normal
 
 
 -- ALIGNMENT

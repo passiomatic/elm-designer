@@ -710,6 +710,32 @@ applyAlignY value attrs =
         None ->
             attrs
 
+            
+-- applyPosition : Position -> List (E.Attribute Msg) -> List (E.Attribute Msg)
+-- applyPosition value attrs =
+--     case value of
+--         Above ->
+--             E.above :: attrs 
+
+--         Below ->
+--             E.below :: attrs 
+
+--         OnStart ->
+--             E.onLeft :: attrs
+
+--         OnEnd ->
+--             E.onRight :: attrs
+
+--         InFront  ->
+--             E.inFront :: attrs
+
+--         BehindContent ->
+--             E.behindContent :: attrs 
+
+--         Normal ->
+--             attrs
+
+
 
 applyBorderWidth : BorderWidth -> List (E.Attribute Msg) -> List (E.Attribute Msg)
 applyBorderWidth value attrs =

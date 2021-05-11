@@ -12,7 +12,7 @@ import Set exposing (Set)
 import Style.Background as Background exposing (Background)
 import Style.Border as Border exposing (BorderCorner, BorderStyle(..), BorderWidth)
 import Style.Font as Font exposing (..)
-import Style.Layout as Layout exposing (Alignment(..), Length, Padding, Spacing(..), Length(..), Transformation)
+import Style.Layout as Layout exposing (Alignment(..), Length(..), Padding, Position(..), Spacing(..), Transformation)
 import Style.Theme as Theme exposing (Theme)
 import Tree as T exposing (Tree)
 
@@ -561,6 +561,7 @@ emitAllStyles node attrs =
         |> emitLetterSpacing node.letterSpacing
         |> emitWordSpacing node.wordSpacing
         |> emitTextAlign node.textAlignment
+        |> emitPosition node.position
         |> emitAlignX node.alignmentX
         |> emitAlignY node.alignmentY
         |> emitBackground node.background
@@ -805,7 +806,7 @@ emitSpacing value attrs =
                 CodeGen.apply [ CodeGen.fqFun elementModule "spacingXY", CodeGen.int x, CodeGen.int y ] :: attrs
 
 
-emitWidth : Length ->  Maybe Int -> Maybe Int -> List Expression -> List Expression
+emitWidth : Length -> Maybe Int -> Maybe Int -> List Expression -> List Expression
 emitWidth value min max attrs =
     emitLength value min max (CodeGen.fqFun elementModule "width") attrs
 
@@ -815,7 +816,7 @@ emitHeight value min max attrs =
     emitLength value min max (CodeGen.fqFun elementModule "height") attrs
 
 
-emitLength : Length ->  Maybe Int -> Maybe Int -> Expression -> List Expression -> List Expression
+emitLength : Length -> Maybe Int -> Maybe Int -> Expression -> List Expression -> List Expression
 emitLength value min max fun attrs =
     case value of
         Px px ->
@@ -895,6 +896,37 @@ emitMaxLength value attrs =
             CodeGen.apply [ CodeGen.fqFun elementModule "maximum", CodeGen.int value_ ] :: attrs
 
         Nothing ->
+            attrs
+
+
+emitPosition : Position -> List Expression -> List Expression
+emitPosition value attrs =
+    let
+        emit_ w =
+            CodeGen.apply
+                [ CodeGen.fqFun elementModule w
+                ]
+    in
+    case value of
+        Above ->
+            emit_ "above" :: attrs
+
+        Below ->
+            emit_ "below" :: attrs
+
+        OnStart ->
+            emit_ "onLeft" :: attrs
+
+        OnEnd ->
+            emit_ "onRight" :: attrs
+
+        InFront ->
+            emit_ "inFront" :: attrs
+
+        BehindContent ->
+            emit_ "behindContent" :: attrs
+
+        Normal ->
             attrs
 
 
