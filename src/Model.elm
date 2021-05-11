@@ -54,7 +54,7 @@ type Msg
     | MouseWheelChanged Wheel.Event
     | MouseMoved Mouse
     | NodeSelected NodeId
-    | TextEditingStarted NodeId
+    | TextEditingStarted String
     | CollapseNodeClicked Bool NodeId
     | PageSelected Int
     | PaddingLockChanged Bool

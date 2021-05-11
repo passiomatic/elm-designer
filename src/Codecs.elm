@@ -121,6 +121,7 @@ nodeCodec =
         |> Codec.field "borderWidth" .borderWidth borderWidthCodec
         |> Codec.field "borderCorner" .borderCorner borderCornerCodec
         |> Codec.field "background" .background backgroundCodec
+        |> Codec.field "position" .position positionCodec
         |> Codec.field "alignmentX" .alignmentX alignmentCodec
         |> Codec.field "alignmentY" .alignmentY alignmentCodec
         |> Codec.field "type" .type_ nodeTypeCodec
@@ -157,6 +158,42 @@ localCodec codec =
         )
         |> Codec.variant1 "Local" Local codec
         |> Codec.variant0 "Inherit" Inherit
+        |> Codec.buildCustom
+
+
+positionCodec : Codec Position
+positionCodec =
+    Codec.custom
+        (\above below onStart onEnd inFront behindContent normal value_ ->
+            case value_ of
+                Above ->
+                    above
+
+                Below ->
+                    below
+
+                OnStart ->
+                    onStart
+
+                OnEnd ->
+                    onEnd
+
+                InFront ->
+                    inFront
+
+                BehindContent ->
+                    behindContent
+
+                Normal ->
+                    normal
+        )
+        |> Codec.variant0 "Above" Above
+        |> Codec.variant0 "Below" Below
+        |> Codec.variant0 "OnStart" OnStart
+        |> Codec.variant0 "OnEnd" OnEnd
+        |> Codec.variant0 "InFront" InFront
+        |> Codec.variant0 "BehindContent" BehindContent
+        |> Codec.variant0 "Normal" Normal
         |> Codec.buildCustom
 
 

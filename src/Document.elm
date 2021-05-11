@@ -142,6 +142,7 @@ type alias Node =
     , borderWidth : BorderWidth
     , borderCorner : BorderCorner
     , background : Background
+    , position : Position
     , alignmentX : Alignment
     , alignmentY : Alignment
     , type_ : NodeType
@@ -380,6 +381,7 @@ fromTemplate template seeds =
                     , borderWidth = template_.borderWidth
                     , borderCorner = template_.borderCorner
                     , background = template_.background
+                    , position = Normal
                     , alignmentX = template_.alignmentX
                     , alignmentY = template_.alignmentY
                     , type_ = template_.type_
@@ -421,6 +423,7 @@ pageNode theme seeds children index =
             , borderWidth = baseTemplate.borderWidth
             , borderCorner = baseTemplate.borderCorner
             , background = baseTemplate.background
+            , position = Normal
             , alignmentX = baseTemplate.alignmentX
             , alignmentY = baseTemplate.alignmentY
             , type_ = baseTemplate.type_

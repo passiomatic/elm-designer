@@ -6,13 +6,35 @@
   //transition: background-color .2s ease-out;
 }
 
+.element__connect {
+  width: 12px;
+  height: 12px;
+  background: #fff;
+  border: 1px solid $primary;
+  border-radius: 50%;
+  //display: none;
+}
+
+.element__nudge {
+  width: 12px;
+  height: 12px;
+  background: #fff;
+  border: 1px solid $primary;
+  //display: none;
+}
+
+ 
+// .element__connect.vis,
+// .element__nudge.vis {
+//   display: block;
+// }
+ 
+
 // ----------------------
 // Selected (design mode only)
 
 .page--design .element--selected {
-  //@extend .unselectable;
-  outline: 3px double $primary;
-  //box-shadow: 0 0 0 1px $primary;
+  outline: 3px solid $primary;
 }
 
 // ----------------------
@@ -23,7 +45,7 @@
 }
 
 .page--design .dragging--file:after {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: 0;
@@ -46,11 +68,11 @@
 }
 
 // Make the inline text editor to honor node text aligment
-.element textarea  {
+.element textarea {
   text-align: inherit;
 }
 
 // Disallow image dragging while in design mode
-.page--design .element>img { 
-    -webkit-user-drag: none;
+.page--design .element > img {
+  -webkit-user-drag: none;
 }
