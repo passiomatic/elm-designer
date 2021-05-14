@@ -386,17 +386,13 @@ update msg model =
             , Cmd.none
             )
 
-        TextEditingStarted id ->
-            let
-                elementId =
-                    Document.nodeId id
-            in
+        TextEditingStarted editorId ->
             ( { model
                 | inspector = EditingText
               }
             , Cmd.batch
-                [ focusElement elementId
-                , Ports.selectText elementId
+                [ focusElement editorId
+                , Ports.selectText editorId
                 ]
             )
 

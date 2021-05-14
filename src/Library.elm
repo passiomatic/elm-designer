@@ -387,7 +387,7 @@ radio theme =
             { baseTemplate
                 | name = "Radio Selection"
                 , spacing = Layout.spacingXY 0 (Theme.xsmall theme)
-                , type_ = RadioNode { text = "Radio Selection", position = LabelRight }
+                , type_ = RadioNode { text = "Radio Selection", position = LabelAbove}
             }
             [ T.singleton
                 { baseTemplate
