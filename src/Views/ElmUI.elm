@@ -2,7 +2,6 @@ module Views.ElmUI exposing (render)
 
 {- Elm UI renderer for the page node element. -}
 
-import Debug
 import Document exposing (..)
 import Element as E exposing (Color, Element, Orientation(..))
 import Element.Background as Background
@@ -16,7 +15,6 @@ import Html as H exposing (Html)
 import Html.Attributes as A
 import Html.Events
 import Html5.DragDrop as DragDrop
-import Icons
 import Json.Decode as Decode exposing (Decoder)
 import Model exposing (..)
 import Palette
@@ -31,7 +29,7 @@ import Views.Common as Common
 
 
 type RenderedNode
-    = RenderedElement (Element Msg)
+    = RenderedElement Position (Element Msg)
       --| RenderedPage (Html Msg)
     | RenderedOption (Option NodeId Msg)
 
@@ -41,7 +39,7 @@ render ctx tree =
     let
         rootElement node =
             case node of
-                RenderedElement el ->
+                RenderedElement _ el ->
                     el
 
                 RenderedOption _ ->
@@ -84,7 +82,7 @@ renderNode ctx node children =
             renderEditableText ctx node selected data.text renderParagraph
 
         HeadingNode data ->
-            -- Render as paragraph so we have text wrapping and line spacing settings
+            -- Render as paragraph so it has text wrapping and line spacing settings
             renderEditableText ctx node selected data.text renderParagraph
 
         TextNode data ->
@@ -144,7 +142,7 @@ renderTextColumn ctx node selected children =
             E.textColumn newAttrs newChildren
     in
     wrapElement ctx node selected renderer
-        |> RenderedElement
+        |> RenderedElement node.position
 
 
 renderColumn : Context -> Node -> Bool -> List RenderedNode -> RenderedNode
@@ -156,17 +154,56 @@ renderColumn ctx node selected children =
                     attrs
                         |> makeFileDroppableIf (not <| Common.isDragging ctx.dragDrop) node.id
 
-                newChildren =
+                ( newAttrs_, newChildren ) =
                     if List.length children == 0 then
-                        [ placeholderText "Empty Column" ]
+                        ( newAttrs, [ placeholderText "Empty Column" ] )
 
                     else
-                        elements children
+                        addChildren newAttrs children
             in
-            E.column newAttrs newChildren
+            E.column newAttrs_ newChildren
     in
     wrapElement ctx node selected renderer
-        |> RenderedElement
+        |> RenderedElement node.position
+
+
+addChildren attrs nodes =
+    List.foldl
+        (\node ( attrs_, children ) -> addChild node attrs_ children)
+        ( attrs, [] )
+        nodes
+
+
+addChild :
+    RenderedNode
+    -> List (E.Attribute Msg)
+    -> List (Element Msg)
+    -> ( List (E.Attribute Msg), List (Element Msg) )
+addChild node attrs children =
+    case node of
+        RenderedElement Above el ->
+            ( E.above el :: attrs, children )
+
+        RenderedElement Below el ->
+            ( E.below el :: attrs, children )
+
+        RenderedElement OnStart el ->
+            ( E.onLeft el :: attrs, children )
+
+        RenderedElement OnEnd el ->
+            ( E.onRight el :: attrs, children )
+
+        RenderedElement InFront el ->
+            ( E.inFront el :: attrs, children )
+
+        RenderedElement BehindContent el ->
+            ( E.behindContent el :: attrs, children )
+
+        RenderedElement Normal el ->
+            ( attrs, el :: children )
+
+        RenderedOption _ ->
+            ( attrs, children )
 
 
 renderRow : Context -> Node -> Bool -> RowData -> List RenderedNode -> RenderedNode
@@ -192,7 +229,7 @@ renderRow ctx node selected { wrapped } children =
                 E.row newAttrs newChildren
     in
     wrapElement ctx node selected renderer
-        |> RenderedElement
+        |> RenderedElement node.position
 
 
 {-| Render page as Elm UI column to layout elements vertically one after another, just like a regular HTML page.
@@ -213,7 +250,7 @@ renderPage ctx node selected children =
                 E.column attrs (elements children)
     in
     wrapElement ctx node selected renderer
-        |> RenderedElement
+        |> RenderedElement node.position
 
 
 renderEmptyPage attrs =
@@ -249,7 +286,7 @@ renderImage ctx node selected image =
             E.image newAttrs image
     in
     wrapElement ctx node selected renderer
-        |> RenderedElement
+        |> RenderedElement node.position
 
 
 renderEditableText :
@@ -277,7 +314,7 @@ renderEditableText ctx node selected text nodeRenderer =
                     nodeRenderer node attrs text
     in
     wrapElement ctx node selected renderer
-        |> RenderedElement
+        |> RenderedElement node.position
 
 
 renderParagraph node attrs text =
@@ -331,14 +368,14 @@ renderTextField ctx node selected label =
             in
             Input.text
                 newAttrs
-                { onChange = \s -> NoOp
+                { onChange = \_ -> NoOp
                 , text = ""
                 , placeholder = Nothing
                 , label = labelPosition label.position [ Font.color ctx.theme.labelColor ] label.text
                 }
     in
     wrapElement ctx node selected renderer
-        |> RenderedElement
+        |> RenderedElement node.position
 
 
 renderTextFieldMultiline : Context -> Node -> Bool -> LabelData -> RenderedNode
@@ -353,7 +390,7 @@ renderTextFieldMultiline ctx node selected label =
             in
             Input.multiline
                 newAttrs
-                { onChange = \s -> NoOp
+                { onChange = \_ -> NoOp
                 , text = ""
                 , placeholder = Nothing
                 , spellcheck = False
@@ -362,7 +399,7 @@ renderTextFieldMultiline ctx node selected label =
                 }
     in
     wrapElement ctx node selected renderer
-        |> RenderedElement
+        |> RenderedElement node.position
 
 
 renderButton : Context -> Node -> Bool -> TextData -> RenderedNode
@@ -376,7 +413,7 @@ renderButton ctx node selected { text } =
                 }
     in
     wrapElement ctx node selected renderer
-        |> RenderedElement
+        |> RenderedElement node.position
 
 
 renderCheckbox : Context -> Node -> Bool -> LabelData -> RenderedNode
@@ -385,14 +422,14 @@ renderCheckbox ctx node selected label =
         renderer attrs =
             Input.checkbox
                 attrs
-                { onChange = \s -> NoOp
+                { onChange = \_ -> NoOp
                 , icon = Input.defaultCheckbox
                 , checked = True
                 , label = labelPosition label.position [ Font.color ctx.theme.labelColor ] label.text
                 }
     in
     wrapElement ctx node selected renderer
-        |> RenderedElement
+        |> RenderedElement node.position
 
 
 renderRadio : Context -> Node -> Bool -> LabelData -> List RenderedNode -> RenderedNode
@@ -401,7 +438,7 @@ renderRadio ctx node selected label children =
         renderer attrs =
             Input.radio
                 attrs
-                { onChange = \s -> NoOp
+                { onChange = \_ -> NoOp
                 , selected = Nothing
                 , label = labelPosition label.position [ Font.color ctx.theme.labelColor ] label.text
                 , options =
@@ -409,7 +446,7 @@ renderRadio ctx node selected label children =
                 }
     in
     wrapElement ctx node selected renderer
-        |> RenderedElement
+        |> RenderedElement node.position
 
 
 renderOption : Context -> Node -> Bool -> TextData -> RenderedNode
@@ -589,52 +626,6 @@ applyAlignY value attrs =
 
         None ->
             attrs
-
-            
--- applyPosition : Position -> List (E.Attribute Msg) -> List (E.Attribute Msg)
--- applyPosition value attrs =
---     case value of
---         Above ->
---             E.above :: attrs 
-
---         Below ->
---             E.below :: attrs 
-
---         OnStart ->
---             E.onLeft :: attrs
-
---         OnEnd ->
---             E.onRight :: attrs
-
---         InFront  ->
---             E.inFront :: attrs
-
---         BehindContent ->
---             E.behindContent :: attrs 
-
---         Normal ->
---             attrs
-
-
-
-
--- applyPosition : Position -> List (E.Attribute Msg) -> List (E.Attribute Msg)
--- applyPosition value attrs =
---     case value of
---         Above ->
---             E.above :: attrs
---         Below ->
---             E.below :: attrs
---         OnStart ->
---             E.onLeft :: attrs
---         OnEnd ->
---             E.onRight :: attrs
---         InFront  ->
---             E.inFront :: attrs
---         BehindContent ->
---             E.behindContent :: attrs
---         Normal ->
---             attrs
 
 
 applyBorderWidth : BorderWidth -> List (E.Attribute Msg) -> List (E.Attribute Msg)
@@ -908,7 +899,7 @@ elements children =
     List.foldr
         (\node accum ->
             case node of
-                RenderedElement el ->
+                RenderedElement _ el ->
                     el :: accum
 
                 _ ->

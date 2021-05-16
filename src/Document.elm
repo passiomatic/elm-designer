@@ -38,6 +38,7 @@ module Document exposing
     , applyOffset
     , applyPadding
     , applyPaddingLock
+    , applyPosition
     , applySpacing
     , applyText
     , applyTextAlign
@@ -765,11 +766,6 @@ setText value record =
     { record | text = value }
 
 
-setPosition : LabelPosition -> { a | position : LabelPosition } -> { a | position : LabelPosition }
-setPosition value record =
-    { record | position = value }
-
-
 applyLabel : String -> Zipper Node -> Zipper Node
 applyLabel value zipper =
     let
@@ -914,6 +910,11 @@ applyOffset setter value zipper =
                 |> Maybe.withDefault 0
     in
     Zipper.mapLabel (\node -> setTransformation (setter value_ node.transformation) node) zipper
+
+
+applyPosition : Position -> Zipper Node -> Zipper Node
+applyPosition value zipper =
+    Zipper.mapLabel (Layout.setPosition value) zipper
 
 
 applyWidth : Length -> Zipper Node -> Zipper Node
@@ -1142,3 +1143,8 @@ applyLabelPosition value zipper =
                     node
         )
         zipper
+
+
+setPosition : LabelPosition -> { a | position : LabelPosition } -> { a | position : LabelPosition }
+setPosition value record =
+    { record | position = value }

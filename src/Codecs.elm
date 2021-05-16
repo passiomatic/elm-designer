@@ -2,11 +2,13 @@ module Codecs exposing
     ( encodeFontFamily
     , encodeFontWeight
     , encodeLabelPosition
+    , encodePosition
     , encodeViewport
     , fontFamilyDecoder
     , fontWeightDecoder
     , fromString
     , labelPositionDecoder
+    , positionDecoder
     , toString
     , viewportDecoder
     )
@@ -195,6 +197,18 @@ positionCodec =
         |> Codec.variant0 "BehindContent" BehindContent
         |> Codec.variant0 "Normal" Normal
         |> Codec.buildCustom
+
+
+positionDecoder : (Position -> msg) -> Decoder msg
+positionDecoder tagger =
+    E.targetValue
+        |> D.andThen (fromResult << Codec.decodeString positionCodec)
+        |> D.map tagger
+
+
+encodePosition : Position -> String
+encodePosition value =
+    Codec.encodeToString 0 positionCodec value
 
 
 lengthCodec : Codec Length

@@ -64,6 +64,7 @@ type Msg
     | AlignmentXChanged Alignment
     | AlignmentYChanged Alignment
     | AlignmentChanged Alignment
+    | PositionChanged Position
     | TextAlignChanged TextAlignment
     | FontFamilyChanged (Local FontFamily)
     | FontWeightChanged FontWeight

@@ -2,6 +2,7 @@ module Style.Layout exposing
     ( Alignment(..)
     , Length(..)
     , Padding
+    , Position(..)
     , Spacing(..)
     , Transformation
     , fill
@@ -9,6 +10,7 @@ module Style.Layout exposing
     , padding
     , paddingXY
     , portion
+    , positionName
     , px
     , setLock
     , setOffsetX
@@ -18,6 +20,7 @@ module Style.Layout exposing
     , setPaddingLeft
     , setPaddingRight
     , setPaddingTop
+    , setPosition
     , setSpacing
     , setSpacingX
     , setSpacingY
@@ -27,7 +30,7 @@ module Style.Layout exposing
     , spacing
     , spacingXY
     , unspecified
-    , untransformed, Position(..)
+    , untransformed
     )
 
 {-| These types mirrors the Elm UI ones as much as possible.
@@ -96,6 +99,36 @@ type Position
     | InFront
     | BehindContent
     | Normal
+
+
+positionName position =
+    case position of
+        Above ->
+            "Above"
+
+        Below ->
+            "Below"
+
+        OnStart ->
+            "Left"
+
+        OnEnd ->
+            "Right"
+
+        InFront ->
+            "In Front"
+
+        BehindContent ->
+            "Behind Content"
+
+        Normal ->
+            "Normal"
+
+
+setPosition : Position -> { a | position : Position } -> { a | position : Position }
+setPosition value node =
+    { node | position = value }
+
 
 
 -- ALIGNMENT

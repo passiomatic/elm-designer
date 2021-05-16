@@ -481,6 +481,9 @@ update msg model =
         WidthChanged value ->
             applyChange model Document.applyWidth value
 
+        PositionChanged value ->
+            applyChange model Document.applyPosition value
+
         DragDropMsg msg_ ->
             let
                 ( newDragDrop, dragDropResult ) =
