@@ -131,15 +131,12 @@ renderTextColumn ctx node selected children =
                 newAttrs =
                     attrs
                         |> makeFileDroppableIf (not <| Common.isDragging ctx.dragDrop) node.id
-
-                newChildren =
-                    if List.length children == 0 then
-                        [ placeholderText "Empty Text Column" ]
-
-                    else
-                        elements children
             in
-            E.textColumn newAttrs newChildren
+            if List.isEmpty children then
+                E.textColumn newAttrs [ placeholderText "Empty Text Column" ]
+
+            else
+                addChildrenFor E.textColumn newAttrs children
     in
     wrapElement ctx node selected renderer
         |> RenderedElement node.position
@@ -153,57 +150,15 @@ renderColumn ctx node selected children =
                 newAttrs =
                     attrs
                         |> makeFileDroppableIf (not <| Common.isDragging ctx.dragDrop) node.id
-
-                ( newAttrs_, newChildren ) =
-                    if List.length children == 0 then
-                        ( newAttrs, [ placeholderText "Empty Column" ] )
-
-                    else
-                        addChildren newAttrs children
             in
-            E.column newAttrs_ newChildren
+            if List.isEmpty children then
+                E.column newAttrs [ placeholderText "Empty Column" ]
+
+            else
+                addChildrenFor E.column newAttrs children
     in
     wrapElement ctx node selected renderer
         |> RenderedElement node.position
-
-
-addChildren attrs nodes =
-    List.foldl
-        (\node ( attrs_, children ) -> addChild node attrs_ children)
-        ( attrs, [] )
-        nodes
-
-
-addChild :
-    RenderedNode
-    -> List (E.Attribute Msg)
-    -> List (Element Msg)
-    -> ( List (E.Attribute Msg), List (Element Msg) )
-addChild node attrs children =
-    case node of
-        RenderedElement Above el ->
-            ( E.above el :: attrs, children )
-
-        RenderedElement Below el ->
-            ( E.below el :: attrs, children )
-
-        RenderedElement OnStart el ->
-            ( E.onLeft el :: attrs, children )
-
-        RenderedElement OnEnd el ->
-            ( E.onRight el :: attrs, children )
-
-        RenderedElement InFront el ->
-            ( E.inFront el :: attrs, children )
-
-        RenderedElement BehindContent el ->
-            ( E.behindContent el :: attrs, children )
-
-        RenderedElement Normal el ->
-            ( attrs, el :: children )
-
-        RenderedOption _ ->
-            ( attrs, children )
 
 
 renderRow : Context -> Node -> Bool -> RowData -> List RenderedNode -> RenderedNode
@@ -215,18 +170,18 @@ renderRow ctx node selected { wrapped } children =
                     attrs
                         |> makeFileDroppableIf (not <| Common.isDragging ctx.dragDrop) node.id
 
-                newChildren =
-                    if List.length children == 0 then
-                        [ placeholderText "Empty Row" ]
+                nodeRenderer =
+                    if wrapped then
+                        E.wrappedRow
 
                     else
-                        elements children
+                        E.row
             in
-            if wrapped then
-                E.wrappedRow newAttrs newChildren
+            if List.isEmpty children then
+                nodeRenderer newAttrs [ placeholderText "Empty Row" ]
 
             else
-                E.row newAttrs newChildren
+                addChildrenFor nodeRenderer newAttrs children
     in
     wrapElement ctx node selected renderer
         |> RenderedElement node.position
@@ -244,10 +199,10 @@ renderPage ctx node selected children =
                         |> makeFileDroppableIf (not <| Common.isDragging ctx.dragDrop) node.id
             in
             if List.isEmpty children then
-                renderEmptyPage attrs
+                renderEmptyPage newAttrs
 
             else
-                E.column attrs (elements children)
+                addChildrenFor E.column newAttrs children
     in
     wrapElement ctx node selected renderer
         |> RenderedElement node.position
@@ -573,6 +528,7 @@ applyLength fn value min max attrs =
                 :: attrs
 
         Unspecified ->
+            -- TODO Keep min max values
             attrs
 
 
@@ -822,6 +778,52 @@ forceBackgroundColor value attrs =
 
 
 -- HELPERS
+
+
+addChildrenFor renderer attrs children =
+    let
+        ( newAttrs, newChildren ) =
+            List.foldl
+                (\node ( accumAttrs, accumChildren ) ->
+                    addChild node accumAttrs accumChildren
+                )
+                ( attrs, [] )
+                children
+    in
+    renderer newAttrs newChildren
+
+
+addChild :
+    RenderedNode
+    -> List (E.Attribute Msg)
+    -> List (Element Msg)
+    -> ( List (E.Attribute Msg), List (Element Msg) )
+addChild node attrs children =
+    case node of
+        RenderedElement Above el ->
+            ( E.above el :: attrs, children )
+
+        RenderedElement Below el ->
+            ( E.below el :: attrs, children )
+
+        RenderedElement OnStart el ->
+            ( E.onLeft el :: attrs, children )
+
+        RenderedElement OnEnd el ->
+            ( E.onRight el :: attrs, children )
+
+        RenderedElement InFront el ->
+            ( E.inFront el :: attrs, children )
+
+        RenderedElement BehindContent el ->
+            ( E.behindContent el :: attrs, children )
+
+        RenderedElement Normal el ->
+            -- Do not reverse children list
+            ( attrs, children ++ [ el ] )
+
+        RenderedOption _ ->
+            ( attrs, children )
 
 
 wrapElement : Context -> Node -> Bool -> (List (E.Attribute Msg) -> Element Msg) -> Element Msg

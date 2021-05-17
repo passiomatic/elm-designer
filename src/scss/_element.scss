@@ -40,8 +40,16 @@
 // ----------------------
 // Drag & drop
 
-.page--design .element--dropped {
-  background: rgba($primary, 0.1);
+.page--design .element--dropped:after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
+  z-index: 1;
+  background: rgba($primary, 0.1); // Overlay background color
+  pointer-events: none;
 }
 
 .page--design .dragging--file:after {
@@ -52,7 +60,7 @@
   bottom: 0;
   right: 0;
   z-index: 1;
-  background: rgba($secondary, 0.2);
+  background: rgba($secondary, 0.2); // Overlay background color
   pointer-events: none;
 }
 
