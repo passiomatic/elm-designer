@@ -536,7 +536,15 @@ applyLength fn value min max attrs =
                 :: attrs
 
         Unspecified ->
-            attrs
+            -- Emit "shrink" as default to specify min/max values anyway.
+            --   This is probably fixed in Elm UI 2 since we can emit min/max
+            --   values indipendently of element width/height values        
+            (E.shrink
+                |> applyMinLength min
+                |> applyMaxLength max
+                |> fn
+            )
+                :: attrs
 
 
 applyMinLength : Maybe Int -> E.Length -> E.Length
