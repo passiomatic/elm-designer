@@ -427,7 +427,6 @@ applyStyles node attrs =
         |> applyBorderColor node.borderColor
         |> applyPadding node.padding
         |> applySpacing node.spacing
-        |> applyTransformation node.transformation
         |> applyFontSize node.fontSize
         |> applyFontFamily node.fontFamily
         |> applyFontColor node.fontColor
@@ -475,7 +474,7 @@ applyOffsetY { offsetY } attrs =
 
 
 applyRotation { rotation } attrs =
-    if rotation > 0 then
+    if rotation /= 0 then
         E.rotate (degrees rotation) :: attrs
 
     else
@@ -850,6 +849,7 @@ wrapElement ctx node selected renderer =
             |> applyHeight node.height node.heightMin node.heightMax
             |> applyAlignX node.alignmentX
             |> applyAlignY node.alignmentY
+            |> applyTransformation node.transformation
         )
         (renderer attrs)
 
