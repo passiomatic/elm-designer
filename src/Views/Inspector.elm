@@ -68,8 +68,8 @@ resolveStyleViews model zipper =
 
                 ImageNode data ->
                     [ sectionView "Layout"
-                        [ positionView model node
-                        , nearbyView model node 
+                        [ alignmentView model node
+                        , positionView model node 
                         , lengthView model node
                         , paddingView model node
                         ]
@@ -82,8 +82,8 @@ resolveStyleViews model zipper =
                         [ wrapRowOptionView data.wrapped
                         ]
                     , sectionView "Layout"
-                        [ positionView model node
-                        , nearbyView model node 
+                        [ alignmentView model node
+                        , positionView model node 
                         , lengthView model node
                         , spacingXView model node
                         , paddingView model node
@@ -97,8 +97,8 @@ resolveStyleViews model zipper =
 
                 ColumnNode ->
                     [ sectionView "Layout"
-                        [ positionView model node
-                        , nearbyView model node 
+                        [ alignmentView model node
+                        , positionView model node 
                         , lengthView model node
                         , spacingYView model node
                         , paddingView model node
@@ -112,8 +112,8 @@ resolveStyleViews model zipper =
 
                 TextColumnNode ->
                     [ sectionView "Layout"
-                        [ positionView model node
-                        , nearbyView model node 
+                        [ alignmentView model node
+                        , positionView model node 
                         , lengthView model node
                         , spacingXView model node
                         , spacingYView model node
@@ -133,8 +133,8 @@ resolveStyleViews model zipper =
                         , spacingYView model node
                         ]
                     , sectionView "Layout"
-                        [ positionView model node
-                        , nearbyView model node 
+                        [ alignmentView model node
+                        , positionView model node 
                         , lengthView model node
                         , paddingView model node
                         ]
@@ -154,8 +154,8 @@ resolveStyleViews model zipper =
                         , spacingYView model node
                         ]
                     , sectionView "Layout"
-                        [ positionView model node
-                        , nearbyView model node 
+                        [ alignmentView model node
+                        , positionView model node 
                         , lengthView model node
                         , paddingView model node
                         ]
@@ -175,8 +175,8 @@ resolveStyleViews model zipper =
                         , spacingXView model node
                         ]
                     , sectionView "Layout"
-                        [ positionView model node
-                        , nearbyView model node 
+                        [ alignmentView model node
+                        , positionView model node 
                         , lengthView model node
                         , paddingView model node
                         ]
@@ -194,8 +194,8 @@ resolveStyleViews model zipper =
                         [ labelTextView button model node
                         ]
                     , sectionView "Layout"
-                        [ positionView model node
-                        , nearbyView model node 
+                        [ alignmentView model node
+                        , positionView model node 
                         , lengthView model node
                         , paddingView model node
                         ]
@@ -214,8 +214,8 @@ resolveStyleViews model zipper =
                         , labelPositionView label model node
                         ]
                     , sectionView "Layout"
-                        [ positionView model node
-                        , nearbyView model node 
+                        [ alignmentView model node
+                        , positionView model node 
                         , lengthView model node
                         , paddingView model node
                         ]
@@ -231,7 +231,7 @@ resolveStyleViews model zipper =
                         [ labelTextView option model node
                         ]
                     , sectionView "Layout"
-                        [ positionView model node
+                        [ alignmentView model node
                         , lengthView model node
                         , paddingView model node
                         ]
@@ -250,8 +250,8 @@ resolveStyleViews model zipper =
 
 commonViews zipper model node =
     [ sectionView "Layout"
-        [ positionView model node       
-        , nearbyView model node  
+        [ alignmentView model node       
+        , positionView model node  
         , lengthView model node
         , paddingView model node
         ]
@@ -1523,8 +1523,8 @@ isPxOrUnspecified value =
             False
 
 
-positionView : Model -> Node -> Html Msg
-positionView model ({ transformation } as node) =
+alignmentView : Model -> Node -> Html Msg
+alignmentView model ({ transformation } as node) =
     let
         offsetX =
             case model.inspector of
@@ -1544,10 +1544,10 @@ positionView model ({ transformation } as node) =
     in
     H.div [ A.class "form-group row align-items-center mb-3" ]
         [ H.label [ A.class "col-3 col-form-label-sm" ]
-            [ H.text "Position" ]
+            [ H.text "Alignment" ]
         , H.div [ A.class "col-9" ]
             [ H.div [ A.class "d-flex align-items-center mb-1" ]
-                [ alignmentView model node
+                [ alignmentView_ model node
                 , H.div [ A.class "w-33 ml-1" ]
                     [ H.input
                         [ A.id (fieldId OffsetXField)
@@ -1579,15 +1579,15 @@ positionView model ({ transformation } as node) =
         ]
 
 
-nearbyView : Model -> Node -> Html Msg
-nearbyView model { type_, position } =
+positionView : Model -> Node -> Html Msg
+positionView model { type_, position } =
     let
         setSelected other attrs =
             A.selected (position == other) :: attrs
     in
-    H.div [ A.class "form-group row align-items-center mb-2" ]
+    H.div [ A.class "form-group row align-items-center mb-3" ]
         [ H.label [ A.class "col-3 col-form-label-sm m-0" ]
-            [ H.text "Nearby" ]
+            [ H.text "Position" ]
         , H.div [ A.class "col-9" ]
             [ Keyed.node "select"
                 [ onPositionSelect PositionChanged, A.class "custom-select custom-select-sm" ]
@@ -1621,8 +1621,8 @@ positions =
     [ Normal, Above, Below, OnStart, OnEnd, InFront, BehindContent ]
 
 
-alignmentView : Model -> Node -> Html Msg
-alignmentView _ { alignmentX, alignmentY } =
+alignmentView_ : Model -> Node -> Html Msg
+alignmentView_ _ { alignmentX, alignmentY } =
     let
         nextAlignLeft =
             nextAlignStartState alignmentX
