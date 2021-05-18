@@ -18,12 +18,7 @@ References:
 
 -}
 
---import Element.Font as Font exposing (Font)
-
 import Dict exposing (Dict)
-import Element.Font exposing (extraBold)
-import List.Extra
-import SelectList exposing (SelectList)
 import Style.Font
     exposing
         ( FontFamily
@@ -73,6 +68,7 @@ families =
     ]
 
 
+families_ : Dict String FontFamily
 families_ =
     families
         |> List.map (\( _, f ) -> f)
@@ -143,16 +139,16 @@ interUrl =
 
 interWeights : List FontWeight
 interWeights =
-  [ Hairline
-  , ExtraLight
-  , Light
-  , Regular
-  , Medium
-  , Bold
-  , SemiBold
-  , ExtraBold
-  , Heavy
-  ]
+    [ Hairline
+    , ExtraLight
+    , Light
+    , Regular
+    , Medium
+    , Bold
+    , SemiBold
+    , ExtraBold
+    , Heavy
+    ]
 
 
 workSansUrl =
