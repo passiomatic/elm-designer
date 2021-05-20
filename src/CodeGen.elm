@@ -281,7 +281,7 @@ emitPage node children =
         [ CodeGen.fqFun elementModule "column"
         , CodeGen.list
             ([]
-                |> emitAllStyles node
+                |> emitStyles node
             )
         , CodeGen.list children
         ]
@@ -293,7 +293,7 @@ emitColumn node children =
         [ CodeGen.fqFun elementModule "column"
         , CodeGen.list
             ([]
-                |> emitAllStyles node
+                |> emitStyles node
             )
         , CodeGen.list children
         ]
@@ -305,7 +305,7 @@ emitTextColumn node children =
         [ CodeGen.fqFun elementModule "textColumn"
         , CodeGen.list
             ([]
-                |> emitAllStyles node
+                |> emitStyles node
             )
         , CodeGen.list children
         ]
@@ -323,7 +323,7 @@ emitRow node { wrapped } children =
             )
         , CodeGen.list
             ([]
-                |> emitAllStyles node
+                |> emitStyles node
             )
         , CodeGen.list children
         ]
@@ -335,7 +335,7 @@ emitParagraph node { text } =
         [ CodeGen.fqFun elementModule "paragraph"
         , CodeGen.list
             ([]
-                |> emitAllStyles node
+                |> emitStyles node
             )
         , emitLines text
         ]
@@ -368,7 +368,7 @@ emitText node { text } =
         [ CodeGen.fqFun elementModule "el"
         , CodeGen.list
             ([]
-                |> emitAllStyles node
+                |> emitStyles node
             )
         , CodeGen.parens (CodeGen.apply [ CodeGen.fqFun elementModule "text", CodeGen.string text ])
         ]
@@ -380,7 +380,7 @@ emitButton node { text } =
         [ CodeGen.fqFun inputModule "button"
         , CodeGen.list
             ([]
-                |> emitAllStyles node
+                |> emitStyles node
             )
         , CodeGen.record
             [ ( "onPress", CodeGen.val "Nothing" )
@@ -399,7 +399,7 @@ emitCheckbox theme node label =
         [ CodeGen.fqFun inputModule "checkbox"
         , CodeGen.list
             ([]
-                |> emitAllStyles node
+                |> emitStyles node
             )
         , CodeGen.record
             [ ( "onChange", CodeGen.val "CheckboxClicked" )
@@ -423,7 +423,7 @@ emitTextField theme node label =
         [ CodeGen.fqFun inputModule "text"
         , CodeGen.list
             ([]
-                |> emitAllStyles node
+                |> emitStyles node
             )
         , CodeGen.record
             [ ( "onChange", CodeGen.val "TextChanged" )
@@ -448,7 +448,7 @@ emitTextFieldMultiline theme node label =
         [ CodeGen.fqFun inputModule "multiline"
         , CodeGen.list
             ([]
-                |> emitAllStyles node
+                |> emitStyles node
             )
         , CodeGen.record
             [ ( "onChange", CodeGen.val "TextChanged" )
@@ -474,7 +474,7 @@ emitRadio theme node label children =
         [ CodeGen.fqFun inputModule "radio"
         , CodeGen.list
             ([]
-                |> emitAllStyles node
+                |> emitStyles node
             )
         , CodeGen.record
             [ ( "onChange", CodeGen.val "RadioClicked" )
@@ -503,7 +503,7 @@ emitOption node { text } =
                 [ CodeGen.fqFun elementModule "el"
                 , CodeGen.list
                     ([]
-                        |> emitAllStyles node
+                        |> emitStyles node
                     )
                 , CodeGen.parens (CodeGen.apply [ CodeGen.fqFun elementModule "text", CodeGen.string text ])
                 ]
@@ -518,7 +518,7 @@ emitImage node image =
         , CodeGen.list
             ([]
                 |> clipIf (Border.isRounded node.borderCorner)
-                |> emitAllStyles node
+                |> emitStyles node
             )
         , CodeGen.record
             [ ( "src", CodeGen.string image.src )
@@ -535,7 +535,7 @@ emitHeading node { text, level } =
         , CodeGen.list
             ([ CodeGen.apply [ CodeGen.fqFun regionModule "heading", CodeGen.int level ]
              ]
-                |> emitAllStyles node
+                |> emitStyles node
             )
         , emitLines text
         ]
@@ -545,8 +545,8 @@ emitHeading node { text, level } =
 -- ATTRIBUTES
 
 
-emitAllStyles : Node -> List Expression -> List Expression
-emitAllStyles node attrs =
+emitStyles : Node -> List Expression -> List Expression
+emitStyles node attrs =
     attrs
         |> emitBorder node.borderColor node.borderStyle node.borderWidth
         |> emitCorner node.borderCorner
