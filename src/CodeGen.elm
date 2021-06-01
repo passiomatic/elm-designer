@@ -17,6 +17,10 @@ import Style.Theme as Theme exposing (Theme)
 import Tree as T exposing (Tree)
 
 
+type EmittedNode
+    = EmittedNode Position Expression
+
+
 debugModule =
     [ "Debug" ]
 
@@ -147,9 +151,13 @@ emitView theme viewport tree =
             [ CodeGen.fqFun elementModule "layout"
             , CodeGen.list
                 emitMaxWidth
-            , CodeGen.parens (T.restructure identity (emitNode theme) tree)
+            , CodeGen.parens (root (T.restructure identity (emitNode theme) tree))
             ]
         )
+
+
+root (EmittedNode _ node) =
+    node
 
 
 emitUpdate =
@@ -229,9 +237,9 @@ emitFontLinks tree =
         |> Set.fromList
 
 
-emitNode : Theme -> Node -> List Expression -> Expression
+emitNode : Theme -> Node -> List EmittedNode -> EmittedNode
 emitNode theme node children =
-    case node.type_ of
+    (case node.type_ of
         PageNode ->
             emitPage node children
 
@@ -273,60 +281,78 @@ emitNode theme node children =
 
         OptionNode data ->
             emitOption node data
+    )
+        |> EmittedNode node.position
 
 
-emitPage : Node -> List Expression -> Expression
+emitPage : Node -> List EmittedNode -> Expression
 emitPage node children =
-    CodeGen.apply
-        [ CodeGen.fqFun elementModule "column"
-        , CodeGen.list
-            ([]
-                |> emitStyles node
-            )
-        , CodeGen.list children
-        ]
+    let
+        emitter attrs children_ =
+            CodeGen.apply
+                [ CodeGen.fqFun elementModule "column"
+                , CodeGen.list
+                    (attrs
+                        |> emitStyles node
+                    )
+                , CodeGen.list children_
+                ]
+    in
+    addChildrenFor emitter children
 
 
-emitColumn : Node -> List Expression -> Expression
+emitColumn : Node -> List EmittedNode -> Expression
 emitColumn node children =
-    CodeGen.apply
-        [ CodeGen.fqFun elementModule "column"
-        , CodeGen.list
-            ([]
-                |> emitStyles node
-            )
-        , CodeGen.list children
-        ]
+    let
+        emitter attrs children_ =
+            CodeGen.apply
+                [ CodeGen.fqFun elementModule "column"
+                , CodeGen.list
+                    (attrs
+                        |> emitStyles node
+                    )
+                , CodeGen.list children_
+                ]
+    in
+    addChildrenFor emitter children
 
 
-emitTextColumn : Node -> List Expression -> Expression
+emitTextColumn : Node -> List EmittedNode -> Expression
 emitTextColumn node children =
-    CodeGen.apply
-        [ CodeGen.fqFun elementModule "textColumn"
-        , CodeGen.list
-            ([]
-                |> emitStyles node
-            )
-        , CodeGen.list children
-        ]
+    let
+        emitter attrs children_ =
+            CodeGen.apply
+                [ CodeGen.fqFun elementModule "textColumn"
+                , CodeGen.list
+                    (attrs
+                        |> emitStyles node
+                    )
+                , CodeGen.list children_
+                ]
+    in
+    addChildrenFor emitter children
 
 
-emitRow : Node -> RowData -> List Expression -> Expression
+emitRow : Node -> RowData -> List EmittedNode -> Expression
 emitRow node { wrapped } children =
-    CodeGen.apply
-        [ CodeGen.fqFun elementModule
-            (if wrapped then
-                "wrappedRow"
+    let
+        emitter attrs children_ =
+            CodeGen.apply
+                [ CodeGen.fqFun elementModule
+                    (if wrapped then
+                        "wrappedRow"
 
-             else
-                "row"
-            )
-        , CodeGen.list
-            ([]
-                |> emitStyles node
-            )
-        , CodeGen.list children
-        ]
+                     else
+                        "row"
+                    )
+                , CodeGen.list
+                    (attrs
+                        |> emitStyles node
+                    )
+                , CodeGen.list children_
+                ]
+    in
+    addChildrenFor emitter children
 
 
 emitParagraph : Node -> TextData -> Expression
@@ -468,29 +494,33 @@ emitTextFieldMultiline theme node label =
         ]
 
 
-emitRadio : Theme -> Node -> LabelData -> List Expression -> Expression
+emitRadio : Theme -> Node -> LabelData -> List EmittedNode -> Expression
 emitRadio theme node label children =
-    CodeGen.apply
-        [ CodeGen.fqFun inputModule "radio"
-        , CodeGen.list
-            ([]
-                |> emitStyles node
-            )
-        , CodeGen.record
-            [ ( "onChange", CodeGen.val "RadioClicked" )
-            , ( "selected", CodeGen.val "Nothing" )
-            , ( "label"
-              , CodeGen.apply
-                    [ emitLabelPosition label.position
-                    , CodeGen.list
-                        [ CodeGen.apply [ CodeGen.fqFun fontModule "color", CodeGen.parens (emitColor theme.labelColor) ]
-                        ]
-                    , CodeGen.parens (CodeGen.apply [ CodeGen.fqFun elementModule "text", CodeGen.string label.text ])
+    let
+        emitter attrs children_ =
+            CodeGen.apply
+                [ CodeGen.fqFun inputModule "radio"
+                , CodeGen.list
+                    (attrs
+                        |> emitStyles node
+                    )
+                , CodeGen.record
+                    [ ( "onChange", CodeGen.val "RadioClicked" )
+                    , ( "selected", CodeGen.val "Nothing" )
+                    , ( "label"
+                      , CodeGen.apply
+                            [ emitLabelPosition label.position
+                            , CodeGen.list
+                                [ CodeGen.apply [ CodeGen.fqFun fontModule "color", CodeGen.parens (emitColor theme.labelColor) ]
+                                ]
+                            , CodeGen.parens (CodeGen.apply [ CodeGen.fqFun elementModule "text", CodeGen.string label.text ])
+                            ]
+                      )
+                    , ( "options", CodeGen.list children_ )
                     ]
-              )
-            , ( "options", CodeGen.list children )
-            ]
-        ]
+                ]
+    in
+    addChildrenFor emitter children
 
 
 emitOption : Node -> TextData -> Expression
@@ -561,7 +591,7 @@ emitStyles node attrs =
         |> emitLetterSpacing node.letterSpacing
         |> emitWordSpacing node.wordSpacing
         |> emitTextAlign node.textAlignment
-        |> emitPosition node.position
+        --|> emitPosition node.position
         |> emitAlignX node.alignmentX
         |> emitAlignY node.alignmentY
         |> emitBackground node.background
@@ -899,37 +929,6 @@ emitMaxLength value attrs =
             attrs
 
 
-emitPosition : Position -> List Expression -> List Expression
-emitPosition value attrs =
-    let
-        emit_ w =
-            CodeGen.apply
-                [ CodeGen.fqFun elementModule w
-                ]
-    in
-    case value of
-        Above ->
-            emit_ "above" :: attrs
-
-        Below ->
-            emit_ "below" :: attrs
-
-        OnStart ->
-            emit_ "onLeft" :: attrs
-
-        OnEnd ->
-            emit_ "onRight" :: attrs
-
-        InFront ->
-            emit_ "inFront" :: attrs
-
-        BehindContent ->
-            emit_ "behindContent" :: attrs
-
-        Normal ->
-            attrs
-
-
 emitAlignX : Alignment -> List Expression -> List Expression
 emitAlignX value attrs =
     case value of
@@ -1048,6 +1047,85 @@ emitLabelPosition position =
 
 
 -- HELPERS
+
+
+addChildrenFor emitter children =
+    let
+        ( newAttrs, newChildren ) =
+            List.foldl
+                (\child ( accumAttrs, accumChildren ) ->
+                    addChild child accumAttrs accumChildren
+                )
+                ( [], [] )
+                children
+    in
+    emitter newAttrs newChildren
+
+
+addChild :
+    EmittedNode
+    -> List Expression
+    -> List Expression
+    -> ( List Expression, List Expression )
+addChild (EmittedNode position child) attrs siblings =
+    case position of
+        Above ->
+            ( CodeGen.apply
+                [ CodeGen.fqFun elementModule "above"
+                , CodeGen.parens child
+                ]
+                :: attrs
+            , siblings
+            )
+
+        Below ->
+            ( CodeGen.apply
+                [ CodeGen.fqFun elementModule "below"
+                , CodeGen.parens child
+                ]
+                :: attrs
+            , siblings
+            )
+
+        OnStart ->
+            ( CodeGen.apply
+                [ CodeGen.fqFun elementModule "onLeft"
+                , CodeGen.parens child
+                ]
+                :: attrs
+            , siblings
+            )
+
+        OnEnd ->
+            ( CodeGen.apply
+                [ CodeGen.fqFun elementModule "onRight"
+                , CodeGen.parens child
+                ]
+                :: attrs
+            , siblings
+            )
+
+        InFront ->
+            ( CodeGen.apply
+                [ CodeGen.fqFun elementModule "inFront"
+                , CodeGen.parens child
+                ]
+                :: attrs
+            , siblings
+            )
+
+        BehindContent ->
+            ( CodeGen.apply
+                [ CodeGen.fqFun elementModule "behindContent"
+                , CodeGen.parens child
+                ]
+                :: attrs
+            , siblings
+            )
+
+        Normal ->
+            -- Do not reverse children list
+            ( attrs, siblings ++ [ child ] )
 
 
 clipIf pred attrs =

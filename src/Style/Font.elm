@@ -8,10 +8,10 @@ module Style.Font exposing
     , minFontSizeAllowed
     , setColor
     , setFamily
-    , setSize
-    , setWeight
     , setLetterSpacing
+    , setSize
     , setTextAlignment
+    , setWeight
     , setWordSpacing
     , weightName
     )
@@ -20,7 +20,6 @@ module Style.Font exposing
 -}
 
 import Element exposing (Color)
-import Element.Font exposing (letterSpacing)
 
 
 minFontSizeAllowed =

@@ -36,18 +36,8 @@ type RenderedNode
 
 render : Context -> Tree Node -> Html Msg
 render ctx tree =
-    let
-        rootElement node =
-            case node of
-                RenderedElement _ el ->
-                    el
-
-                RenderedOption _ ->
-                    -- We don't have any radio option at top level
-                    E.none
-    in
     T.restructure identity (renderNode ctx) tree
-        |> rootElement
+        |> root
         |> (case ( ctx.mode, ctx.inspector ) of
                 ( DesignMode, NotEdited ) ->
                     -- Avoid focus rings in design mode while not editing any text/fields
@@ -59,6 +49,16 @@ render ctx tree =
                 ( _, _ ) ->
                     E.layout []
            )
+
+
+root node =
+    case node of
+        RenderedElement _ el ->
+            el
+
+        RenderedOption _ ->
+            -- We don't have any radio option at top level
+            E.none
 
 
 noFocusStyle =
@@ -896,20 +896,20 @@ options children =
         children
 
 
-elements : List RenderedNode -> List (Element Msg)
-elements children =
-    List.foldr
-        (\node accum ->
-            case node of
-                RenderedElement _ el ->
-                    el :: accum
 
-                _ ->
-                    -- Ignore everything else
-                    accum
-        )
-        []
-        children
+-- elements : List RenderedNode -> List (Element Msg)
+-- elements children =
+--     List.foldr
+--         (\node accum ->
+--             case node of
+--                 RenderedElement _ el ->
+--                     el :: accum
+--                 _ ->
+--                     -- Ignore everything else
+--                     accum
+--         )
+--         []
+--         children
 
 
 elementId node =
