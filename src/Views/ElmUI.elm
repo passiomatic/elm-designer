@@ -476,7 +476,7 @@ applyOffsetY { offsetY } attrs =
 
 applyRotation { rotation } attrs =
     if rotation /= 0 then
-        E.rotate (degrees rotation) :: attrs
+        E.rotate rotation :: attrs
 
     else
         attrs

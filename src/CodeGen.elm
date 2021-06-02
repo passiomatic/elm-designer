@@ -9,6 +9,7 @@ import Elm.CodeGen as G exposing (Expression)
 import Elm.Pretty
 import Pretty
 import Set exposing (Set)
+import String exposing (trim)
 import Style.Background as Background exposing (Background)
 import Style.Border as Border exposing (BorderCorner, BorderStyle(..), BorderWidth)
 import Style.Font as Font exposing (..)
@@ -592,10 +593,61 @@ emitStyles node attrs =
         |> emitLetterSpacing node.letterSpacing
         |> emitWordSpacing node.wordSpacing
         |> emitTextAlign node.textAlignment
-        --|> emitPosition node.position
         |> emitAlignX node.alignmentX
         |> emitAlignY node.alignmentY
+        |> emitTransformation node.transformation
         |> emitBackground node.background
+
+
+emitTransformation : Transformation -> List Expression -> List Expression
+emitTransformation value attrs =
+    attrs
+        |> emitOffsetX value.offsetX
+        |> emitOffsetY value.offsetY
+        |> emitRotation value.rotation
+        |> emitScale value.scale
+
+
+emitOffsetX : Float -> List Expression -> List Expression
+emitOffsetX value attrs =
+    if value < 0 then
+        G.apply [ G.fqFun elementModule "moveLeft", G.float (abs value) ] :: attrs
+
+    else if value > 0 then
+        G.apply [ G.fqFun elementModule "moveRight", G.float value ] :: attrs
+
+    else
+        attrs
+
+
+emitOffsetY : Float -> List Expression -> List Expression
+emitOffsetY value attrs =
+    if value < 0 then
+        G.apply [ G.fqFun elementModule "moveUp", G.float (abs value) ] :: attrs
+
+    else if value > 0 then
+        G.apply [ G.fqFun elementModule "moveDown", G.float value ] :: attrs
+
+    else
+        attrs
+
+
+emitRotation : Float -> List Expression -> List Expression
+emitRotation value attrs =
+    if value /= 0 then
+        G.apply [ G.fqFun elementModule "rotate", G.float value ] :: attrs
+
+    else
+        attrs
+
+
+emitScale : Float -> List Expression -> List Expression
+emitScale value attrs =
+    if value /= 1.0 then
+        G.apply [ G.fqFun elementModule "scale", G.float value ] :: attrs
+
+    else
+        attrs
 
 
 emitPadding : Padding -> List Expression -> List Expression
