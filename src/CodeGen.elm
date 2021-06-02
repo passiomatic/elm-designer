@@ -5,7 +5,7 @@ module CodeGen exposing (backgroundModule, emit)
 
 import Document exposing (..)
 import Element exposing (Color)
-import Elm.CodeGen as CodeGen exposing (Expression)
+import Elm.CodeGen as G exposing (Expression)
 import Elm.Pretty
 import Pretty
 import Set exposing (Set)
@@ -62,48 +62,48 @@ emit : Theme -> Viewport -> Tree Node -> String
 emit theme viewport tree =
     let
         module_ =
-            CodeGen.normalModule [ "Main" ] [ CodeGen.funExpose "main" ]
+            G.normalModule [ "Main" ] [ G.funExpose "main" ]
 
         imports =
-            [ CodeGen.importStmt browserModule Nothing Nothing
-            , CodeGen.importStmt htmlModule Nothing Nothing
-            , CodeGen.importStmt elementModule Nothing Nothing
-            , CodeGen.importStmt (elementModule ++ fontModule) (Just fontModule) Nothing
-            , CodeGen.importStmt (elementModule ++ inputModule) (Just inputModule) Nothing
-            , CodeGen.importStmt (elementModule ++ backgroundModule) (Just backgroundModule) Nothing
-            , CodeGen.importStmt (elementModule ++ borderModule) (Just borderModule) Nothing
-            , CodeGen.importStmt (elementModule ++ regionModule) (Just regionModule) Nothing
+            [ G.importStmt browserModule Nothing Nothing
+            , G.importStmt htmlModule Nothing Nothing
+            , G.importStmt elementModule Nothing Nothing
+            , G.importStmt (elementModule ++ fontModule) (Just fontModule) Nothing
+            , G.importStmt (elementModule ++ inputModule) (Just inputModule) Nothing
+            , G.importStmt (elementModule ++ backgroundModule) (Just backgroundModule) Nothing
+            , G.importStmt (elementModule ++ borderModule) (Just borderModule) Nothing
+            , G.importStmt (elementModule ++ regionModule) (Just regionModule) Nothing
             ]
 
         msgs =
-            CodeGen.customTypeDecl
+            G.customTypeDecl
                 Nothing
                 "Msg"
                 []
-                [ ( "CheckboxClicked", [ CodeGen.boolAnn ] )
-                , ( "RadioClicked", [ CodeGen.intAnn ] )
-                , ( "TextChanged", [ CodeGen.stringAnn ] )
+                [ ( "CheckboxClicked", [ G.boolAnn ] )
+                , ( "RadioClicked", [ G.intAnn ] )
+                , ( "TextChanged", [ G.stringAnn ] )
                 ]
 
         decls =
             [ emitView theme viewport tree
             , msgs
             , emitUpdate
-            , CodeGen.valDecl
+            , G.valDecl
                 Nothing
                 Nothing
                 "init"
-                CodeGen.unit
-            , CodeGen.valDecl
+                G.unit
+            , G.valDecl
                 Nothing
                 Nothing
                 "main"
-                (CodeGen.apply
-                    [ CodeGen.fqFun browserModule "sandbox"
-                    , CodeGen.record
-                        [ ( "init", CodeGen.val "init" )
-                        , ( "view", CodeGen.val "view" )
-                        , ( "update", CodeGen.val "update" )
+                (G.apply
+                    [ G.fqFun browserModule "sandbox"
+                    , G.record
+                        [ ( "init", G.val "init" )
+                        , ( "view", G.val "view" )
+                        , ( "update", G.val "update" )
                         ]
                     ]
                 )
@@ -114,7 +114,7 @@ emit theme viewport tree =
             ]
 
         file =
-            CodeGen.file module_ imports decls comments
+            G.file module_ imports decls comments
     in
     Elm.Pretty.pretty file
         |> Pretty.pretty 80
@@ -129,11 +129,11 @@ emitView theme viewport tree =
                         ( w, _, _ ) =
                             Document.findDeviceInfo name
                     in
-                    [ CodeGen.apply
-                        [ CodeGen.fqFun elementModule "width"
-                        , CodeGen.parens
-                            (CodeGen.pipe (CodeGen.fqFun elementModule "fill")
-                                [ CodeGen.apply [ CodeGen.fqFun elementModule "maximum", CodeGen.int w ]
+                    [ G.apply
+                        [ G.fqFun elementModule "width"
+                        , G.parens
+                            (G.pipe (G.fqFun elementModule "fill")
+                                [ G.apply [ G.fqFun elementModule "maximum", G.int w ]
                                 ]
                             )
                         ]
@@ -142,17 +142,17 @@ emitView theme viewport tree =
                 _ ->
                     []
     in
-    CodeGen.funDecl
+    G.funDecl
         Nothing
         Nothing
         "view"
-        [ CodeGen.varPattern "model"
+        [ G.varPattern "model"
         ]
-        (CodeGen.apply
-            [ CodeGen.fqFun elementModule "layout"
-            , CodeGen.list
+        (G.apply
+            [ G.fqFun elementModule "layout"
+            , G.list
                 emitMaxWidth
-            , CodeGen.parens (root (T.restructure identity (emitNode theme) tree))
+            , G.parens (root (T.restructure identity (emitNode theme) tree))
             ]
         )
 
@@ -162,39 +162,39 @@ root (EmittedNode _ node) =
 
 
 emitUpdate =
-    CodeGen.funDecl
+    G.funDecl
         Nothing
         Nothing
         "update"
-        [ CodeGen.varPattern "msg"
-        , CodeGen.varPattern "model"
+        [ G.varPattern "msg"
+        , G.varPattern "model"
         ]
-        (CodeGen.caseExpr (CodeGen.val "msg")
-            [ ( CodeGen.namedPattern "CheckboxClicked"
-                    [ CodeGen.varPattern "value"
+        (G.caseExpr (G.val "msg")
+            [ ( G.namedPattern "CheckboxClicked"
+                    [ G.varPattern "value"
                     ]
-              , CodeGen.apply
-                    [ CodeGen.fqFun debugModule "log"
-                    , CodeGen.string "Checkbox clicked"
-                    , CodeGen.val "model"
-                    ]
-              )
-            , ( CodeGen.namedPattern "RadioClicked"
-                    [ CodeGen.varPattern "value"
-                    ]
-              , CodeGen.apply
-                    [ CodeGen.fqFun debugModule "log"
-                    , CodeGen.string "Radio clicked"
-                    , CodeGen.val "model"
+              , G.apply
+                    [ G.fqFun debugModule "log"
+                    , G.string "Checkbox clicked"
+                    , G.val "model"
                     ]
               )
-            , ( CodeGen.namedPattern "TextChanged"
-                    [ CodeGen.varPattern "value"
+            , ( G.namedPattern "RadioClicked"
+                    [ G.varPattern "value"
                     ]
-              , CodeGen.apply
-                    [ CodeGen.fqFun debugModule "log"
-                    , CodeGen.string "Text changed"
-                    , CodeGen.val "model"
+              , G.apply
+                    [ G.fqFun debugModule "log"
+                    , G.string "Radio clicked"
+                    , G.val "model"
+                    ]
+              )
+            , ( G.namedPattern "TextChanged"
+                    [ G.varPattern "value"
+                    ]
+              , G.apply
+                    [ G.fqFun debugModule "log"
+                    , G.string "Text changed"
+                    , G.val "model"
                     ]
               )
             ]
@@ -290,13 +290,13 @@ emitPage : Node -> List EmittedNode -> Expression
 emitPage node children =
     let
         emitter attrs children_ =
-            CodeGen.apply
-                [ CodeGen.fqFun elementModule "column"
-                , CodeGen.list
+            G.apply
+                [ G.fqFun elementModule "column"
+                , G.list
                     (attrs
                         |> emitStyles node
                     )
-                , CodeGen.list children_
+                , G.list children_
                 ]
     in
     addChildrenFor emitter children
@@ -306,13 +306,13 @@ emitColumn : Node -> List EmittedNode -> Expression
 emitColumn node children =
     let
         emitter attrs children_ =
-            CodeGen.apply
-                [ CodeGen.fqFun elementModule "column"
-                , CodeGen.list
+            G.apply
+                [ G.fqFun elementModule "column"
+                , G.list
                     (attrs
                         |> emitStyles node
                     )
-                , CodeGen.list children_
+                , G.list children_
                 ]
     in
     addChildrenFor emitter children
@@ -322,13 +322,13 @@ emitTextColumn : Node -> List EmittedNode -> Expression
 emitTextColumn node children =
     let
         emitter attrs children_ =
-            CodeGen.apply
-                [ CodeGen.fqFun elementModule "textColumn"
-                , CodeGen.list
+            G.apply
+                [ G.fqFun elementModule "textColumn"
+                , G.list
                     (attrs
                         |> emitStyles node
                     )
-                , CodeGen.list children_
+                , G.list children_
                 ]
     in
     addChildrenFor emitter children
@@ -338,19 +338,19 @@ emitRow : Node -> RowData -> List EmittedNode -> Expression
 emitRow node { wrapped } children =
     let
         emitter attrs children_ =
-            CodeGen.apply
-                [ CodeGen.fqFun elementModule
+            G.apply
+                [ G.fqFun elementModule
                     (if wrapped then
                         "wrappedRow"
 
                      else
                         "row"
                     )
-                , CodeGen.list
+                , G.list
                     (attrs
                         |> emitStyles node
                     )
-                , CodeGen.list children_
+                , G.list children_
                 ]
     in
     addChildrenFor emitter children
@@ -358,9 +358,9 @@ emitRow node { wrapped } children =
 
 emitParagraph : Node -> TextData -> Expression
 emitParagraph node { text } =
-    CodeGen.apply
-        [ CodeGen.fqFun elementModule "paragraph"
-        , CodeGen.list
+    G.apply
+        [ G.fqFun elementModule "paragraph"
+        , G.list
             ([]
                 |> emitStyles node
             )
@@ -371,19 +371,19 @@ emitParagraph node { text } =
 emitLines : String -> Expression
 emitLines text =
     String.lines text
-        |> List.map (\line -> CodeGen.apply [ CodeGen.fqFun elementModule "text", CodeGen.string line ])
+        |> List.map (\line -> G.apply [ G.fqFun elementModule "text", G.string line ])
         |> List.intersperse break
-        |> CodeGen.list
+        |> G.list
 
 
 break =
-    CodeGen.apply
-        [ CodeGen.fqFun elementModule "html"
-        , CodeGen.parens
-            (CodeGen.apply
-                [ CodeGen.fqFun htmlModule "br"
-                , CodeGen.list []
-                , CodeGen.list []
+    G.apply
+        [ G.fqFun elementModule "html"
+        , G.parens
+            (G.apply
+                [ G.fqFun htmlModule "br"
+                , G.list []
+                , G.list []
                 ]
             )
         ]
@@ -391,27 +391,27 @@ break =
 
 emitText : Node -> TextData -> Expression
 emitText node { text } =
-    CodeGen.apply
-        [ CodeGen.fqFun elementModule "el"
-        , CodeGen.list
+    G.apply
+        [ G.fqFun elementModule "el"
+        , G.list
             ([]
                 |> emitStyles node
             )
-        , CodeGen.parens (CodeGen.apply [ CodeGen.fqFun elementModule "text", CodeGen.string text ])
+        , G.parens (G.apply [ G.fqFun elementModule "text", G.string text ])
         ]
 
 
 emitButton : Node -> TextData -> Expression
 emitButton node { text } =
-    CodeGen.apply
-        [ CodeGen.fqFun inputModule "button"
-        , CodeGen.list
+    G.apply
+        [ G.fqFun inputModule "button"
+        , G.list
             ([]
                 |> emitStyles node
             )
-        , CodeGen.record
-            [ ( "onPress", CodeGen.val "Nothing" )
-            , ( "label", CodeGen.apply [ CodeGen.fqFun elementModule "text", CodeGen.string text ] )
+        , G.record
+            [ ( "onPress", G.val "Nothing" )
+            , ( "label", G.apply [ G.fqFun elementModule "text", G.string text ] )
             ]
         ]
 
@@ -422,22 +422,22 @@ emitCheckbox theme node label =
         labelPadding =
             { zero | left = Theme.xsmall theme }
     in
-    CodeGen.apply
-        [ CodeGen.fqFun inputModule "checkbox"
-        , CodeGen.list
+    G.apply
+        [ G.fqFun inputModule "checkbox"
+        , G.list
             ([]
                 |> emitStyles node
             )
-        , CodeGen.record
-            [ ( "onChange", CodeGen.val "CheckboxClicked" )
-            , ( "icon", CodeGen.fqFun inputModule "defaultCheckbox" )
-            , ( "checked", CodeGen.val "False" )
+        , G.record
+            [ ( "onChange", G.val "CheckboxClicked" )
+            , ( "icon", G.fqFun inputModule "defaultCheckbox" )
+            , ( "checked", G.val "False" )
             , ( "label"
-              , CodeGen.apply
+              , G.apply
                     [ emitLabelPosition label.position
-                    , CodeGen.list
+                    , G.list
                         []
-                    , CodeGen.parens (CodeGen.apply [ CodeGen.fqFun elementModule "text", CodeGen.string label.text ])
+                    , G.parens (G.apply [ G.fqFun elementModule "text", G.string label.text ])
                     ]
               )
             ]
@@ -446,23 +446,23 @@ emitCheckbox theme node label =
 
 emitTextField : Theme -> Node -> LabelData -> Expression
 emitTextField theme node label =
-    CodeGen.apply
-        [ CodeGen.fqFun inputModule "text"
-        , CodeGen.list
+    G.apply
+        [ G.fqFun inputModule "text"
+        , G.list
             ([]
                 |> emitStyles node
             )
-        , CodeGen.record
-            [ ( "onChange", CodeGen.val "TextChanged" )
-            , ( "text", CodeGen.string "" )
-            , ( "placeholder", CodeGen.val "Nothing" )
+        , G.record
+            [ ( "onChange", G.val "TextChanged" )
+            , ( "text", G.string "" )
+            , ( "placeholder", G.val "Nothing" )
             , ( "label"
-              , CodeGen.apply
+              , G.apply
                     [ emitLabelPosition label.position
-                    , CodeGen.list
-                        [ CodeGen.apply [ CodeGen.fqFun fontModule "color", CodeGen.parens (emitColor theme.labelColor) ]
+                    , G.list
+                        [ G.apply [ G.fqFun fontModule "color", G.parens (emitColor theme.labelColor) ]
                         ]
-                    , CodeGen.parens (CodeGen.apply [ CodeGen.fqFun elementModule "text", CodeGen.string label.text ])
+                    , G.parens (G.apply [ G.fqFun elementModule "text", G.string label.text ])
                     ]
               )
             ]
@@ -471,24 +471,24 @@ emitTextField theme node label =
 
 emitTextFieldMultiline : Theme -> Node -> LabelData -> Expression
 emitTextFieldMultiline theme node label =
-    CodeGen.apply
-        [ CodeGen.fqFun inputModule "multiline"
-        , CodeGen.list
+    G.apply
+        [ G.fqFun inputModule "multiline"
+        , G.list
             ([]
                 |> emitStyles node
             )
-        , CodeGen.record
-            [ ( "onChange", CodeGen.val "TextChanged" )
-            , ( "text", CodeGen.string "" )
-            , ( "placeholder", CodeGen.val "Nothing" )
-            , ( "spellcheck", CodeGen.val "False" )
+        , G.record
+            [ ( "onChange", G.val "TextChanged" )
+            , ( "text", G.string "" )
+            , ( "placeholder", G.val "Nothing" )
+            , ( "spellcheck", G.val "False" )
             , ( "label"
-              , CodeGen.apply
+              , G.apply
                     [ emitLabelPosition label.position
-                    , CodeGen.list
-                        [ CodeGen.apply [ CodeGen.fqFun fontModule "color", CodeGen.parens (emitColor theme.labelColor) ]
+                    , G.list
+                        [ G.apply [ G.fqFun fontModule "color", G.parens (emitColor theme.labelColor) ]
                         ]
-                    , CodeGen.parens (CodeGen.apply [ CodeGen.fqFun elementModule "text", CodeGen.string label.text ])
+                    , G.parens (G.apply [ G.fqFun elementModule "text", G.string label.text ])
                     ]
               )
             ]
@@ -499,25 +499,25 @@ emitRadio : Theme -> Node -> LabelData -> List EmittedNode -> Expression
 emitRadio theme node label children =
     let
         emitter attrs children_ =
-            CodeGen.apply
-                [ CodeGen.fqFun inputModule "radio"
-                , CodeGen.list
+            G.apply
+                [ G.fqFun inputModule "radio"
+                , G.list
                     (attrs
                         |> emitStyles node
                     )
-                , CodeGen.record
-                    [ ( "onChange", CodeGen.val "RadioClicked" )
-                    , ( "selected", CodeGen.val "Nothing" )
+                , G.record
+                    [ ( "onChange", G.val "RadioClicked" )
+                    , ( "selected", G.val "Nothing" )
                     , ( "label"
-                      , CodeGen.apply
+                      , G.apply
                             [ emitLabelPosition label.position
-                            , CodeGen.list
-                                [ CodeGen.apply [ CodeGen.fqFun fontModule "color", CodeGen.parens (emitColor theme.labelColor) ]
+                            , G.list
+                                [ G.apply [ G.fqFun fontModule "color", G.parens (emitColor theme.labelColor) ]
                                 ]
-                            , CodeGen.parens (CodeGen.apply [ CodeGen.fqFun elementModule "text", CodeGen.string label.text ])
+                            , G.parens (G.apply [ G.fqFun elementModule "text", G.string label.text ])
                             ]
                       )
-                    , ( "options", CodeGen.list children_ )
+                    , ( "options", G.list children_ )
                     ]
                 ]
     in
@@ -526,17 +526,17 @@ emitRadio theme node label children =
 
 emitOption : Node -> TextData -> Expression
 emitOption node { text } =
-    CodeGen.apply
-        [ CodeGen.fqFun inputModule "option"
-        , CodeGen.int 1
-        , CodeGen.parens
-            (CodeGen.apply
-                [ CodeGen.fqFun elementModule "el"
-                , CodeGen.list
+    G.apply
+        [ G.fqFun inputModule "option"
+        , G.int 1
+        , G.parens
+            (G.apply
+                [ G.fqFun elementModule "el"
+                , G.list
                     ([]
                         |> emitStyles node
                     )
-                , CodeGen.parens (CodeGen.apply [ CodeGen.fqFun elementModule "text", CodeGen.string text ])
+                , G.parens (G.apply [ G.fqFun elementModule "text", G.string text ])
                 ]
             )
         ]
@@ -544,16 +544,16 @@ emitOption node { text } =
 
 emitImage : Node -> ImageData -> Expression
 emitImage node image =
-    CodeGen.apply
-        [ CodeGen.fqFun elementModule "image"
-        , CodeGen.list
+    G.apply
+        [ G.fqFun elementModule "image"
+        , G.list
             ([]
                 |> clipIf (Border.isRounded node.borderCorner)
                 |> emitStyles node
             )
-        , CodeGen.record
-            [ ( "src", CodeGen.string image.src )
-            , ( "description", CodeGen.string image.description )
+        , G.record
+            [ ( "src", G.string image.src )
+            , ( "description", G.string image.description )
             ]
         ]
 
@@ -561,10 +561,10 @@ emitImage node image =
 emitHeading : Node -> HeadingData -> Expression
 emitHeading node { text, level } =
     -- Paragraph allows to wrap text and to set a line height
-    CodeGen.apply
-        [ CodeGen.fqFun elementModule "paragraph"
-        , CodeGen.list
-            ([ CodeGen.apply [ CodeGen.fqFun regionModule "heading", CodeGen.int level ]
+    G.apply
+        [ G.fqFun elementModule "paragraph"
+        , G.list
+            ([ G.apply [ G.fqFun regionModule "heading", G.int level ]
              ]
                 |> emitStyles node
             )
@@ -604,21 +604,21 @@ emitPadding value attrs =
         attrs
 
     else if value.top == value.bottom && value.right == value.left then
-        CodeGen.apply
-            [ CodeGen.fqFun elementModule "paddingXY"
-            , CodeGen.int value.right
-            , CodeGen.int value.top
+        G.apply
+            [ G.fqFun elementModule "paddingXY"
+            , G.int value.right
+            , G.int value.top
             ]
             :: attrs
 
     else
-        CodeGen.apply
-            [ CodeGen.fqFun elementModule "paddingEach"
-            , CodeGen.record
-                [ ( "top", CodeGen.int value.top )
-                , ( "right", CodeGen.int value.right )
-                , ( "bottom", CodeGen.int value.bottom )
-                , ( "left", CodeGen.int value.left )
+        G.apply
+            [ G.fqFun elementModule "paddingEach"
+            , G.record
+                [ ( "top", G.int value.top )
+                , ( "right", G.int value.right )
+                , ( "bottom", G.int value.bottom )
+                , ( "left", G.int value.left )
                 ]
             ]
             :: attrs
@@ -630,36 +630,36 @@ emitBorder borderColor borderStyle borderWidth attrs =
         attrs
 
     else
-        CodeGen.apply
-            [ CodeGen.fqFun borderModule "color"
-            , CodeGen.parens
+        G.apply
+            [ G.fqFun borderModule "color"
+            , G.parens
                 (emitColor borderColor)
             ]
             :: (case borderStyle of
                     Solid ->
-                        CodeGen.fqFun borderModule "solid"
+                        G.fqFun borderModule "solid"
 
                     Dashed ->
-                        CodeGen.fqFun borderModule "dashed"
+                        G.fqFun borderModule "dashed"
 
                     Dotted ->
-                        CodeGen.fqFun borderModule "dotted"
+                        G.fqFun borderModule "dotted"
                )
             :: (if borderWidth.top == borderWidth.bottom && borderWidth.right == borderWidth.left then
-                    CodeGen.apply
-                        [ CodeGen.fqFun borderModule "widthXY"
-                        , CodeGen.int borderWidth.right
-                        , CodeGen.int borderWidth.top
+                    G.apply
+                        [ G.fqFun borderModule "widthXY"
+                        , G.int borderWidth.right
+                        , G.int borderWidth.top
                         ]
 
                 else
-                    CodeGen.apply
-                        [ CodeGen.fqFun borderModule "widthEach"
-                        , CodeGen.record
-                            [ ( "top", CodeGen.int borderWidth.top )
-                            , ( "right", CodeGen.int borderWidth.right )
-                            , ( "bottom", CodeGen.int borderWidth.bottom )
-                            , ( "left", CodeGen.int borderWidth.left )
+                    G.apply
+                        [ G.fqFun borderModule "widthEach"
+                        , G.record
+                            [ ( "top", G.int borderWidth.top )
+                            , ( "right", G.int borderWidth.right )
+                            , ( "bottom", G.int borderWidth.bottom )
+                            , ( "left", G.int borderWidth.left )
                             ]
                         ]
                )
@@ -672,20 +672,20 @@ emitCorner borderCorner attrs =
         attrs
 
     else if borderCorner.locked then
-        CodeGen.apply
-            [ CodeGen.fqFun borderModule "rounded"
-            , CodeGen.int borderCorner.topLeft
+        G.apply
+            [ G.fqFun borderModule "rounded"
+            , G.int borderCorner.topLeft
             ]
             :: attrs
 
     else
-        CodeGen.apply
-            [ CodeGen.fqFun borderModule "roundEach"
-            , CodeGen.record
-                [ ( "topLeft", CodeGen.int borderCorner.topLeft )
-                , ( "topRight", CodeGen.int borderCorner.topRight )
-                , ( "bottomLeft", CodeGen.int borderCorner.bottomLeft )
-                , ( "bottomRight", CodeGen.int borderCorner.bottomRight )
+        G.apply
+            [ G.fqFun borderModule "roundEach"
+            , G.record
+                [ ( "topLeft", G.int borderCorner.topLeft )
+                , ( "topRight", G.int borderCorner.topRight )
+                , ( "bottomLeft", G.int borderCorner.bottomLeft )
+                , ( "bottomRight", G.int borderCorner.bottomRight )
                 ]
             ]
             :: attrs
@@ -696,12 +696,12 @@ emitColor value =
         rgba =
             Element.toRgb value
     in
-    CodeGen.apply
-        [ CodeGen.fqFun elementModule "rgba255"
-        , CodeGen.int <| round (rgba.red * 255)
-        , CodeGen.int <| round (rgba.green * 255)
-        , CodeGen.int <| round (rgba.blue * 255)
-        , CodeGen.float rgba.alpha
+    G.apply
+        [ G.fqFun elementModule "rgba255"
+        , G.int <| round (rgba.red * 255)
+        , G.int <| round (rgba.green * 255)
+        , G.int <| round (rgba.blue * 255)
+        , G.float rgba.alpha
         ]
 
 
@@ -711,14 +711,14 @@ emitFontFamily value attrs =
         Local value_ ->
             case value_.type_ of
                 Native fontStack ->
-                    CodeGen.apply
-                        [ CodeGen.fqFun fontModule "family"
-                        , CodeGen.list
+                    G.apply
+                        [ G.fqFun fontModule "family"
+                        , G.list
                             (List.map
                                 (\name ->
-                                    CodeGen.apply
-                                        [ CodeGen.fqFun fontModule "typeface"
-                                        , CodeGen.string name
+                                    G.apply
+                                        [ G.fqFun fontModule "typeface"
+                                        , G.string name
                                         ]
                                 )
                                 fontStack
@@ -727,12 +727,12 @@ emitFontFamily value attrs =
                         :: attrs
 
                 External url ->
-                    CodeGen.apply
-                        [ CodeGen.fqFun fontModule "family"
-                        , CodeGen.list
-                            [ CodeGen.apply
-                                [ CodeGen.fqFun fontModule "typeface"
-                                , CodeGen.string value_.name
+                    G.apply
+                        [ G.fqFun fontModule "family"
+                        , G.list
+                            [ G.apply
+                                [ G.fqFun fontModule "typeface"
+                                , G.string value_.name
                                 ]
                             ]
                         ]
@@ -746,9 +746,9 @@ emitFontColor : Local Color -> List Expression -> List Expression
 emitFontColor value attrs =
     case value of
         Local value_ ->
-            CodeGen.apply
-                [ CodeGen.fqFun fontModule "color"
-                , CodeGen.parens
+            G.apply
+                [ G.fqFun fontModule "color"
+                , G.parens
                     (emitColor value_)
                 ]
                 :: attrs
@@ -761,8 +761,8 @@ emitFontWeight : FontWeight -> List Expression -> List Expression
 emitFontWeight value attrs =
     let
         emit_ w =
-            CodeGen.apply
-                [ CodeGen.fqFun fontModule w
+            G.apply
+                [ G.fqFun fontModule w
                 ]
     in
     case value of
@@ -827,34 +827,34 @@ emitSpacing : Spacing -> List Expression -> List Expression
 emitSpacing value attrs =
     case value of
         SpaceEvenly ->
-            CodeGen.fqFun elementModule "spaceEvenly" :: attrs
+            G.fqFun elementModule "spaceEvenly" :: attrs
 
         Spacing ( x, y ) ->
             if x == 0 && y == 0 then
                 attrs
 
             else
-                CodeGen.apply [ CodeGen.fqFun elementModule "spacingXY", CodeGen.int x, CodeGen.int y ] :: attrs
+                G.apply [ G.fqFun elementModule "spacingXY", G.int x, G.int y ] :: attrs
 
 
 emitWidth : Length -> Maybe Int -> Maybe Int -> List Expression -> List Expression
 emitWidth value min max attrs =
-    emitLength value min max (CodeGen.fqFun elementModule "width") attrs
+    emitLength value min max (G.fqFun elementModule "width") attrs
 
 
 emitHeight : Length -> Maybe Int -> Maybe Int -> List Expression -> List Expression
 emitHeight value min max attrs =
-    emitLength value min max (CodeGen.fqFun elementModule "height") attrs
+    emitLength value min max (G.fqFun elementModule "height") attrs
 
 
 emitLength : Length -> Maybe Int -> Maybe Int -> Expression -> List Expression -> List Expression
 emitLength value min max fun attrs =
     case value of
         Px px ->
-            CodeGen.apply
+            G.apply
                 [ fun
-                , CodeGen.parens
-                    (CodeGen.pipe (CodeGen.apply [ CodeGen.fqFun elementModule "px", CodeGen.int px ])
+                , G.parens
+                    (G.pipe (G.apply [ G.fqFun elementModule "px", G.int px ])
                         ([]
                             |> emitMinLength min
                             |> emitMaxLength max
@@ -864,10 +864,10 @@ emitLength value min max fun attrs =
                 :: attrs
 
         Content ->
-            CodeGen.apply
+            G.apply
                 [ fun
-                , CodeGen.parens
-                    (CodeGen.pipe (CodeGen.fqFun elementModule "shrink")
+                , G.parens
+                    (G.pipe (G.fqFun elementModule "shrink")
                         ([]
                             |> emitMinLength min
                             |> emitMaxLength max
@@ -878,10 +878,10 @@ emitLength value min max fun attrs =
 
         Fill portion ->
             (if portion == 1 then
-                CodeGen.apply
+                G.apply
                     [ fun
-                    , CodeGen.parens
-                        (CodeGen.pipe (CodeGen.fqFun elementModule "fill")
+                    , G.parens
+                        (G.pipe (G.fqFun elementModule "fill")
                             ([]
                                 |> emitMinLength min
                                 |> emitMaxLength max
@@ -890,10 +890,10 @@ emitLength value min max fun attrs =
                     ]
 
              else
-                CodeGen.apply
+                G.apply
                     [ fun
-                    , CodeGen.parens
-                        (CodeGen.pipe (CodeGen.apply [ CodeGen.fqFun elementModule "fillPortion", CodeGen.int portion ])
+                    , G.parens
+                        (G.pipe (G.apply [ G.fqFun elementModule "fillPortion", G.int portion ])
                             ([]
                                 |> emitMinLength min
                                 |> emitMaxLength max
@@ -907,10 +907,10 @@ emitLength value min max fun attrs =
             -- Emit "shrink" as default to specify min/max values.
             --   This is probably fixed in Elm UI 2 since we can emit min/max
             --   values indipendently of element width/height values
-            CodeGen.apply
+            G.apply
                 [ fun
-                , CodeGen.parens
-                    (CodeGen.pipe (CodeGen.fqFun elementModule "shrink")
+                , G.parens
+                    (G.pipe (G.fqFun elementModule "shrink")
                         ([]
                             |> emitMinLength min
                             |> emitMaxLength max
@@ -924,7 +924,7 @@ emitMinLength : Maybe Int -> List Expression -> List Expression
 emitMinLength value attrs =
     case value of
         Just value_ ->
-            CodeGen.apply [ CodeGen.fqFun elementModule "minimum", CodeGen.int value_ ] :: attrs
+            G.apply [ G.fqFun elementModule "minimum", G.int value_ ] :: attrs
 
         Nothing ->
             attrs
@@ -934,7 +934,7 @@ emitMaxLength : Maybe Int -> List Expression -> List Expression
 emitMaxLength value attrs =
     case value of
         Just value_ ->
-            CodeGen.apply [ CodeGen.fqFun elementModule "maximum", CodeGen.int value_ ] :: attrs
+            G.apply [ G.fqFun elementModule "maximum", G.int value_ ] :: attrs
 
         Nothing ->
             attrs
@@ -944,13 +944,13 @@ emitAlignX : Alignment -> List Expression -> List Expression
 emitAlignX value attrs =
     case value of
         Start ->
-            CodeGen.fqFun elementModule "alignLeft" :: attrs
+            G.fqFun elementModule "alignLeft" :: attrs
 
         Center ->
-            CodeGen.fqFun elementModule "centerX" :: attrs
+            G.fqFun elementModule "centerX" :: attrs
 
         End ->
-            CodeGen.fqFun elementModule "alignRight" :: attrs
+            G.fqFun elementModule "alignRight" :: attrs
 
         None ->
             attrs
@@ -960,13 +960,13 @@ emitAlignY : Alignment -> List Expression -> List Expression
 emitAlignY value attrs =
     case value of
         Start ->
-            CodeGen.fqFun elementModule "alignTop" :: attrs
+            G.fqFun elementModule "alignTop" :: attrs
 
         Center ->
-            CodeGen.fqFun elementModule "centerY" :: attrs
+            G.fqFun elementModule "centerY" :: attrs
 
         End ->
-            CodeGen.fqFun elementModule "alignBottom" :: attrs
+            G.fqFun elementModule "alignBottom" :: attrs
 
         None ->
             attrs
@@ -976,7 +976,7 @@ emitFontSize : Local Int -> List Expression -> List Expression
 emitFontSize value attrs =
     case value of
         Local size ->
-            CodeGen.apply [ CodeGen.fqFun fontModule "size", CodeGen.int size ] :: attrs
+            G.apply [ G.fqFun fontModule "size", G.int size ] :: attrs
 
         Inherit ->
             attrs
@@ -985,7 +985,7 @@ emitFontSize value attrs =
 emitLetterSpacing : Float -> List Expression -> List Expression
 emitLetterSpacing value attrs =
     if value /= 0 then
-        CodeGen.apply [ CodeGen.fqFun fontModule "letterSpacing", CodeGen.float value ] :: attrs
+        G.apply [ G.fqFun fontModule "letterSpacing", G.float value ] :: attrs
 
     else
         attrs
@@ -994,7 +994,7 @@ emitLetterSpacing value attrs =
 emitWordSpacing : Float -> List Expression -> List Expression
 emitWordSpacing value attrs =
     if value /= 0 then
-        CodeGen.apply [ CodeGen.fqFun fontModule "wordSpacing", CodeGen.float value ] :: attrs
+        G.apply [ G.fqFun fontModule "wordSpacing", G.float value ] :: attrs
 
     else
         attrs
@@ -1004,29 +1004,29 @@ emitTextAlign : TextAlignment -> List Expression -> List Expression
 emitTextAlign value attrs =
     case value of
         TextLeft ->
-            --CodeGen.apply [ CodeGen.fqFun fontModule "alignLeft" ] :: attrs
+            --G.apply [ G.fqFun fontModule "alignLeft" ] :: attrs
             attrs
 
         TextCenter ->
-            CodeGen.apply [ CodeGen.fqFun fontModule "center" ] :: attrs
+            G.apply [ G.fqFun fontModule "center" ] :: attrs
 
         TextRight ->
-            CodeGen.apply [ CodeGen.fqFun fontModule "alignRight" ] :: attrs
+            G.apply [ G.fqFun fontModule "alignRight" ] :: attrs
 
         TextJustify ->
-            CodeGen.apply [ CodeGen.fqFun fontModule "justify" ] :: attrs
+            G.apply [ G.fqFun fontModule "justify" ] :: attrs
 
 
 emitBackground : Background -> List Expression -> List Expression
 emitBackground value attrs =
     case value of
         Background.Image value_ ->
-            CodeGen.apply [ CodeGen.fqFun backgroundModule "image", CodeGen.string value_ ] :: attrs
+            G.apply [ G.fqFun backgroundModule "image", G.string value_ ] :: attrs
 
         Background.Solid value_ ->
-            CodeGen.apply
-                [ CodeGen.fqFun backgroundModule "color"
-                , CodeGen.parens
+            G.apply
+                [ G.fqFun backgroundModule "color"
+                , G.parens
                     (emitColor value_)
                 ]
                 :: attrs
@@ -1053,7 +1053,7 @@ emitLabelPosition position =
         LabelHidden ->
             "labelHidden"
     )
-        |> CodeGen.fqFun inputModule
+        |> G.fqFun inputModule
 
 
 
@@ -1081,54 +1081,54 @@ addChild :
 addChild (EmittedNode position child) attrs siblings =
     case position of
         Above ->
-            ( CodeGen.apply
-                [ CodeGen.fqFun elementModule "above"
-                , CodeGen.parens child
+            ( G.apply
+                [ G.fqFun elementModule "above"
+                , G.parens child
                 ]
                 :: attrs
             , siblings
             )
 
         Below ->
-            ( CodeGen.apply
-                [ CodeGen.fqFun elementModule "below"
-                , CodeGen.parens child
+            ( G.apply
+                [ G.fqFun elementModule "below"
+                , G.parens child
                 ]
                 :: attrs
             , siblings
             )
 
         OnStart ->
-            ( CodeGen.apply
-                [ CodeGen.fqFun elementModule "onLeft"
-                , CodeGen.parens child
+            ( G.apply
+                [ G.fqFun elementModule "onLeft"
+                , G.parens child
                 ]
                 :: attrs
             , siblings
             )
 
         OnEnd ->
-            ( CodeGen.apply
-                [ CodeGen.fqFun elementModule "onRight"
-                , CodeGen.parens child
+            ( G.apply
+                [ G.fqFun elementModule "onRight"
+                , G.parens child
                 ]
                 :: attrs
             , siblings
             )
 
         InFront ->
-            ( CodeGen.apply
-                [ CodeGen.fqFun elementModule "inFront"
-                , CodeGen.parens child
+            ( G.apply
+                [ G.fqFun elementModule "inFront"
+                , G.parens child
                 ]
                 :: attrs
             , siblings
             )
 
         BehindContent ->
-            ( CodeGen.apply
-                [ CodeGen.fqFun elementModule "behindContent"
-                , CodeGen.parens child
+            ( G.apply
+                [ G.fqFun elementModule "behindContent"
+                , G.parens child
                 ]
                 :: attrs
             , siblings
@@ -1141,7 +1141,7 @@ addChild (EmittedNode position child) attrs siblings =
 
 clipIf pred attrs =
     if pred then
-        CodeGen.fqFun elementModule "clip" :: attrs
+        G.fqFun elementModule "clip" :: attrs
 
     else
         attrs
