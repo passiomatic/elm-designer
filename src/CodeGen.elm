@@ -903,10 +903,20 @@ emitLength value min max fun attrs =
                 :: attrs
 
         Unspecified ->
-            -- TODO Emit "shrink" as default to specify min/max values anyway?
+            -- Emit "shrink" as default to specify min/max values.
             --   This is probably fixed in Elm UI 2 since we can emit min/max
             --   values indipendently of element width/height values
-            attrs
+            CodeGen.apply
+                [ fun
+                , CodeGen.parens
+                    (CodeGen.pipe (CodeGen.fqFun elementModule "shrink")
+                        ([]
+                            |> emitMinLength min
+                            |> emitMaxLength max
+                        )
+                    )
+                ]
+                :: attrs
 
 
 emitMinLength : Maybe Int -> List Expression -> List Expression
