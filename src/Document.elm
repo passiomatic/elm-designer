@@ -5,7 +5,6 @@ module Document exposing
     , HeadingData
     , ImageData
     , LabelData
-    , LabelPosition(..)
     , Node
     , NodeId
     , NodeType(..)
@@ -63,7 +62,6 @@ module Document exposing
     , isContainer
     , isPageNode
     , isSelected
-    , labelPositionName
     , nodeId
     , nodeType
     , removeNode
@@ -88,6 +86,7 @@ import Style.Background as Background exposing (Background)
 import Style.Border as Border exposing (BorderCorner, BorderStyle(..), BorderWidth)
 import Style.Font as Font exposing (..)
 import Style.Layout as Layout exposing (..)
+import Style.Input as Input exposing (LabelPosition(..))
 import Style.Theme as Theme exposing (Theme)
 import Time exposing (Posix)
 import Tree as T exposing (Tree)
@@ -313,32 +312,6 @@ type alias ImageData =
 type alias RowData =
     { wrapped : Bool
     }
-
-
-type LabelPosition
-    = LabelAbove
-    | LabelBelow
-    | LabelLeft
-    | LabelRight
-    | LabelHidden
-
-
-labelPositionName position =
-    case position of
-        LabelAbove ->
-            "Above"
-
-        LabelBelow ->
-            "Below"
-
-        LabelLeft ->
-            "Left"
-
-        LabelRight ->
-            "Right"
-
-        LabelHidden ->
-            "Hidden"
 
 
 
@@ -1128,16 +1101,16 @@ applyLabelPosition value zipper =
         (\node ->
             case node.type_ of
                 TextFieldNode data ->
-                    { node | type_ = TextFieldNode (setPosition value data) }
+                    { node | type_ = TextFieldNode (Input.setLabelPosition value data) }
 
                 TextFieldMultilineNode data ->
-                    { node | type_ = TextFieldNode (setPosition value data) }
+                    { node | type_ = TextFieldNode (Input.setLabelPosition value data) }
 
                 CheckboxNode data ->
-                    { node | type_ = CheckboxNode (setPosition value data) }
+                    { node | type_ = CheckboxNode (Input.setLabelPosition value data) }
 
                 RadioNode data ->
-                    { node | type_ = RadioNode (setPosition value data) }
+                    { node | type_ = RadioNode (Input.setLabelPosition value data) }
 
                 _ ->
                     node
@@ -1145,6 +1118,4 @@ applyLabelPosition value zipper =
         zipper
 
 
-setPosition : LabelPosition -> { a | position : LabelPosition } -> { a | position : LabelPosition }
-setPosition value record =
-    { record | position = value }
+

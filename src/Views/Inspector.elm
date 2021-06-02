@@ -21,6 +21,7 @@ import Palette
 import SelectList exposing (SelectList)
 import Style.Background as Background exposing (Background)
 import Style.Font as Font exposing (..)
+import Style.Input as Input exposing (..)
 import Style.Layout as Layout exposing (..)
 import Style.Theme as Theme
 import Tree as T exposing (Tree)
@@ -69,7 +70,7 @@ resolveStyleViews model zipper =
                 ImageNode data ->
                     [ sectionView "Layout"
                         [ alignmentView model node
-                        , positionView model node 
+                        , positionView model node
                         , lengthView model node
                         , paddingView model node
                         ]
@@ -83,7 +84,7 @@ resolveStyleViews model zipper =
                         ]
                     , sectionView "Layout"
                         [ alignmentView model node
-                        , positionView model node 
+                        , positionView model node
                         , lengthView model node
                         , spacingXView model node
                         , paddingView model node
@@ -98,7 +99,7 @@ resolveStyleViews model zipper =
                 ColumnNode ->
                     [ sectionView "Layout"
                         [ alignmentView model node
-                        , positionView model node 
+                        , positionView model node
                         , lengthView model node
                         , spacingYView model node
                         , paddingView model node
@@ -113,7 +114,7 @@ resolveStyleViews model zipper =
                 TextColumnNode ->
                     [ sectionView "Layout"
                         [ alignmentView model node
-                        , positionView model node 
+                        , positionView model node
                         , lengthView model node
                         , spacingXView model node
                         , spacingYView model node
@@ -134,7 +135,7 @@ resolveStyleViews model zipper =
                         ]
                     , sectionView "Layout"
                         [ alignmentView model node
-                        , positionView model node 
+                        , positionView model node
                         , lengthView model node
                         , paddingView model node
                         ]
@@ -149,13 +150,13 @@ resolveStyleViews model zipper =
 
                 TextFieldMultilineNode label ->
                     [ sectionView "Label"
-                        [ labelTextView label model node                        
+                        [ labelTextView label model node
                         , labelPositionView label model node
                         , spacingYView model node
                         ]
                     , sectionView "Layout"
                         [ alignmentView model node
-                        , positionView model node 
+                        , positionView model node
                         , lengthView model node
                         , paddingView model node
                         ]
@@ -176,7 +177,7 @@ resolveStyleViews model zipper =
                         ]
                     , sectionView "Layout"
                         [ alignmentView model node
-                        , positionView model node 
+                        , positionView model node
                         , lengthView model node
                         , paddingView model node
                         ]
@@ -195,7 +196,7 @@ resolveStyleViews model zipper =
                         ]
                     , sectionView "Layout"
                         [ alignmentView model node
-                        , positionView model node 
+                        , positionView model node
                         , lengthView model node
                         , paddingView model node
                         ]
@@ -215,7 +216,7 @@ resolveStyleViews model zipper =
                         ]
                     , sectionView "Layout"
                         [ alignmentView model node
-                        , positionView model node 
+                        , positionView model node
                         , lengthView model node
                         , paddingView model node
                         ]
@@ -250,8 +251,8 @@ resolveStyleViews model zipper =
 
 commonViews zipper model node =
     [ sectionView "Layout"
-        [ alignmentView model node       
-        , positionView model node  
+        [ alignmentView model node
+        , positionView model node
         , lengthView model node
         , paddingView model node
         ]
@@ -325,7 +326,7 @@ labelPositionView { position } model { type_ } =
                     (\position_ ->
                         let
                             name =
-                                Document.labelPositionName position_
+                                Input.labelPositionName position_
                         in
                         ( name
                         , H.option (setSelected position_ [ labelPositionValue position_ ])

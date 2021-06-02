@@ -22,6 +22,7 @@ import SelectList exposing (SelectList)
 import Style.Background as Background exposing (Background)
 import Style.Border exposing (BorderCorner, BorderStyle(..), BorderWidth)
 import Style.Font as Font exposing (..)
+import Style.Input as Input exposing (LabelPosition(..))
 import Style.Layout as Layout exposing (..)
 import Tree as T exposing (Tree)
 import Tree.Zipper as Zipper exposing (Zipper)
@@ -529,7 +530,7 @@ applyLength fn value min max attrs =
         Unspecified ->
             -- Emit "shrink" as default to specify min/max values anyway.
             --   This is probably fixed in Elm UI 2 since we can emit min/max
-            --   values indipendently of element width/height values        
+            --   values indipendently of element width/height values
             (E.shrink
                 |> applyMinLength min
                 |> applyMaxLength max

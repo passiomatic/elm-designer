@@ -26,6 +26,7 @@ import List.Extra
 import Palette
 import Style.Background as Background exposing (Background(..))
 import Style.Font as Font exposing (..)
+import Style.Input as Input exposing (LabelPosition(..))
 import Style.Layout as Layout exposing (..)
 import Style.Theme as Theme exposing (Theme)
 import Tree as T exposing (Tree)
@@ -387,7 +388,7 @@ radio theme =
             { baseTemplate
                 | name = "Radio Selection"
                 , spacing = Layout.spacingXY 0 (Theme.xsmall theme)
-                , type_ = RadioNode { text = "Radio Selection", position = LabelAbove}
+                , type_ = RadioNode { text = "Radio Selection", position = LabelAbove }
             }
             [ T.singleton
                 { baseTemplate
