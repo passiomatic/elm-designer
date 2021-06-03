@@ -1055,14 +1055,14 @@ emitWordSpacing value attrs =
 emitTextAlign : TextAlignment -> List Expression -> List Expression
 emitTextAlign value attrs =
     case value of
-        TextLeft ->
+        TextStart ->
             --G.apply [ G.fqFun fontModule "alignLeft" ] :: attrs
             attrs
 
         TextCenter ->
             G.apply [ G.fqFun fontModule "center" ] :: attrs
 
-        TextRight ->
+        TextEnd ->
             G.apply [ G.fqFun fontModule "alignRight" ] :: attrs
 
         TextJustify ->

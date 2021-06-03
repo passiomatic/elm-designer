@@ -238,9 +238,9 @@ weightNumber value =
 
 
 type TextAlignment
-    = TextLeft
-    | TextCenter
-    | TextRight
+    = TextCenter
+    | TextStart
+    | TextEnd
     | TextJustify
 
 

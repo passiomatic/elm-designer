@@ -412,23 +412,23 @@ fontWeightDecoder tagger =
 textAlignmentCodec : Codec TextAlignment
 textAlignmentCodec =
     Codec.custom
-        (\textLeft textCenter textRight textJustify value ->
+        (\textStart textCenter textEnd textJustify value ->
             case value of
-                TextLeft ->
-                    textLeft
+                TextStart ->
+                    textStart
 
                 TextCenter ->
                     textCenter
 
-                TextRight ->
-                    textRight
+                TextEnd ->
+                    textEnd
 
                 TextJustify ->
                     textJustify
         )
-        |> Codec.variant0 "TextLeft" TextLeft
+        |> Codec.variant0 "TextStart" TextStart
         |> Codec.variant0 "TextCenter" TextCenter
-        |> Codec.variant0 "TextRight" TextRight
+        |> Codec.variant0 "TextEnd" TextEnd
         |> Codec.variant0 "TextJustify" TextJustify
         |> Codec.buildCustom
 

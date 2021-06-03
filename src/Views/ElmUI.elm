@@ -656,7 +656,7 @@ applyWordSpacing value attrs =
 applyTextAlign : TextAlignment -> List (E.Attribute Msg) -> List (E.Attribute Msg)
 applyTextAlign value attrs =
     case value of
-        TextLeft ->
+        TextStart ->
             -- Default
             --Font.alignLeft :: attrs
             attrs
@@ -664,7 +664,7 @@ applyTextAlign value attrs =
         TextCenter ->
             Font.center :: attrs
 
-        TextRight ->
+        TextEnd ->
             Font.alignRight :: attrs
 
         TextJustify ->

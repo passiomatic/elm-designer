@@ -1756,9 +1756,9 @@ textAlignmentView _ value =
             [ H.button
                 [ A.classList
                     [ ( "btn btn-light btn-sm w-25", True )
-                    , ( "active", value == TextLeft )
+                    , ( "active", value == TextStart )
                     ]
-                , E.onClick (TextAlignChanged TextLeft)
+                , E.onClick (TextAlignChanged TextStart)
                 , A.type_ "button"
                 ]
                 [ Icons.alignLeft ]
@@ -1774,9 +1774,9 @@ textAlignmentView _ value =
             , H.button
                 [ A.classList
                     [ ( "btn btn-light btn-sm w-25", True )
-                    , ( "active", value == TextRight )
+                    , ( "active", value == TextEnd )
                     ]
-                , E.onClick (TextAlignChanged TextRight)
+                , E.onClick (TextAlignChanged TextEnd)
                 , A.type_ "button"
                 ]
                 [ Icons.alignRight ]
