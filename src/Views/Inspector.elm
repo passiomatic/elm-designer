@@ -1081,7 +1081,7 @@ backgroundView model { background } =
             [ H.button
                 [ A.classList
                     [ ( "btn btn-light btn-sm", True )
-                    , ( "active", isNone background )
+                    , ( "active", Background.isNone background )
                     ]
                 , E.onClick (BackgroundChanged Background.None)
                 , A.type_ "button"
@@ -1090,7 +1090,7 @@ backgroundView model { background } =
             , H.button
                 [ A.classList
                     [ ( "btn btn-light btn-sm", True )
-                    , ( "active", isSolid background )
+                    , ( "active", Background.isSolid background )
                     ]
                 , E.onClick (BackgroundChanged (Background.Solid Palette.white))
                 , A.type_ "button"
@@ -1099,7 +1099,7 @@ backgroundView model { background } =
             , H.button
                 [ A.classList
                     [ ( "btn btn-light btn-sm", True )
-                    , ( "active", isImage background )
+                    , ( "active", Background.isImage background )
                     ]
                 , E.onClick (BackgroundChanged (Background.Image ""))
                 , A.type_ "button"
@@ -1216,33 +1216,6 @@ backgroundView model { background } =
 --             True
 --         _ ->
 --             False
-
-
-isSolid value =
-    case value of
-        Background.Solid _ ->
-            True
-
-        _ ->
-            False
-
-
-isImage value =
-    case value of
-        Background.Image _ ->
-            True
-
-        _ ->
-            False
-
-
-isNone value =
-    case value of
-        Background.None ->
-            True
-
-        _ ->
-            False
 
 
 lengthView : Model -> Node -> Html Msg
