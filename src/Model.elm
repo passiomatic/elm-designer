@@ -39,6 +39,7 @@ import Tree exposing (Tree)
 import Tree.Zipper as Zipper exposing (Zipper)
 import UUID exposing (Seeds)
 import UndoList exposing (UndoList)
+import Style.Border exposing (BorderStyle)
 
 
 workspaceWidth =
@@ -74,6 +75,7 @@ type Msg
     | BackgroundColorChanged String
     | BackgroundChanged Background
     | BorderColorChanged String
+    | BorderStyleChanged BorderStyle
     | LabelPositionChanged LabelPosition
     | FieldEditingStarted Field String
     | FieldEditingConfirmed

@@ -3,7 +3,10 @@ module Style.Border exposing
     , BorderStyle(..)
     , BorderWidth
     , corner
+    , isDashed
+    , isDotted
     , isRounded
+    , isSolid
     , setBottomLeftCorner
     , setBottomRightCorner
     , setBottomWidth
@@ -11,6 +14,7 @@ module Style.Border exposing
     , setCorner
     , setLeftWidth
     , setRightWidth
+    , setStyle
     , setTopLeftCorner
     , setTopRightCorner
     , setTopWidth
@@ -109,6 +113,11 @@ setCorner value node =
     { node | borderCorner = value }
 
 
+setStyle : BorderStyle -> { a | borderStyle : BorderStyle } -> { a | borderStyle : BorderStyle }
+setStyle value node =
+    { node | borderStyle = value }
+
+
 setTopLeftCorner : Int -> BorderCorner -> BorderCorner
 setTopLeftCorner value record =
     if record.locked then
@@ -148,3 +157,30 @@ setBottomLeftCorner value record =
 isRounded : BorderCorner -> Bool
 isRounded value =
     value.topLeft /= 0 || value.topRight /= 0 || value.bottomLeft /= 0 || value.bottomRight /= 0
+
+
+isSolid value =
+    case value of
+        Solid ->
+            True
+
+        _ ->
+            False
+
+
+isDashed value =
+    case value of
+        Dashed ->
+            True
+
+        _ ->
+            False
+
+
+isDotted value =
+    case value of
+        Dotted ->
+            True
+
+        _ ->
+            False

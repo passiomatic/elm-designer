@@ -22,6 +22,7 @@ module Document exposing
     , applyBorderColor
     , applyBorderCorner
     , applyBorderLock
+    , applyBorderStyle
     , applyBorderWidth
     , applyFontColor
     , applyFontFamily
@@ -85,8 +86,8 @@ import Set exposing (Set)
 import Style.Background as Background exposing (Background)
 import Style.Border as Border exposing (BorderCorner, BorderStyle(..), BorderWidth)
 import Style.Font as Font exposing (..)
-import Style.Layout as Layout exposing (..)
 import Style.Input as Input exposing (LabelPosition(..))
+import Style.Layout as Layout exposing (..)
 import Style.Theme as Theme exposing (Theme)
 import Time exposing (Posix)
 import Tree as T exposing (Tree)
@@ -1070,6 +1071,11 @@ applyBorderWidth setter value zipper =
     Zipper.mapLabel (\node -> Border.setWidth (setter value_ node.borderWidth) node) zipper
 
 
+applyBorderStyle : BorderStyle -> Zipper Node -> Zipper Node
+applyBorderStyle value zipper =
+    Zipper.mapLabel (Border.setStyle value) zipper
+
+
 applyBorderCorner : (Int -> BorderCorner -> BorderCorner) -> String -> Zipper Node -> Zipper Node
 applyBorderCorner setter value zipper =
     let
@@ -1116,6 +1122,3 @@ applyLabelPosition value zipper =
                     node
         )
         zipper
-
-
-

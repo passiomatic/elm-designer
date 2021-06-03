@@ -20,6 +20,7 @@ import Model exposing (..)
 import Palette
 import SelectList exposing (SelectList)
 import Style.Background as Background exposing (Background)
+import Style.Border as Border exposing (BorderStyle(..))
 import Style.Font as Font exposing (..)
 import Style.Input as Input exposing (..)
 import Style.Layout as Layout exposing (..)
@@ -709,7 +710,7 @@ addDropdown fieldId_ state items parent =
 
 
 bordersView : Model -> Node -> Html Msg
-bordersView model { borderColor, borderWidth, borderCorner } =
+bordersView model { borderColor, borderWidth, borderStyle, borderCorner } =
     let
         -- Corners
         topLeftCorner =
@@ -941,7 +942,47 @@ bordersView model { borderColor, borderWidth, borderCorner } =
                     ]
                 ]
             ]
+        , borderStyleView model borderStyle
         , colorView model (Just borderColor) BorderColorField BorderColorChanged
+        ]
+
+
+borderStyleView : Model -> BorderStyle -> Html Msg
+borderStyleView model borderStyle =
+    H.div [ A.class "form-group row align-items-center mb-2" ]
+        [ H.label [ A.class "col-3 col-form-label-sm m-0 text-nowrap" ]
+            [ H.text "Style" ]
+        , H.div [ A.class "col-9 d-flex" ]
+            [ H.div [ A.class "btn-group w-100", A.attribute "role" "group" ]
+                [ H.button
+                    [ A.classList
+                        [ ( "btn btn-light btn-sm", True )
+                        , ( "active", Border.isSolid borderStyle )
+                        ]
+                    , E.onClick (BorderStyleChanged Solid)
+                    , A.type_ "button"
+                    ]
+                    [ H.text "Solid" ]
+                , H.button
+                    [ A.classList
+                        [ ( "btn btn-light btn-sm", True )
+                        , ( "active", Border.isDashed borderStyle )
+                        ]
+                    , E.onClick (BorderStyleChanged Dashed)
+                    , A.type_ "button"
+                    ]
+                    [ H.text "Dashed" ]
+                , H.button
+                    [ A.classList
+                        [ ( "btn btn-light btn-sm", True )
+                        , ( "active", Border.isDotted borderStyle )
+                        ]
+                    , E.onClick (BorderStyleChanged Dotted)
+                    , A.type_ "button"
+                    ]
+                    [ H.text "Dotted" ]
+                ]
+            ]
         ]
 
 

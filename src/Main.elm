@@ -454,6 +454,9 @@ update msg model =
         FontFamilyChanged family ->
             applyChange model Document.applyFontFamily family
 
+        BorderStyleChanged value ->
+            applyChange model Document.applyBorderStyle value
+            
         BackgroundColorChanged value ->
             applyChange model Document.applyBackgroundColor value
 

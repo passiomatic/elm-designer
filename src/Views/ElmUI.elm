@@ -426,6 +426,7 @@ applyStyles node attrs =
         |> applyBorderCorner node.borderCorner
         |> applyBorderWidth node.borderWidth
         |> applyBorderColor node.borderColor
+        |> applyBorderStyle node.borderStyle
         |> applyPadding node.padding
         |> applySpacing node.spacing
         |> applyFontSize node.fontSize
@@ -616,6 +617,19 @@ applyBorderCorner value attrs =
 applyBorderColor : Color -> List (E.Attribute Msg) -> List (E.Attribute Msg)
 applyBorderColor value attrs =
     Border.color value :: attrs
+
+
+applyBorderStyle : BorderStyle -> List (E.Attribute Msg) -> List (E.Attribute Msg)
+applyBorderStyle value attrs =
+    case value of
+        Solid ->
+            Border.solid :: attrs
+
+        Dashed ->
+            Border.dashed :: attrs
+
+        Dotted ->
+            Border.dotted :: attrs
 
 
 applyPadding : Padding -> List (E.Attribute Msg) -> List (E.Attribute Msg)
