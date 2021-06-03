@@ -85,6 +85,7 @@ import SelectList exposing (SelectList)
 import Set exposing (Set)
 import Style.Background as Background exposing (Background)
 import Style.Border as Border exposing (BorderCorner, BorderStyle(..), BorderWidth)
+import Style.Shadow as Shadow exposing (Shadow)
 import Style.Font as Font exposing (..)
 import Style.Input as Input exposing (LabelPosition(..))
 import Style.Layout as Layout exposing (..)
@@ -142,6 +143,7 @@ type alias Node =
     , borderStyle : BorderStyle
     , borderWidth : BorderWidth
     , borderCorner : BorderCorner
+    , shadow : Shadow
     , background : Background
     , position : Position
     , alignmentX : Alignment
@@ -170,6 +172,7 @@ type alias Template =
     , borderStyle : BorderStyle
     , borderWidth : BorderWidth
     , borderCorner : BorderCorner
+    -- , shadow: Shadow 
     , background : Background
     , alignmentX : Alignment
     , alignmentY : Alignment
@@ -207,6 +210,7 @@ baseTemplate =
     , borderStyle = Solid
     , borderWidth = Border.width 0
     , borderCorner = Border.corner 0
+    --, shadow = Border.flat
     , background = Background.None
     , alignmentX = None
     , alignmentY = None
@@ -355,6 +359,7 @@ fromTemplate template seeds =
                     , borderStyle = template_.borderStyle
                     , borderWidth = template_.borderWidth
                     , borderCorner = template_.borderCorner
+                    , shadow = Shadow.none
                     , background = template_.background
                     , position = Normal
                     , alignmentX = template_.alignmentX
@@ -397,6 +402,7 @@ pageNode theme seeds children index =
             , borderStyle = baseTemplate.borderStyle
             , borderWidth = baseTemplate.borderWidth
             , borderCorner = baseTemplate.borderCorner
+            , shadow = Shadow.none
             , background = Background.Solid theme.backgroundColor
             , position = Normal
             , alignmentX = baseTemplate.alignmentX
