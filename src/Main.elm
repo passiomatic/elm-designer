@@ -812,6 +812,9 @@ updateField model =
         EditingField ShadowBlurField newValue ->
             applyChange model (Document.applyShadow Shadow.setBlur) newValue
 
+        EditingField ShadowColorField newValue ->
+            applyChange model Document.applyShadowColor newValue
+
         -- ###########
         -- Padding
         -- ###########

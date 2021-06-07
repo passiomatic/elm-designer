@@ -838,7 +838,7 @@ shadowView model { shadow } =
                     ]
                 ]
             ]
-        , colorView model (Just shadow.color) ShadowColorField BorderColorChanged
+        , colorView model (Just shadow.color) ShadowColorField ShadowColorChanged
         ]
 
 
