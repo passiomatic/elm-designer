@@ -76,6 +76,7 @@ type Msg
     | BackgroundChanged Background
     | BorderColorChanged String
     | BorderStyleChanged BorderStyle
+    | ShadowColorChanged String
     | LabelPositionChanged LabelPosition
     | FieldEditingStarted Field String
     | FieldEditingConfirmed
@@ -142,6 +143,11 @@ type Field
     | HeightMaxField
     | HeightPxField
     | HeightPortionField
+    | ShadowOffsetXField
+    | ShadowOffsetYField
+    | ShadowBlurField
+    | ShadowColorField
+    | ShadowSizeField
 
 
 type WidgetState

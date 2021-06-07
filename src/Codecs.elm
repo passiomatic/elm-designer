@@ -520,7 +520,8 @@ borderWidthCodec =
 shadowCodec : Codec Shadow
 shadowCodec =
     Codec.object Shadow
-        |> Codec.field "offset" .offset (Codec.tuple Codec.float Codec.float)
+        |> Codec.field "offsetX" .offsetX Codec.float
+        |> Codec.field "offsetY" .offsetY Codec.float
         |> Codec.field "size" .size Codec.float
         |> Codec.field "blur" .blur Codec.float
         |> Codec.field "color" .color colorCodec

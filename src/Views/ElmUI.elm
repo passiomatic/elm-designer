@@ -24,6 +24,7 @@ import Style.Border exposing (BorderCorner, BorderStyle(..), BorderWidth)
 import Style.Font as Font exposing (..)
 import Style.Input as Input exposing (LabelPosition(..))
 import Style.Layout as Layout exposing (..)
+import Style.Shadow as Shadow exposing (Shadow, ShadowType(..))
 import Tree as T exposing (Tree)
 import Tree.Zipper as Zipper exposing (Zipper)
 import Views.Common as Common
@@ -427,6 +428,7 @@ applyStyles node attrs =
         |> applyBorderWidth node.borderWidth
         |> applyBorderColor node.borderColor
         |> applyBorderStyle node.borderStyle
+        |> applyShadow node.shadow
         |> applyPadding node.padding
         |> applySpacing node.spacing
         |> applyFontSize node.fontSize
@@ -442,6 +444,26 @@ applyStyles node attrs =
 
 -- applyExplain attrs =
 --     E.explain Debug.todo :: attrs
+
+
+applyShadow : Shadow -> List (E.Attribute Msg) -> List (E.Attribute Msg)
+applyShadow value attrs =
+    let
+        renderer = 
+            case value.type_ of 
+                Inner -> 
+                    Border.innerShadow
+
+                Outer ->
+                    Border.shadow
+    in
+    renderer
+        { offset = ( value.offsetX, value.offsetY )
+        , size = value.size
+        , blur = value.blur
+        , color = value.color
+        }
+        :: attrs
 
 
 applyTransformation : Transformation -> List (E.Attribute Msg) -> List (E.Attribute Msg)

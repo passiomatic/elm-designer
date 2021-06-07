@@ -1,4 +1,4 @@
-module Views.Common exposing (canDropInto, canDropSibling, fieldId, none, isDragging)
+module Views.Common exposing (canDropInto, canDropSibling, fieldId, isDragging, none)
 
 import Document exposing (DragId(..))
 import Html as H exposing (Html)
@@ -140,6 +140,21 @@ fieldId field =
 
         HeightPortionField ->
             "height-portion"
+
+        ShadowOffsetXField ->
+            "shadow-offset-x"
+
+        ShadowOffsetYField ->
+            "shadow-offset-y"
+
+        ShadowSizeField ->
+            "shadow-size"
+
+        ShadowColorField ->
+            "shadow-color-hex"
+
+        ShadowBlurField ->
+            "shadow-blur"
 
 
 none =
