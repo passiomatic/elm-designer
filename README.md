@@ -6,11 +6,13 @@
 
 The application is in early stages of development and supports a subset of [Elm UI][elmui].
 
-Version 0.2 main features are:
+Version 0.3 main features are:
 
-* Add JPEG, PNG, GIF and SVG images by picking them from local file system
-* Specify exact, minimun, and maximun elements dimensions
-* Drop library elements directly on the page or on the outline pane like before 
+* Undo/redo for destructive operations
+* Support for relative positioned children (above, in front, etc.)
+* Support for element shadow
+* Label position for form fields (above, below, left, right and hidden)
+* Border style selector: solid, dashed and dotted
 
 ## Download 
 
@@ -25,7 +27,6 @@ By uploading images and referencing them by URL sidesteps a number of issues lik
 ## Known issues
 
 - Color picker is quite limited at the moment since Elm Designer is using HTML 5 `input type=color`. Specifically you can't reset a color or specify `inherit`. See [#1][issue1]
-- When switching fonts the weight of the new font should match, or be closer as possible, to the old one. See [#2][issue2]
 - "Insert" menu allows to create non-renderable nodes. See [#20][issue20]
 
 ## Build Elm Designer from sources
@@ -53,7 +54,7 @@ This will build the app assets with Parcel in production mode, copy the files in
 [2]: https://parceljs.org
 [3]: https://parceljs.org/getting_started.html
 [4]: https://www.electronjs.org
-[d]: https://github.com/passiomatic/elm-designer/releases/tag/v0.2.1
+[d]: https://github.com/passiomatic/elm-designer/releases/tag/v0.3.0
 [issue1]: https://github.com/passiomatic/elm-designer/issues/1 
 [issue2]: https://github.com/passiomatic/elm-designer/issues/2 
 [issue20]: https://github.com/passiomatic/elm-designer/issues/20
