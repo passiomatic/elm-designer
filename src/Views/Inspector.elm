@@ -77,6 +77,7 @@ resolveStyleViews model zipper =
                         ]
                     , bordersView model node
                     , backgroundView model node
+                    , shadowView model node
                     ]
 
                 RowNode data ->
@@ -95,6 +96,7 @@ resolveStyleViews model zipper =
                         ]
                     , bordersView model node
                     , backgroundView model node
+                    , shadowView model node
                     ]
 
                 ColumnNode ->
@@ -110,6 +112,7 @@ resolveStyleViews model zipper =
                         ]
                     , bordersView model node
                     , backgroundView model node
+                    , shadowView model node
                     ]
 
                 TextColumnNode ->
@@ -126,6 +129,7 @@ resolveStyleViews model zipper =
                         ]
                     , bordersView model node
                     , backgroundView model node
+                    , shadowView model node
                     ]
 
                 TextFieldNode label ->
@@ -147,6 +151,7 @@ resolveStyleViews model zipper =
                         ]
                     , bordersView model node
                     , backgroundView model node
+                    , shadowView model node
                     ]
 
                 TextFieldMultilineNode label ->
@@ -168,6 +173,7 @@ resolveStyleViews model zipper =
                         ]
                     , bordersView model node
                     , backgroundView model node
+                    , shadowView model node
                     ]
 
                 CheckboxNode label ->
@@ -189,6 +195,7 @@ resolveStyleViews model zipper =
                         ]
                     , bordersView model node
                     , backgroundView model node
+                    , shadowView model node
                     ]
 
                 ButtonNode button ->
@@ -208,6 +215,7 @@ resolveStyleViews model zipper =
                         ]
                     , bordersView model node
                     , backgroundView model node
+                    , shadowView model node
                     ]
 
                 RadioNode label ->
@@ -226,6 +234,7 @@ resolveStyleViews model zipper =
                         ]
                     , bordersView model node
                     , backgroundView model node
+                    , shadowView model node
                     ]
 
                 OptionNode option ->
@@ -243,6 +252,7 @@ resolveStyleViews model zipper =
                         ]
                     , bordersView model node
                     , backgroundView model node
+                    , shadowView model node
                     ]
 
                 _ ->
@@ -264,6 +274,7 @@ commonViews zipper model node =
         ]
     , bordersView model node
     , backgroundView model node
+    , shadowView model node
     ]
 
 
@@ -706,6 +717,116 @@ addDropdown fieldId_ state items parent =
             -- , H.div [ A.class "dropdown-divider", A.attribute "role" "separator" ]
             --     []
             ]
+        ]
+
+
+shadowView : Model -> Node -> Html Msg
+shadowView model { shadow } =
+    let
+        offsetX =
+            case model.inspector of
+                EditingField ShadowOffsetXField new ->
+                    new
+
+                _ ->
+                    String.fromFloat shadow.offsetX
+
+        offsetY =
+            case model.inspector of
+                EditingField ShadowOffsetYField new ->
+                    new
+
+                _ ->
+                    String.fromFloat shadow.offsetY
+
+        size =
+            case model.inspector of
+                EditingField ShadowSizeField new ->
+                    new
+
+                _ ->
+                    String.fromFloat shadow.size
+
+        blur =
+            case model.inspector of
+                EditingField ShadowBlurField new ->
+                    new
+
+                _ ->
+                    String.fromFloat shadow.blur
+    in
+    H.section [ A.class "section bp-3  border-bottom" ]
+        [ H.h2 [ A.class "section__title mb-2" ]
+            [ H.text "Shadow" ]
+        , H.div [ A.class "form-group row align-items-center mb-2" ]
+            [ H.div [ A.class "col-12" ]
+                [ H.div [ A.class "d-flex" ]
+                    [ H.div [ A.class "w-25 ml-auto mr-1" ]
+                        [ H.label [ A.class "col-form-label-sm m-0 p-0", A.for (fieldId ShadowOffsetXField) ]
+                            [ H.text "Offset X"
+                            ]
+                        , H.input
+                            [ A.id (fieldId ShadowOffsetXField)
+                            , A.type_ "number"
+                            , A.value offsetX
+                            , A.class "form-control form-control-sm text-center"
+                            , E.onFocus (FieldEditingStarted ShadowOffsetXField offsetX)
+                            , E.onBlur FieldEditingFinished
+                            , E.onInput FieldChanged
+                            ]
+                            []
+                        ]
+                    , H.div [ A.class "w-25 mr-1" ]
+                        [ H.label [ A.class "col-form-label-sm m-0 p-0", A.for (fieldId ShadowOffsetXField) ]
+                            [ H.text "Offset Y"
+                            ]
+                        , H.input
+                            [ A.id (fieldId ShadowOffsetYField)
+                            , A.type_ "number"
+                            , A.value offsetY
+                            , A.class "form-control form-control-sm text-center"
+                            , E.onFocus (FieldEditingStarted ShadowOffsetYField offsetY)
+                            , E.onBlur FieldEditingFinished
+                            , E.onInput FieldChanged
+                            ]
+                            []
+                        ]
+                    , H.div [ A.class "w-25 mr-1" ]
+                        [ H.label [ A.class "col-form-label-sm m-0 p-0", A.for (fieldId ShadowOffsetXField) ]
+                            [ H.text "Size"
+                            ]
+                        , H.input
+                            [ A.id (fieldId ShadowSizeField)
+                            , A.type_ "number"
+                            , A.min "0"
+                            , A.value size
+                            , A.class "form-control form-control-sm text-center"
+                            , E.onFocus (FieldEditingStarted ShadowSizeField size)
+                            , E.onBlur FieldEditingFinished
+                            , E.onInput FieldChanged
+                            ]
+                            []
+                        ]
+                    , H.div [ A.class "w-25" ]
+                        [ H.label [ A.class "col-form-label-sm m-0 p-0", A.for (fieldId ShadowOffsetXField) ]
+                            [ H.text "Blur"
+                            ]
+                        , H.input
+                            [ A.id (fieldId ShadowBlurField)
+                            , A.type_ "number"
+                            , A.min "0"
+                            , A.value blur
+                            , A.class "form-control form-control-sm text-center"
+                            , E.onFocus (FieldEditingStarted ShadowBlurField blur)
+                            , E.onBlur FieldEditingFinished
+                            , E.onInput FieldChanged
+                            ]
+                            []
+                        ]
+                    ]
+                ]
+            ]
+        , colorView model (Just shadow.color) ShadowColorField ShadowColorChanged
         ]
 
 

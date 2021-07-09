@@ -19,6 +19,7 @@ module Codecs exposing
 import Codec exposing (Codec, Error, Value)
 import Document exposing (..)
 import Element exposing (Color, Orientation(..))
+import Element.Border exposing (shadow)
 import Element.Font as Font exposing (Font)
 import Fonts
 import Html.Events as E
@@ -30,6 +31,7 @@ import Style.Border as Border exposing (..)
 import Style.Font as Font exposing (..)
 import Style.Input as Input exposing (LabelPosition(..))
 import Style.Layout as Layout exposing (..)
+import Style.Shadow as Shadow exposing (Shadow, ShadowType(..))
 import Time exposing (Posix)
 import Tree as T exposing (Tree)
 import UUID
@@ -123,6 +125,7 @@ nodeCodec =
         |> Codec.field "borderStyle" .borderStyle borderStyleCodec
         |> Codec.field "borderWidth" .borderWidth borderWidthCodec
         |> Codec.field "borderCorner" .borderCorner borderCornerCodec
+        |> Codec.field "shadow" .shadow shadowCodec
         |> Codec.field "background" .background backgroundCodec
         |> Codec.field "position" .position positionCodec
         |> Codec.field "alignmentX" .alignmentX alignmentCodec
@@ -512,6 +515,34 @@ borderWidthCodec =
         |> Codec.field "bottom" .bottom Codec.int
         |> Codec.field "left" .left Codec.int
         |> Codec.buildObject
+
+
+shadowCodec : Codec Shadow
+shadowCodec =
+    Codec.object Shadow
+        |> Codec.field "offsetX" .offsetX Codec.float
+        |> Codec.field "offsetY" .offsetY Codec.float
+        |> Codec.field "size" .size Codec.float
+        |> Codec.field "blur" .blur Codec.float
+        |> Codec.field "color" .color colorCodec
+        |> Codec.field "type" .type_ shadowTypeCodec
+        |> Codec.buildObject
+
+
+shadowTypeCodec : Codec ShadowType
+shadowTypeCodec =
+    Codec.custom
+        (\inner outer value ->
+            case value of
+                Inner ->
+                    inner
+
+                Outer ->
+                    outer
+        )
+        |> Codec.variant0 "Inner" Inner
+        |> Codec.variant0 "Outer" Outer
+        |> Codec.buildCustom
 
 
 nodeTypeCodec : Codec NodeType

@@ -27,6 +27,7 @@ import Set exposing (Set)
 import Style.Border as Border exposing (BorderCorner, BorderStyle(..), BorderWidth)
 import Style.Font as Font exposing (..)
 import Style.Layout as Layout exposing (..)
+import Style.Shadow as Shadow exposing (Shadow, ShadowType(..))
 import Style.Theme as Theme exposing (Theme)
 import Task
 import Time
@@ -456,7 +457,7 @@ update msg model =
 
         BorderStyleChanged value ->
             applyChange model Document.applyBorderStyle value
-            
+
         BackgroundColorChanged value ->
             applyChange model Document.applyBackgroundColor value
 
@@ -465,6 +466,9 @@ update msg model =
 
         BorderColorChanged value ->
             applyChange model Document.applyBorderColor value
+
+        ShadowColorChanged value ->
+            applyChange model Document.applyShadowColor value
 
         FontColorChanged value ->
             applyChange model Document.applyFontColor value
@@ -792,6 +796,24 @@ updateField model =
 
         EditingField BorderLeftWidthField newValue ->
             applyChange model (Document.applyBorderWidth Border.setLeftWidth) newValue
+
+        -- ###########
+        -- Shadow
+        -- ###########
+        EditingField ShadowOffsetXField newValue ->
+            applyChange model (Document.applyShadow Shadow.setOffsetX) newValue
+
+        EditingField ShadowOffsetYField newValue ->
+            applyChange model (Document.applyShadow Shadow.setOffsetY) newValue
+
+        EditingField ShadowSizeField newValue ->
+            applyChange model (Document.applyShadow Shadow.setSize) newValue
+
+        EditingField ShadowBlurField newValue ->
+            applyChange model (Document.applyShadow Shadow.setBlur) newValue
+
+        EditingField ShadowColorField newValue ->
+            applyChange model Document.applyShadowColor newValue
 
         -- ###########
         -- Padding

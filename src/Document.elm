@@ -39,6 +39,8 @@ module Document exposing
     , applyPadding
     , applyPaddingLock
     , applyPosition
+    , applyShadow
+    , applyShadowColor
     , applySpacing
     , applyText
     , applyTextAlign
@@ -88,6 +90,7 @@ import Style.Border as Border exposing (BorderCorner, BorderStyle(..), BorderWid
 import Style.Font as Font exposing (..)
 import Style.Input as Input exposing (LabelPosition(..))
 import Style.Layout as Layout exposing (..)
+import Style.Shadow as Shadow exposing (Shadow)
 import Style.Theme as Theme exposing (Theme)
 import Time exposing (Posix)
 import Tree as T exposing (Tree)
@@ -142,6 +145,7 @@ type alias Node =
     , borderStyle : BorderStyle
     , borderWidth : BorderWidth
     , borderCorner : BorderCorner
+    , shadow : Shadow
     , background : Background
     , position : Position
     , alignmentX : Alignment
@@ -170,6 +174,8 @@ type alias Template =
     , borderStyle : BorderStyle
     , borderWidth : BorderWidth
     , borderCorner : BorderCorner
+
+    -- , shadow: Shadow
     , background : Background
     , alignmentX : Alignment
     , alignmentY : Alignment
@@ -207,6 +213,8 @@ baseTemplate =
     , borderStyle = Solid
     , borderWidth = Border.width 0
     , borderCorner = Border.corner 0
+
+    --, shadow = Border.flat
     , background = Background.None
     , alignmentX = None
     , alignmentY = None
@@ -355,6 +363,7 @@ fromTemplate template seeds =
                     , borderStyle = template_.borderStyle
                     , borderWidth = template_.borderWidth
                     , borderCorner = template_.borderCorner
+                    , shadow = Shadow.none
                     , background = template_.background
                     , position = Normal
                     , alignmentX = template_.alignmentX
@@ -397,6 +406,7 @@ pageNode theme seeds children index =
             , borderStyle = baseTemplate.borderStyle
             , borderWidth = baseTemplate.borderWidth
             , borderCorner = baseTemplate.borderCorner
+            , shadow = Shadow.none
             , background = Background.Solid theme.backgroundColor
             , position = Normal
             , alignmentX = baseTemplate.alignmentX
@@ -1099,6 +1109,27 @@ applyFontColor value zipper =
 applyFontWeight : FontWeight -> Zipper Node -> Zipper Node
 applyFontWeight value zipper =
     Zipper.mapLabel (Font.setWeight value) zipper
+
+
+applyShadow : (Float -> Shadow -> Shadow) -> String -> Zipper Node -> Zipper Node
+applyShadow setter value zipper =
+    let
+        value_ =
+            String.toFloat value
+                -- TODO handle negative and positive offset values whule clamping 0-positive blur and size
+                --|> Maybe.map (clamp 0 999)
+                |> Maybe.withDefault 0
+    in
+    Zipper.mapLabel (\node -> Shadow.setShadow (setter value_ node.shadow) node) zipper
+
+
+applyShadowColor : String -> Zipper Node -> Zipper Node
+applyShadowColor value zipper =
+    let
+        value_ =
+            Css.stringToColor value
+    in
+    Zipper.mapLabel (\node -> Shadow.setShadow (Shadow.setColor value_ node.shadow) node) zipper
 
 
 applyLabelPosition : LabelPosition -> Zipper Node -> Zipper Node
