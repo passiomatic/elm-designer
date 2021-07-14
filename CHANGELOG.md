@@ -1,3 +1,22 @@
+# Version 0.3.0 • 2021-07-11
+
+⚠️ **Document format is changed from previous version so you won't be able to load your existing designs.**
+
+## New features and tweaks
+
+* Added undo/redo menu commands for destructive operations (thanks @CharlonTank!)
+* Added support for relative positioned children (above, in front, etc.)
+* Added support for element shadow
+* Added UI to specify form fields label position: above, below, left, right and hidden
+* Added UI for border style: solid, dashed and dotted
+
+## Bugs fixed 
+
+* Node offset and rotation values are not generated 
+* Can't remove Label on text fields
+
+---
+
 # Version 0.2.1 • 2021-02-20
 
 ## New features and tweaks
