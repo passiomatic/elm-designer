@@ -3,6 +3,7 @@ module Fonts exposing
     , families
     , findFamily
     , links
+    , load
     )
 
 {-| All the available fonts in the app.
@@ -19,6 +20,8 @@ References:
 -}
 
 import Dict exposing (Dict)
+import Http exposing (Error)
+import Json.Decode as D exposing (Decoder)
 import Style.Font
     exposing
         ( FontCategory(..)
@@ -143,6 +146,84 @@ nativeWeights =
     , Bold
     , BoldItalic
     ]
+
+
+
+-- LOADING
+
+
+{-| Load the whole Google Font list from JSON file, see: <https://github.com/passiomatic/elm-designer/issues/21>
+-}
+load : String -> (Result Error (List FontFamily) -> msg) -> Cmd msg
+load baseUrl_ msg =
+    Http.get
+        { url = baseUrl_ ++ "/google-fonts.json"
+        , expect = Http.expectJson msg familyDecoder
+        }
+
+
+familyDecoder : Decoder (List FontFamily)
+familyDecoder =
+    D.list
+        (D.map5 FontFamily
+            (D.field "id" D.string)
+            (D.field "family" D.string)
+            -- TODO Figure out URL here
+            (D.succeed (External "url-here"))
+            (D.field "variants" (D.list fontWeightCodec))
+            (D.field "category" fontCategoryCodec)
+        )
+
+
+fontCategoryCodec : Decoder FontCategory
+fontCategoryCodec =
+    D.string
+        |> D.andThen
+            (\value ->
+                D.succeed
+                    (case value of
+                        "serif" ->
+                            Serif
+
+                        "sans-serif" ->
+                            SansSerif
+
+                        "handwriting" ->
+                            Handwriting
+
+                        "display" ->
+                            Display
+
+                        "monospace" ->
+                            Monospace
+
+                        _ ->
+                            SansSerif
+                    )
+            )
+
+
+fontWeightCodec : Decoder FontWeight
+fontWeightCodec =
+    D.string
+        |> D.andThen
+            (\value ->
+                D.succeed
+                    (case value of
+                        "regular" ->
+                            Regular
+
+                        "italic" ->
+                            Italic
+
+                        "700" ->
+                            Bold
+
+                        -- TODO add all weights
+                        _ ->
+                            Regular
+                    )
+            )
 
 
 

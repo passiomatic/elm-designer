@@ -43,6 +43,7 @@ var app = Elm.Main.init({
     width: w,
     height: h,
     uploadEndpoint: "https://0x0.st", 
+    baseUrl: window.location.origin,
     seed1: seeds[0],
     seed2: seeds[1],
     seed3: seeds[2],

@@ -51,15 +51,12 @@ appName =
 
 init : Flags -> ( Model, Cmd Msg )
 init flags =
-    let
-        links =
-            Fonts.links
-    in
     ( Model.initialModel flags
     , Cmd.batch
         [ Ports.loadDocument ()
-        , Ports.setFontLinks links
+        , Ports.setFontLinks Fonts.links
         , Ports.setupAppMenu Library.menuItems
+        , Fonts.load flags.baseUrl FontsLoaded
         ]
     )
 
@@ -67,6 +64,28 @@ init flags =
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
+        -- ###########
+        -- Fonts
+        -- ###########
+        FontsLoaded result ->
+            case result of 
+                Ok fonts ->
+                    let 
+                        --_ = Debug.log "LOADED fonts" fonts
+                        newFonts = 
+                            List.map (\font ->
+                                (font.id, font)
+                            ) fonts
+                            |> Dict.fromList 
+                    in 
+                        ({ model | fonts = newFonts}, Cmd.none)
+
+                Err reason ->
+                    let 
+                        _ = Debug.log "FAILED" reason
+                    in                 
+                    (model, Cmd.none)
+
         -- ###########
         -- Image drag & drop from local filesystem
         -- ###########
@@ -1020,7 +1039,6 @@ acceptFiles files =
             Set.member (File.mime f) acceptedTypes
         )
         files
-
 
 
 -- NOTIFICATION

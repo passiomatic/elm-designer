@@ -30,6 +30,7 @@ import Result exposing (Result(..))
 import SelectList exposing (SelectList)
 import Set exposing (Set)
 import Style.Background as Background exposing (Background)
+import Style.Border exposing (BorderStyle)
 import Style.Font as Font exposing (..)
 import Style.Input as Input exposing (LabelPosition(..))
 import Style.Layout as Layout exposing (..)
@@ -39,8 +40,7 @@ import Tree exposing (Tree)
 import Tree.Zipper as Zipper exposing (Zipper)
 import UUID exposing (Seeds)
 import UndoList exposing (UndoList)
-import Style.Border exposing (BorderStyle)
-
+import Dict exposing (Dict)
 
 workspaceWidth =
     4000
@@ -92,6 +92,7 @@ type Msg
     | InsertNodeClicked String
     | DropDownChanged WidgetState
     | DocumentLoaded String
+    | FontsLoaded (Result Error (List FontFamily))
     | Ticked Posix
     | ModeChanged Mode
     | FileDropped NodeId File (List File)
@@ -169,7 +170,8 @@ type Inspector
 type alias Model =
     { mode : Mode
     , uploadEndpoint : String
-
+    , baseUrl : String
+    , fonts: Dict String FontFamily 
     -- , workspaceScale : Float
     -- , workspaceX : Int
     -- , workspaceY : Int
@@ -261,6 +263,7 @@ type alias Flags =
     { width : Int
     , height : Int
     , uploadEndpoint : String
+    , baseUrl : String
     , seed1 : Int
     , seed2 : Int
     , seed3 : Int
@@ -269,7 +272,7 @@ type alias Flags =
 
 
 initialModel : Flags -> Model
-initialModel { width, height, uploadEndpoint, seed1, seed2, seed3, seed4 } =
+initialModel { width, height, uploadEndpoint, baseUrl, seed1, seed2, seed3, seed4 } =
     let
         seeds =
             Seeds
@@ -283,6 +286,8 @@ initialModel { width, height, uploadEndpoint, seed1, seed2, seed3, seed4 } =
     in
     { mode = DesignMode
     , uploadEndpoint = uploadEndpoint
+    , baseUrl = baseUrl
+    , fonts = Dict.empty -- TODO: Fill with native fonts?
 
     -- , workspaceScale = 1.0
     -- , workspaceX = -workspaceWidth // 2 + width // 2
