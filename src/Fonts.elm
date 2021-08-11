@@ -21,7 +21,8 @@ References:
 import Dict exposing (Dict)
 import Style.Font
     exposing
-        ( FontFamily
+        ( FontCategory(..)
+        , FontFamily
         , FontType(..)
         , FontWeight(..)
         )
@@ -35,34 +36,34 @@ families : List ( String, List FontFamily )
 families =
     [ ( "Native"
       , [ defaultFamily
-        , FontFamily "Helvetica" (Native helveticaFontStack) nativeWeights
-        , FontFamily "Georgia" (Native georgiaFontStack) nativeWeights
-        , FontFamily "Times New Roman" (Native timesNewRomanFontStack) nativeWeights
+        , FontFamily "native-helvetica" "Helvetica" (Native helveticaFontStack) nativeWeights SansSerif
+        , FontFamily "native-georgia" "Georgia" (Native georgiaFontStack) nativeWeights Serif
+        , FontFamily "native-times-new-roman" "Times New Roman" (Native timesNewRomanFontStack) nativeWeights Serif
         ]
       )
     , ( "Sans Serif/Google Fonts"
-      , [ FontFamily "Alegreya Sans" (External alegreyaSansUrl) alegreyaSansWeights
-        , FontFamily "IBM Plex Sans" (External plexSansUrl) plexSansWeights
-        , FontFamily "Inter" (External interUrl) interWeights
-        , FontFamily "Roboto" (External robotoUrl) robotoWeights
-        , FontFamily "Rubik" (External rubikUrl) rubikWeights
-        , FontFamily "Source Sans Pro" (External sourceSansProUrl) sourceSansProWeights
-        , FontFamily "Work Sans" (External workSansUrl) workSansWeights
+      , [ FontFamily "alegreya-sans" "Alegreya Sans" (External alegreyaSansUrl) alegreyaSansWeights SansSerif
+        , FontFamily "ibm-plex-sans" "IBM Plex Sans" (External plexSansUrl) plexSansWeights SansSerif
+        , FontFamily "inter" "Inter" (External interUrl) interWeights SansSerif
+        , FontFamily "roboto" "Roboto" (External robotoUrl) robotoWeights SansSerif
+        , FontFamily "rubik" "Rubik" (External rubikUrl) rubikWeights SansSerif
+        , FontFamily "source-sans-pro" "Source Sans Pro" (External sourceSansProUrl) sourceSansProWeights SansSerif
+        , FontFamily "work-sans" "Work Sans" (External workSansUrl) workSansWeights SansSerif
         ]
       )
     , ( "Serif/Google Fonts"
-      , [ FontFamily "Alegreya" (External alegreyaUrl) alegreyaWeights
-        , FontFamily "Cormorant" (External cormorantUrl) cormorantWeights
-        , FontFamily "Eczar" (External eczarUrl) eczarWeights
-        , FontFamily "Libre Baskerville" (External libreBaskervilleUrl) libreBaskervilleWeights
-        , FontFamily "Lora" (External loraUrl) loraWeights
-        , FontFamily "Source Serif Pro" (External sourceSerifProUrl) sourceSerifProWeights
+      , [ FontFamily "alegreya" "Alegreya" (External alegreyaUrl) alegreyaWeights Serif
+        , FontFamily "cormorant" "Cormorant" (External cormorantUrl) cormorantWeights Serif
+        , FontFamily "eczar" "Eczar" (External eczarUrl) eczarWeights Serif
+        , FontFamily "libre-baskerville" "Libre Baskerville" (External libreBaskervilleUrl) libreBaskervilleWeights Serif
+        , FontFamily "lora" "Lora" (External loraUrl) loraWeights Serif
+        , FontFamily "source-serif-pro" "Source Serif Pro" (External sourceSerifProUrl) sourceSerifProWeights Serif
         ]
       )
     , ( "Fixed-width/Google Fonts"
-      , [ FontFamily "Roboto Mono" (External robotoMonoUrl) robotoMonoWeights
-        , FontFamily "Space Mono" (External spaceMonoUrl) spaceMonoWeights
-        , FontFamily "Source Code Pro" (External sourceCodeProUrl) sourceCodeProWeights
+      , [ FontFamily "roboto-mono" "Roboto Mono" (External robotoMonoUrl) robotoMonoWeights Monospace
+        , FontFamily "space-mono" "Space Mono" (External spaceMonoUrl) spaceMonoWeights Monospace
+        , FontFamily "source-code-pro" "Source Code Pro" (External sourceCodeProUrl) sourceCodeProWeights Monospace
         ]
       )
     ]
@@ -73,18 +74,18 @@ families_ =
     families
         |> List.map (\( _, f ) -> f)
         |> List.concat
-        |> List.map (\family -> ( family.name, family ))
+        |> List.map (\family -> ( family.id, family ))
         |> Dict.fromList
 
 
 findFamily : String -> FontFamily
-findFamily name =
-    Dict.get name families_
+findFamily id =
+    Dict.get id families_
         |> Maybe.withDefault defaultFamily
 
 
 defaultFamily =
-    FontFamily "System" (Native systemFontStack) nativeWeights
+    FontFamily "System" "System" (Native systemFontStack) nativeWeights SansSerif
 
 
 links : List String

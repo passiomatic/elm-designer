@@ -1,5 +1,6 @@
 module Style.Font exposing
-    ( FontFamily
+    ( FontCategory(..)
+    , FontFamily
     , FontType(..)
     , FontWeight(..)
     , Local(..)
@@ -41,10 +42,20 @@ type FontType
     | External String
 
 
+type FontCategory
+    = Serif
+    | SansSerif
+    | Handwriting
+    | Display
+    | Monospace
+
+
 type alias FontFamily =
-    { name : String
+    { id : String
+    , name : String
     , type_ : FontType
     , weights : List FontWeight
+    , category : FontCategory
     }
 
 

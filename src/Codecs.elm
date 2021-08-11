@@ -298,13 +298,13 @@ fontFamilyCodec : Codec FontFamily
 fontFamilyCodec =
     Codec.string
         |> Codec.map
-            (\name ->
+            (\id ->
                 -- From JSON
-                Fonts.findFamily name
+                Fonts.findFamily id
             )
             (\family ->
                 -- To JSON
-                family.name
+                family.id
             )
 
 
@@ -318,6 +318,47 @@ fontFamilyDecoder tagger =
     E.targetValue
         |> D.andThen (fromResult << Codec.decodeString (localCodec fontFamilyCodec))
         |> D.map tagger
+
+
+{-| Decode the whole Google Font list from JSON file, see: <https://github.com/passiomatic/elm-designer/issues/21>
+-}
+googleFontFamilyDecoder : Decoder FontFamily
+googleFontFamilyDecoder =
+    D.map5 FontFamily
+        (D.field "id" D.string)
+        (D.field "family" D.string)
+        -- TODO Figure out URL here
+        (D.succeed (External "url-here"))
+        (D.field "variants" (D.list (Codec.decoder fontWeightCodec)))
+        (D.field "category" (Codec.decoder fontCategoryCodec))
+
+
+fontCategoryCodec : Codec FontCategory
+fontCategoryCodec =
+    Codec.custom
+        (\serif sansSerif handwriting display monospace value_ ->
+            case value_ of
+                Serif ->
+                    serif
+
+                SansSerif ->
+                    sansSerif
+
+                Handwriting ->
+                    handwriting
+
+                Display ->
+                    display
+
+                Monospace ->
+                    monospace
+        )
+        |> Codec.variant0 "serif" Serif
+        |> Codec.variant0 "sans-serif" SansSerif
+        |> Codec.variant0 "handwriting" Handwriting
+        |> Codec.variant0 "display" Display
+        |> Codec.variant0 "monospace" Monospace
+        |> Codec.buildCustom
 
 
 fontWeightCodec : Codec FontWeight
