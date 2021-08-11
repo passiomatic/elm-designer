@@ -36,9 +36,9 @@ families : List ( String, List FontFamily )
 families =
     [ ( "Native"
       , [ defaultFamily
-        , FontFamily "native-helvetica" "Helvetica" (Native helveticaFontStack) nativeWeights SansSerif
-        , FontFamily "native-georgia" "Georgia" (Native georgiaFontStack) nativeWeights Serif
-        , FontFamily "native-times-new-roman" "Times New Roman" (Native timesNewRomanFontStack) nativeWeights Serif
+        , FontFamily "-native-helvetica" "Helvetica" (Native helveticaFontStack) nativeWeights SansSerif
+        , FontFamily "-native-georgia" "Georgia" (Native georgiaFontStack) nativeWeights Serif
+        , FontFamily "-native-times-new-roman" "Times New Roman" (Native timesNewRomanFontStack) nativeWeights Serif
         ]
       )
     , ( "Sans Serif/Google Fonts"
@@ -69,6 +69,40 @@ families =
     ]
 
 
+{-| Default font families on startup.
+-}
+defaultFamilies : List String
+defaultFamilies =
+    -- Native
+    [ "-native-system"
+    , "-native-helvetica"
+    , "-native-georgia"
+    , "-native-times-new-roman"
+
+    -- Sans Serif
+    , "alegreya-sans"
+    , "ibm-plex-sans"
+    , "inter"
+    , "roboto"
+    , "rubik"
+    , "source-sans-pro"
+    , "work-sans"
+
+    -- Serif
+    , "alegreya"
+    , "cormorant"
+    , "eczar"
+    , "libre-baskerville"
+    , "lora"
+    , "source-serif-pro"
+
+    -- Monospace
+    , "roboto-mono"
+    , "space-mono"
+    , "source-code-pro"
+    ]
+
+
 families_ : Dict String FontFamily
 families_ =
     families
@@ -85,7 +119,7 @@ findFamily id =
 
 
 defaultFamily =
-    FontFamily "System" "System" (Native systemFontStack) nativeWeights SansSerif
+    FontFamily "-native-system" "System" (Native systemFontStack) nativeWeights SansSerif
 
 
 links : List String
