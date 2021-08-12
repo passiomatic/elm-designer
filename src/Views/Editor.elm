@@ -30,6 +30,7 @@ import Tree as T exposing (Tree)
 import Tree.Zipper as Zipper exposing (Zipper)
 import Views.Common as Common exposing (none)
 import Views.ElmUI as ElmUI
+import Views.FontsDialog as FontsDialog
 import Views.Inspector as Inspector
 
 
@@ -42,33 +43,37 @@ maxTreeLabelLength =
 
 
 view model =
-    H.node "main"
-        [ A.classList
-            [ ( "h-100", True )
-            , ( "dragging--element", Common.isDragging model.dragDrop )
+    H.div [ A.class "modal-open"]
+        [ H.node "main"
+            [ A.classList
+                [ ( "h-100", True )
+                , ( "dragging--element", Common.isDragging model.dragDrop )
+                ]
+
+            -- Receive files from Electron. This is a workaround since
+            --   we cannot pass Files or Bytes to Elm via ports yet
+            , E.on "files-selected" (filesDecoder FileSelected)
             ]
+            (case model.mode of
+                PreviewMode ->
+                    [ headerView model
+                    , H.div [ A.class "d-flex" ]
+                        [ workspaceView model
+                        ]
+                    ]
 
-        -- Receive files from Electron. This is a workaround since
-        --   we cannot pass Files or Bytes to Elm via ports yet
-        , E.on "files-selected" (filesDecoder FileSelected)
+                _ ->
+                    [ headerView model
+                    , H.div [ A.class "d-flex" ]
+                        [ leftPaneView model
+                        , workspaceView model
+                        , rightPaneView model
+                        ]
+                    ]
+            )
+        --, FontsDialog.view model
+        --, H.div [A.class "modal-backdrop"] []
         ]
-        (case model.mode of
-            PreviewMode ->
-                [ headerView model
-                , H.div [ A.class "d-flex" ]
-                    [ workspaceView model
-                    ]
-                ]
-
-            _ ->
-                [ headerView model
-                , H.div [ A.class "d-flex" ]
-                    [ leftPaneView model
-                    , workspaceView model
-                    , rightPaneView model
-                    ]
-                ]
-        )
 
 
 filesDecoder tagger =
