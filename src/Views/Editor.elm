@@ -30,7 +30,7 @@ import Tree as T exposing (Tree)
 import Tree.Zipper as Zipper exposing (Zipper)
 import Views.Common as Common exposing (none)
 import Views.ElmUI as ElmUI
-import Views.FontsDialog as FontsDialog
+import Views.FontBrowser as FontBrowser
 import Views.Inspector as Inspector
 
 
@@ -43,7 +43,16 @@ maxTreeLabelLength =
 
 
 view model =
-    H.div [ A.class "modal-open"]
+    let
+        fontBrowser =
+            case model.fontBrowser of
+                Just browser ->
+                    FontBrowser.view browser
+
+                Nothing ->
+                    Common.none
+    in
+    H.div [ A.class "modal-open" ]
         [ H.node "main"
             [ A.classList
                 [ ( "h-100", True )
@@ -71,7 +80,8 @@ view model =
                         ]
                     ]
             )
-        --, FontsDialog.view model
+        , fontBrowser
+
         --, H.div [A.class "modal-backdrop"] []
         ]
 

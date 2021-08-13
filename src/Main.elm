@@ -39,6 +39,7 @@ import UndoList
 import Uploader
 import Views.Common as Common exposing (fieldId)
 import Views.Editor as Editor
+import Views.FontBrowser as FontBrowser
 
 
 saveInterval =
@@ -68,23 +69,31 @@ update msg model =
         -- Fonts
         -- ###########
         FontsLoaded result ->
-            case result of 
+            case result of
                 Ok fonts ->
-                    let 
+                    let
                         --_ = Debug.log "LOADED fonts" fonts
-                        newFonts = 
-                            List.map (\font ->
-                                (font.id, font)
-                            ) fonts
-                            |> Dict.fromList 
-                    in 
-                        ({ model | fonts = newFonts}, Cmd.none)
+                        newFonts =
+                            List.map
+                                (\font ->
+                                    ( font.id, font )
+                                )
+                                fonts
+                                |> Dict.fromList
+                    in
+                    ( { model
+                        | fonts = newFonts
+                        , fontBrowser = Just (FontBrowser.init FontAddClicked FontRemoveClicked newFonts)
+                      }
+                    , Cmd.none
+                    )
 
                 Err reason ->
-                    let 
-                        _ = Debug.log "FAILED" reason
-                    in                 
-                    (model, Cmd.none)
+                    let
+                        _ =
+                            Debug.log "FAILED" reason
+                    in
+                    ( model, Cmd.none )
 
         -- ###########
         -- Image drag & drop from local filesystem
@@ -1039,6 +1048,7 @@ acceptFiles files =
             Set.member (File.mime f) acceptedTypes
         )
         files
+
 
 
 -- NOTIFICATION

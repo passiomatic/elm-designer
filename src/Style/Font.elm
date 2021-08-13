@@ -6,6 +6,7 @@ module Style.Font exposing
     , Local(..)
     , TextAlignment(..)
     , findClosestWeight
+    , isItalic
     , minFontSizeAllowed
     , setColor
     , setFamily
@@ -14,7 +15,7 @@ module Style.Font exposing
     , setTextAlignment
     , setWeight
     , setWordSpacing
-    , weightName
+    , weightName, weightNumber
     )
 
 {-| Font properties.
@@ -246,6 +247,11 @@ weightNumber value =
 
         HairlineItalic ->
             101
+
+
+isItalic : FontWeight -> Bool
+isItalic value =
+    remainderBy 100 (weightNumber value) == 1
 
 
 type TextAlignment

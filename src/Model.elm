@@ -41,6 +41,7 @@ import Tree.Zipper as Zipper exposing (Zipper)
 import UUID exposing (Seeds)
 import UndoList exposing (UndoList)
 import Dict exposing (Dict)
+import Views.FontBrowser as FontBrowser
 
 workspaceWidth =
     4000
@@ -101,6 +102,8 @@ type Msg
     | FileDragCanceled
     | FileUploading File (List File) Progress
     | FileUploaded (Result Error String)
+    | FontAddClicked FontFamily
+    | FontRemoveClicked FontFamily
     | NoOp
     | DragDropMsg (DragDrop.Msg DragId DropId)
     | TabMsg Tab.State
@@ -187,6 +190,7 @@ type alias Model =
     , dragDrop : DragDrop.Model DragId DropId
     , fileDrop : FileDrop
     , rightPaneTabState : Tab.State
+    , fontBrowser: Maybe (FontBrowser.State Msg)
     , seeds : Seeds
     , currentTime : Posix
     , saveState : DocumentState
@@ -304,6 +308,7 @@ initialModel { width, height, uploadEndpoint, baseUrl, seed1, seed2, seed3, seed
     , dragDrop = DragDrop.init
     , fileDrop = Empty
     , rightPaneTabState = Tab.customInitialState "tab-design"
+    , fontBrowser = Nothing
     , seeds = newSeeds
     , currentTime = Time.millisToPosix 0
     , saveState = Original
