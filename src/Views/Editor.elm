@@ -75,7 +75,8 @@ view model =
                     [ headerView model
                     , H.div [ A.class "d-flex" ]
                         [ leftPaneView model
-                        , workspaceView model
+                        -- FIXME: Temp. hide to avoid conflict with Elm UI form controls 
+                        --, workspaceView model
                         , rightPaneView model
                         ]
                     ]

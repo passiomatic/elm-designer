@@ -14,6 +14,7 @@ module Icons exposing
     , chevronRight
     , coloredSquare
     , edit
+    , eternalLink
     , image
     , info
     , layout
@@ -221,6 +222,13 @@ pipe =
         |> I.withSize 18
         |> I.withStrokeWidth 3
         |> I.withViewBox "0 0 24 24"
+        |> I.toHtml []
+
+
+eternalLink : Html msg
+eternalLink =
+    I.externalLink
+        |> I.withSize smallSize
         |> I.toHtml []
 
 
