@@ -303,7 +303,7 @@ labelTextView { text } model { type_ } =
                 _ ->
                     text
     in
-    H.div [ A.class "form-group row align-items-center mb-2" ]
+    H.div [ A.class "row align-items-center mb-2" ]
         [ H.label [ A.class "col-3 col-form-label-sm m-0" ]
             [ H.text "Text" ]
         , H.div [ A.class "col-9" ]
@@ -328,7 +328,7 @@ labelPositionView { position } model { type_ } =
         setSelected other attrs =
             A.selected (position == other) :: attrs
     in
-    H.div [ A.class "form-group row align-items-center mb-2" ]
+    H.div [ A.class "row align-items-center mb-2" ]
         [ H.label [ A.class "col-3 col-form-label-sm m-0" ]
             [ H.text "Position" ]
         , H.div [ A.class "col-9" ]
@@ -379,7 +379,7 @@ imageView image model _ =
         [ H.h2 [ A.class "section__title mb-2" ]
             [ H.text "Image" ]
         , H.div [ A.class "" ]
-            [ H.div [ A.class "form-group m-0" ]
+            [ H.div [ A.class "" ]
                 [ H.input
                     [ A.id (fieldId ImageSrcField)
                     , A.type_ "text"
@@ -517,7 +517,7 @@ paddingView model { padding } =
                 _ ->
                     String.fromInt padding.left
     in
-    H.div [ A.class "form-group row align-items-center mb-0" ]
+    H.div [ A.class "row align-items-center" ]
         [ H.label [ A.class "col-3 col-form-label-sm m-0 text-nowrap" ]
             [ H.text "Padding" ]
         , H.div [ A.class "col-9" ]
@@ -618,7 +618,7 @@ spacingXView model { spacing } =
                 SpaceEvenly ->
                     "Evenly"
     in
-    H.div [ A.class "form-group row align-items-center mb-2" ]
+    H.div [ A.class "row align-items-center mb-2" ]
         [ H.label [ A.class "col-3 col-form-label-sm m-0 text-nowrap" ]
             [ H.text "Spacing X" ]
         , H.div [ A.class "col-9" ]
@@ -654,7 +654,7 @@ spacingYView model { spacing } =
                 SpaceEvenly ->
                     "Evenly"
     in
-    H.div [ A.class "form-group row align-items-center mb-2" ]
+    H.div [ A.class "row align-items-center mb-2" ]
         [ H.label [ A.class "col-3 col-form-label-sm m-0 text-nowrap" ]
             [ H.text "Spacing Y" ]
         , H.div [ A.class "col-9" ]
@@ -754,7 +754,7 @@ shadowView model { shadow } =
     H.section [ A.class "section bp-3  border-bottom" ]
         [ H.h2 [ A.class "section__title mb-2" ]
             [ H.text "Shadow" ]
-        , H.div [ A.class "form-group row align-items-center mb-2" ]
+        , H.div [ A.class "row align-items-center mb-2" ]
             [ H.div [ A.class "col-12" ]
                 [ H.div [ A.class "d-flex" ]
                     [ H.div [ A.class "w-25 ms-auto me-1" ]
@@ -898,7 +898,7 @@ bordersView model { borderColor, borderWidth, borderStyle, borderCorner } =
     H.section [ A.class "section bp-3  border-bottom" ]
         [ H.h2 [ A.class "section__title mb-2" ]
             [ H.text "Border" ]
-        , H.div [ A.class "form-group row align-items-center mb-2" ]
+        , H.div [ A.class "row align-items-center mb-2" ]
             [ H.label [ A.class "col-3 col-form-label-sm m-0 text-nowrap" ]
                 [ H.text "Size" ]
             , H.div [ A.class "col-9" ]
@@ -1062,7 +1062,7 @@ bordersView model { borderColor, borderWidth, borderStyle, borderCorner } =
 
 borderStyleView : Model -> BorderStyle -> Html Msg
 borderStyleView model borderStyle =
-    H.div [ A.class "form-group row align-items-center mb-2" ]
+    H.div [ A.class "row align-items-center mb-2" ]
         [ H.label [ A.class "col-3 col-form-label-sm m-0 text-nowrap" ]
             [ H.text "Style" ]
         , H.div [ A.class "col-9 d-flex" ]
@@ -1101,7 +1101,7 @@ borderStyleView model borderStyle =
 
 colorView : Model -> Maybe Color -> Field -> (String -> Msg) -> Html Msg
 colorView model color field msg =
-    H.div [ A.class "form-group row align-items-center mb-2" ]
+    H.div [ A.class "row align-items-center mb-2" ]
         [ H.label [ A.class "col-3 col-form-label-sm m-0" ]
             [ H.text "Color" ]
         , H.div [ A.class "col-9 d-flex" ]
@@ -1166,7 +1166,7 @@ colorHexView model color field =
 
 -- colorAlphaView : Model -> String -> Color -> Html Msg
 -- colorAlphaView _ name color =
---     H.div [ A.class "form-group m-0 w-33" ]
+--     H.div [ A.class "w-33" ]
 --         [ H.label [ A.for (fieldId BorderColorField), A.class "small m-0" ]
 --             [ H.text "Opacity" ]
 --         , H.div [ A.class "input-group input-group-sm" ]
@@ -1230,7 +1230,7 @@ backgroundView model { background } =
                             _ ->
                                 value
                 in
-                H.div [ A.class "form-group row align-items-center mb-2" ]
+                H.div [ A.class "row align-items-center mb-2" ]
                     [ H.label [ A.for (fieldId BackgroundImageField), A.class "col-3 col-form-label-sm m-0 text-nowrap" ]
                         [ H.text "Image URL" ]
                     , H.div [ A.class "col-9" ]
@@ -1267,7 +1267,7 @@ backgroundView model { background } =
 --             url =
 --                 backgroundImageUrl value
 --         in
---         H.div [ A.class "form-group row align-items-center mb-2" ]
+--         H.div [ A.class "row align-items-center mb-2" ]
 --             [ H.label [ A.class "col-3 col-form-label-sm m-0 text-nowrap" ]
 --                 [ H.text "Sizing" ]
 --             , H.div [ A.class "col-9 btn-group", A.attribute "role" "group" ]
@@ -1341,17 +1341,17 @@ lengthView model node =
 
 wrapRowOptionView : Bool -> Html Msg
 wrapRowOptionView wrapped =
-    H.div [ A.class "custom-control custom-switch" ]
+    H.div [ A.class "form-check form-switch" ]
         [ H.input
             [ E.onCheck WrapRowItemsChanged
             , A.checked wrapped
-            , A.class "custom-control-input"
+            , A.class "form-check-input"
             , A.id "wrap-row-items"
             , A.type_ "checkbox"
             ]
             []
         , H.label
-            [ A.class "custom-control-label"
+            [ A.class "form-check-label"
             , A.for "wrap-row-items"
             ]
             [ H.text "Wrap row items" ]
@@ -1379,7 +1379,7 @@ widthView model { width, widthMin, widthMax } =
                     Maybe.map String.fromInt widthMax
                         |> Maybe.withDefault ""
     in
-    H.div [ A.class "form-group row align-items-center mb-3" ]
+    H.div [ A.class "row align-items-center mb-3" ]
         [ H.label [ A.class "col-3 col-form-label-sm m-0" ]
             [ H.text "Width" ]
         , H.div [ A.class "col-9" ]
@@ -1515,7 +1515,7 @@ heightView model { height, heightMin, heightMax } =
                         |> Maybe.withDefault ""
     in
     H.div []
-        [ H.div [ A.class "form-group row align-items-center  mb-3" ]
+        [ H.div [ A.class "row align-items-center  mb-3" ]
             [ H.label [ A.class "col-3 col-form-label-sm m-0" ]
                 [ H.text "Height" ]
             , H.div [ A.class "col-9" ]
@@ -1670,7 +1670,7 @@ alignmentView model ({ transformation } as node) =
                 _ ->
                     String.fromFloat transformation.offsetY
     in
-    H.div [ A.class "form-group row align-items-center mb-3" ]
+    H.div [ A.class "row align-items-center mb-3" ]
         [ H.label [ A.class "col-3 col-form-label-sm" ]
             [ H.text "Alignment" ]
         , H.div [ A.class "col-9" ]
@@ -1713,7 +1713,7 @@ positionView model { type_, position } =
         setSelected other attrs =
             A.selected (position == other) :: attrs
     in
-    H.div [ A.class "form-group row align-items-center mb-3" ]
+    H.div [ A.class "row align-items-center mb-3" ]
         [ H.label [ A.class "col-3 col-form-label-sm m-0" ]
             [ H.text "Position" ]
         , H.div [ A.class "col-9" ]
@@ -1862,7 +1862,7 @@ nextAlignEndState value =
 
 textAlignmentView : Model -> TextAlignment -> Html Msg
 textAlignmentView _ value =
-    H.div [ A.class "form-group row align-items-center mb-0" ]
+    H.div [ A.class "row align-items-center mb-0" ]
         [ H.label [ A.class "col-3 col-form-label-sm m-0 text-nowrap" ]
             [ H.text "Alignment" ]
         , H.div [ A.class "col-9 btn-group", A.attribute "role" "group" ]
@@ -2030,7 +2030,7 @@ fontSpacingView model node =
                 _ ->
                     String.fromFloat node.letterSpacing
     in
-    H.div [ A.class "form-group mb-2 row align-items-center" ]
+    H.div [ A.class "mb-2 row align-items-center" ]
         [ H.label [ A.class "col-3 col-form-label-sm m-0 text-nowrap" ]
             [ H.text "Spacing"
             ]
