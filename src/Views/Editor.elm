@@ -165,7 +165,7 @@ viewportsView : Model -> Html Msg
 viewportsView model =
     H.div [ A.class "d-flex align-items-center" ]
         [ H.text "Device"
-        , H.select [ onViewportSelect ViewportChanged, A.class "custom-select custom-select-sm ml-1" ]
+        , H.select [ onViewportSelect ViewportChanged, A.class "form-select form-select-sm ms-1" ]
             (List.map
                 (\viewport ->
                     let
@@ -226,7 +226,7 @@ onViewportSelect msg =
 --         zoom =
 --             round (model.workspaceScale * 100)
 --     in
---     H.div [ A.class "d-flex align-items-center mr-5" ]
+--     H.div [ A.class "d-flex align-items-center me-5" ]
 --         [ Button.button [ Button.light, Button.small ] [ Icons.minusCircle ]
 --         , H.div [ A.class "bp-3 bg-white rounded text-center", A.style "width" "3rem" ] [ H.text (String.fromInt zoom ++ "%") ]
 --         , Button.button [ Button.light, Button.small ] [ Icons.plusCircle ]
@@ -235,7 +235,7 @@ onViewportSelect msg =
 
 rightPaneView : Model -> Html Msg
 rightPaneView model =
-    H.aside [ A.class "pane pane--right border-left" ]
+    H.aside [ A.class "pane pane--right border-start" ]
         [ Tab.config TabMsg
             |> Tab.attrs [ A.class "bpt-2" ]
             |> Tab.items
@@ -296,7 +296,7 @@ codeView model =
 
 leftPaneView : Model -> Html Msg
 leftPaneView model =
-    H.aside [ A.class "pane pane--left border-right d-flex flex-column" ]
+    H.aside [ A.class "pane pane--left border-end d-flex flex-column" ]
         [ pageListView model
         , outlineView model
         , libraryView model
@@ -578,7 +578,7 @@ templateView item =
             :: A.title item.description
             :: DragDrop.draggable DragDropMsg (Insert item.root)
         )
-        [ H.span [ A.class "mr-1" ]
+        [ H.span [ A.class "me-1" ]
             [ item.icon ]
         , H.div []
             [ H.text template.name ]
@@ -642,8 +642,8 @@ pageView model =
                 ]
                 [ H.div [ A.class "chrome__header d-flex justify-content-between" ]
                     [ H.div []
-                        [ H.div [ A.class "chrome-button chrome-button--red mr-2" ] [ H.text "" ]
-                        , H.div [ A.class "chrome-button chrome-button--yellow mr-2" ] [ H.text "" ]
+                        [ H.div [ A.class "chrome-button chrome-button--red me-2" ] [ H.text "" ]
+                        , H.div [ A.class "chrome-button chrome-button--yellow me-2" ] [ H.text "" ]
                         , H.div [ A.class "chrome-button chrome-button--green" ] [ H.text "" ]
                         ]
                     , H.div [] [ H.text "Page Title" ]
