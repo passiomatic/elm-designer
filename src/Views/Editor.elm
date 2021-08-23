@@ -278,7 +278,7 @@ codeView model =
                 |> Zipper.tree
     in
     [ H.section [ A.class "section bp-3 d-flex flex-column h-100" ]
-        [ H.div [ A.class "mb-2 font-weight-500" ]
+        [ H.div [ A.class "mb-2 fw-500" ]
             [ H.text ("Generated code for " ++ (T.label node |> .name))
             ]
         , H.div [ A.class "scroll-y flex-fill bg-white bp-1 border" ]
@@ -395,7 +395,7 @@ outlineItemView model node children =
             -- Tree node
             if Document.isPageNode node then
                 H.div [ A.class "d-flex flex-column h-100" ]
-                    [ H.div [ A.class "mb-2 font-weight-500" ]
+                    [ H.div [ A.class "mb-2 fw-500" ]
                         [ H.text "Outline" ]
                     , H.ol
                         (A.classList
@@ -515,7 +515,7 @@ pageListView : Model -> Html Msg
 pageListView model =
     H.div [ A.class "bp-3 scroll-y border-bottom", A.style "min-height" "112px", A.style "max-height" "112px" ]
         (H.div [ A.class "d-flex align-items-center justify-content-between mb-2" ]
-            [ H.div [ A.class "font-weight-500" ]
+            [ H.div [ A.class "fw-500" ]
                 [ H.text "Pages" ]
             , H.button [ A.title "Add page", A.class "btn btn-link p-0 line-height-1 text-dark", E.onClick <| PageAddClicked () ] [ Icons.plusCircleSmall ]
             ]
@@ -550,8 +550,8 @@ pageListView model =
 
 libraryView : Model -> Html Msg
 libraryView _ =
-    H.div [ A.class "bpl-3 bpt-3 scroll-y", A.style "height" "350px", A.style "min-height" "350px" ]
-        (H.div [ A.class "font-weight-500" ]
+    H.div [ A.class "bps-3 bpt-3 scroll-y", A.style "height" "350px", A.style "min-height" "350px" ]
+        (H.div [ A.class "fw-500" ]
             [ H.text "Library" ]
             :: (Library.groups
                     |> List.map

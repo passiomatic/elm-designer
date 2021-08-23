@@ -1,13 +1,14 @@
 /*!
- * Bootstrap v4.3.1 (https://getbootstrap.com/)
- * Copyright 2011-2019 The Bootstrap Authors
- * Copyright 2011-2019 Twitter, Inc.
- * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+ * Bootstrap v5.0.2 (https://getbootstrap.com/)
+ * Copyright 2011-2021 The Bootstrap Authors
+ * Copyright 2011-2021 Twitter, Inc.
+ * Licensed under MIT (https://github.com/twbs/bootstrap/blob/main/LICENSE)
  */
 
 // Setup vars
 
 @import "bootstrap/functions";
+@import "bootstrap/mixins";
 
 $header-height: 46px;
 
@@ -48,6 +49,7 @@ $form-group-margin-bottom: 0.5rem;
 $label-margin-bottom: 0.375rem;
 
 @import "bootstrap/variables";
+@import "bootstrap/utilities";
 
 // Code
 
@@ -62,41 +64,44 @@ $nav-tabs-link-active-border-color: $nav-tabs-link-active-bg;
 
 // Other Bootstrap elements
 
-@import "bootstrap/mixins";
+// Layout & components
 @import "bootstrap/root";
 @import "bootstrap/reboot";
 @import "bootstrap/type";
 @import "bootstrap/images";
-@import "bootstrap/code";
+@import "bootstrap/containers";
 @import "bootstrap/grid";
-//@import "tables";
+@import "bootstrap/tables";
 @import "bootstrap/forms";
 @import "bootstrap/buttons";
 @import "bootstrap/transitions";
 @import "bootstrap/dropdown";
 @import "bootstrap/button-group";
-@import "bootstrap/input-group";
-@import "bootstrap/custom-forms";
 @import "bootstrap/nav";
-//@import "bootstrap/navbar";
+@import "bootstrap/navbar";
 //@import "bootstrap/card";
-//@import "bootstrap/breadcrumb";
-//@import "bootstrap/pagination";
+//@import "bootstrap/accordion";
+@import "bootstrap/breadcrumb";
+@import "bootstrap/pagination";
 @import "bootstrap/badge";
-//@import "bootstrap/jumbotron";
 @import "bootstrap/alert";
 @import "bootstrap/progress";
-//@import "bootstrap/media";
 @import "bootstrap/list-group";
 @import "bootstrap/close";
 //@import "bootstrap/toasts";
-//@import "bootstrap/modal";
-//@import "bootstrap/tooltip";
+@import "bootstrap/modal";
+@import "bootstrap/tooltip";
 //@import "bootstrap/popover";
 //@import "bootstrap/carousel";
 @import "bootstrap/spinners";
-@import "bootstrap/utilities";
-//@import "bootstrap/print";
+@import "bootstrap/offcanvas";
+
+// Helpers
+@import "bootstrap/helpers";
+
+// Utilities
+@import "bootstrap/utilities/api";
+// scss-docs-end import-stack
 
 @import "utilities";
 @import "ui";

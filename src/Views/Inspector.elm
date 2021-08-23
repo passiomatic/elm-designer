@@ -38,7 +38,7 @@ view model =
     in
     [ H.form [ E.onSubmit FieldEditingConfirmed ]
         -- This makes onSubmit to work when hitting enter
-        (H.button [ A.type_ "submit", A.class "sr-only" ] []
+        (H.button [ A.type_ "submit", A.class "visually-hidden" ] []
             :: resolveStyleViews model zipper
         )
     ]
@@ -51,7 +51,7 @@ resolveStyleViews model zipper =
             Zipper.label zipper
 
         title =
-            H.div [ A.class "bpx-3 bpt-3 font-weight-500" ]
+            H.div [ A.class "bpx-3 bpt-3 fw-500" ]
                 [ H.text (Document.nodeType node.type_) ]
     in
     title
