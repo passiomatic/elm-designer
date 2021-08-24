@@ -38,7 +38,7 @@ view model =
     in
     [ H.form [ E.onSubmit FieldEditingConfirmed ]
         -- This makes onSubmit to work when hitting enter
-        (H.button [ A.type_ "submit", A.class "sr-only" ] []
+        (H.button [ A.type_ "submit", A.class "visually-hidden" ] []
             :: resolveStyleViews model zipper
         )
     ]
@@ -51,7 +51,7 @@ resolveStyleViews model zipper =
             Zipper.label zipper
 
         title =
-            H.div [ A.class "bpx-3 bpt-3 font-weight-500" ]
+            H.div [ A.class "bpx-3 bpt-3 fw-500" ]
                 [ H.text (Document.nodeType node.type_) ]
     in
     title
@@ -303,7 +303,7 @@ labelTextView { text } model { type_ } =
                 _ ->
                     text
     in
-    H.div [ A.class "form-group row align-items-center mb-2" ]
+    H.div [ A.class "row align-items-center mb-2" ]
         [ H.label [ A.class "col-3 col-form-label-sm m-0" ]
             [ H.text "Text" ]
         , H.div [ A.class "col-9" ]
@@ -328,7 +328,7 @@ labelPositionView { position } model { type_ } =
         setSelected other attrs =
             A.selected (position == other) :: attrs
     in
-    H.div [ A.class "form-group row align-items-center mb-2" ]
+    H.div [ A.class "row align-items-center mb-2" ]
         [ H.label [ A.class "col-3 col-form-label-sm m-0" ]
             [ H.text "Position" ]
         , H.div [ A.class "col-9" ]
@@ -379,7 +379,7 @@ imageView image model _ =
         [ H.h2 [ A.class "section__title mb-2" ]
             [ H.text "Image" ]
         , H.div [ A.class "" ]
-            [ H.div [ A.class "form-group m-0" ]
+            [ H.div [ A.class "" ]
                 [ H.input
                     [ A.id (fieldId ImageSrcField)
                     , A.type_ "text"
@@ -517,7 +517,7 @@ paddingView model { padding } =
                 _ ->
                     String.fromInt padding.left
     in
-    H.div [ A.class "form-group row align-items-center mb-0" ]
+    H.div [ A.class "row align-items-center" ]
         [ H.label [ A.class "col-3 col-form-label-sm m-0 text-nowrap" ]
             [ H.text "Padding" ]
         , H.div [ A.class "col-9" ]
@@ -618,7 +618,7 @@ spacingXView model { spacing } =
                 SpaceEvenly ->
                     "Evenly"
     in
-    H.div [ A.class "form-group row align-items-center mb-2" ]
+    H.div [ A.class "row align-items-center mb-2" ]
         [ H.label [ A.class "col-3 col-form-label-sm m-0 text-nowrap" ]
             [ H.text "Spacing X" ]
         , H.div [ A.class "col-9" ]
@@ -654,7 +654,7 @@ spacingYView model { spacing } =
                 SpaceEvenly ->
                     "Evenly"
     in
-    H.div [ A.class "form-group row align-items-center mb-2" ]
+    H.div [ A.class "row align-items-center mb-2" ]
         [ H.label [ A.class "col-3 col-form-label-sm m-0 text-nowrap" ]
             [ H.text "Spacing Y" ]
         , H.div [ A.class "col-9" ]
@@ -684,39 +684,35 @@ addDropdown fieldId_ state items parent =
                 Hidden ->
                     False
     in
+    -- FIXME: https://getbootstrap.com/docs/5.0/forms/input-group/
     H.div [ A.class "input-group" ]
         [ parent
-        , H.div [ A.class "input-group-append" ]
-            [ H.button
-                [ --A.attribute "aria-expanded" "false"
-                  A.attribute "aria-haspopup" "true"
-                , A.class "btn btn-light btn-sm dropdown-toggle"
-                , E.onClick
-                    (DropDownChanged
-                        (if visible then
-                            Hidden
-
-                         else
-                            Visible fieldId_
-                        )
-                    )
-
-                --, A.attribute "data-toggle" "dropdown"
-                , A.type_ "button"
+        , H.div
+            [ A.classList
+                [ ( "dropdown-menu", True )
+                , ( fieldId fieldId_ ++ "-dropdown", True )
+                , ( "show", visible )
                 ]
-                [ H.text "" ]
-            , H.div
-                [ A.classList
-                    [ ( "dropdown-menu", True )
-                    , ( fieldId fieldId_ ++ "-dropdown", True )
-                    , ( "show", visible )
-                    ]
-                ]
-                items
-
-            -- , H.div [ A.class "dropdown-divider", A.attribute "role" "separator" ]
-            --     []
             ]
+            items        
+        , H.button
+            [ --A.attribute "aria-expanded" "false"
+              A.attribute "aria-haspopup" "true"
+            , A.class "btn btn-light btn-sm dropdown-toggle"
+            , E.onClick
+                (DropDownChanged
+                    (if visible then
+                        Hidden
+
+                     else
+                        Visible fieldId_
+                    )
+                )
+
+            --, A.attribute "data-toggle" "dropdown"
+            , A.type_ "button"
+            ]
+            [ H.text "" ]
         ]
 
 
@@ -758,10 +754,10 @@ shadowView model { shadow } =
     H.section [ A.class "section bp-3  border-bottom" ]
         [ H.h2 [ A.class "section__title mb-2" ]
             [ H.text "Shadow" ]
-        , H.div [ A.class "form-group row align-items-center mb-2" ]
+        , H.div [ A.class "row align-items-center mb-2" ]
             [ H.div [ A.class "col-12" ]
                 [ H.div [ A.class "d-flex" ]
-                    [ H.div [ A.class "w-25 ml-auto mr-1" ]
+                    [ H.div [ A.class "w-25 ms-auto me-1" ]
                         [ H.label [ A.class "col-form-label-sm m-0 p-0", A.for (fieldId ShadowOffsetXField) ]
                             [ H.text "Offset X"
                             ]
@@ -776,7 +772,7 @@ shadowView model { shadow } =
                             ]
                             []
                         ]
-                    , H.div [ A.class "w-25 mr-1" ]
+                    , H.div [ A.class "w-25 me-1" ]
                         [ H.label [ A.class "col-form-label-sm m-0 p-0", A.for (fieldId ShadowOffsetXField) ]
                             [ H.text "Offset Y"
                             ]
@@ -791,7 +787,7 @@ shadowView model { shadow } =
                             ]
                             []
                         ]
-                    , H.div [ A.class "w-25 mr-1" ]
+                    , H.div [ A.class "w-25 me-1" ]
                         [ H.label [ A.class "col-form-label-sm m-0 p-0", A.for (fieldId ShadowOffsetXField) ]
                             [ H.text "Size"
                             ]
@@ -902,16 +898,16 @@ bordersView model { borderColor, borderWidth, borderStyle, borderCorner } =
     H.section [ A.class "section bp-3  border-bottom" ]
         [ H.h2 [ A.class "section__title mb-2" ]
             [ H.text "Border" ]
-        , H.div [ A.class "form-group row align-items-center mb-2" ]
+        , H.div [ A.class "row align-items-center mb-2" ]
             [ H.label [ A.class "col-3 col-form-label-sm m-0 text-nowrap" ]
                 [ H.text "Size" ]
             , H.div [ A.class "col-9" ]
                 [ H.div [ A.class "d-flex justify-content-between mb-1" ]
-                    [ H.div [ A.class "w-25 mr-1" ]
+                    [ H.div [ A.class "w-25 me-1" ]
                         [ H.div [ A.class "input-group input-group-sm" ]
-                            [ H.div [ A.class "input-group-prepend" ]
-                                [ H.span [ A.class "input-group-text bpx-1" ] [ H.text Entity.ulcorner ]
-                                ]
+                            [  
+                                H.span [ A.class "input-group-text bpx-1" ] [ H.text Entity.ulcorner ]
+                                 
                             , H.input
                                 [ A.id (fieldId BorderTopLeftCornerField)
                                 , A.type_ "number"
@@ -925,7 +921,7 @@ bordersView model { borderColor, borderWidth, borderStyle, borderCorner } =
                                 []
                             ]
                         ]
-                    , H.div [ A.class "w-25 mr-1" ]
+                    , H.div [ A.class "w-25 me-1" ]
                         [ H.input
                             [ A.id (fieldId BorderTopWidthField)
                             , A.type_ "number"
@@ -951,9 +947,7 @@ bordersView model { borderColor, borderWidth, borderStyle, borderCorner } =
                                 , E.onInput FieldChanged
                                 ]
                                 []
-                            , H.div [ A.class "input-group-append" ]
-                                [ H.span [ A.class "input-group-text bpx-1" ] [ H.text Entity.urcorner ]
-                                ]
+                            , H.span [ A.class "input-group-text bpx-1" ] [ H.text Entity.urcorner ]
                             ]
                         ]
                     ]
@@ -1005,11 +999,11 @@ bordersView model { borderColor, borderWidth, borderStyle, borderCorner } =
                         ]
                     ]
                 , H.div [ A.class "d-flex justify-content-between" ]
-                    [ H.div [ A.class "w-25 mr-1" ]
+                    [ H.div [ A.class "w-25 me-1" ]
                         [ H.div [ A.class "input-group input-group-sm" ]
-                            [ H.div [ A.class "input-group-prepend" ]
-                                [ H.span [ A.class "input-group-text bpx-1" ] [ H.text Entity.llcorner ]
-                                ]
+                            [ 
+                                  H.span [ A.class "input-group-text bpx-1" ] [ H.text Entity.llcorner ]
+                                 
                             , H.input
                                 [ A.id (fieldId BorderBottomLeftCornerField)
                                 , A.type_ "number"
@@ -1025,7 +1019,7 @@ bordersView model { borderColor, borderWidth, borderStyle, borderCorner } =
                                 []
                             ]
                         ]
-                    , H.div [ A.class "w-25 mr-1" ]
+                    , H.div [ A.class "w-25 me-1" ]
                         [ H.input
                             [ A.id (fieldId BorderBottomWidthField)
                             , A.type_ "number"
@@ -1055,9 +1049,7 @@ bordersView model { borderColor, borderWidth, borderStyle, borderCorner } =
                                 , E.onInput FieldChanged
                                 ]
                                 []
-                            , H.div [ A.class "input-group-append" ]
-                                [ H.span [ A.class "input-group-text bpx-1" ] [ H.text Entity.lrcorner ]
-                                ]
+                            , H.span [ A.class "input-group-text bpx-1" ] [ H.text Entity.lrcorner ]
                             ]
                         ]
                     ]
@@ -1070,7 +1062,7 @@ bordersView model { borderColor, borderWidth, borderStyle, borderCorner } =
 
 borderStyleView : Model -> BorderStyle -> Html Msg
 borderStyleView model borderStyle =
-    H.div [ A.class "form-group row align-items-center mb-2" ]
+    H.div [ A.class "row align-items-center mb-2" ]
         [ H.label [ A.class "col-3 col-form-label-sm m-0 text-nowrap" ]
             [ H.text "Style" ]
         , H.div [ A.class "col-9 d-flex" ]
@@ -1109,7 +1101,7 @@ borderStyleView model borderStyle =
 
 colorView : Model -> Maybe Color -> Field -> (String -> Msg) -> Html Msg
 colorView model color field msg =
-    H.div [ A.class "form-group row align-items-center mb-2" ]
+    H.div [ A.class "row align-items-center mb-2" ]
         [ H.label [ A.class "col-3 col-form-label-sm m-0" ]
             [ H.text "Color" ]
         , H.div [ A.class "col-9 d-flex" ]
@@ -1130,7 +1122,7 @@ colorPickerView _ value msg =
         , A.value (Css.colorToStringWithHash value_)
         , E.onInput msg
         , A.classList
-            [ ( "form-control form-control-sm mr-1", True )
+            [ ( "form-control form-control-sm me-1", True )
             , ( "transparent", value == Nothing )
             ]
         ]
@@ -1155,9 +1147,9 @@ colorHexView model color field =
                         |> Maybe.withDefault ""
     in
     H.div [ A.class "input-group input-group-sm" ]
-        [ H.div [ A.class "input-group-prepend" ]
-            [ H.span [ A.class "input-group-text bpx-1" ] [ H.text "#" ]
-            ]
+        [  
+             H.span [ A.class "input-group-text bpx-1" ] [ H.text "#" ]
+             
         , H.input
             [ A.id (fieldId field)
             , A.type_ "text"
@@ -1174,7 +1166,7 @@ colorHexView model color field =
 
 -- colorAlphaView : Model -> String -> Color -> Html Msg
 -- colorAlphaView _ name color =
---     H.div [ A.class "form-group m-0 w-33" ]
+--     H.div [ A.class "w-33" ]
 --         [ H.label [ A.for (fieldId BorderColorField), A.class "small m-0" ]
 --             [ H.text "Opacity" ]
 --         , H.div [ A.class "input-group input-group-sm" ]
@@ -1186,7 +1178,7 @@ colorHexView model color field =
 --                 --, A.title "Color opacity"
 --                 ]
 --                 []
---             , H.div [ A.class "input-group-append" ] [ H.span [ A.class "input-group-text bpx-1" ] [ H.text "%" ] ]
+--               , H.span [ A.class "input-group-text bpx-1" ] [ H.text "%" ]  
 --             ]
 --         -- , H.label [ A.for name, A.class "small m-0" ]
 --         --     [ H.text "Opacity" ]
@@ -1238,7 +1230,7 @@ backgroundView model { background } =
                             _ ->
                                 value
                 in
-                H.div [ A.class "form-group row align-items-center mb-2" ]
+                H.div [ A.class "row align-items-center mb-2" ]
                     [ H.label [ A.for (fieldId BackgroundImageField), A.class "col-3 col-form-label-sm m-0 text-nowrap" ]
                         [ H.text "Image URL" ]
                     , H.div [ A.class "col-9" ]
@@ -1275,7 +1267,7 @@ backgroundView model { background } =
 --             url =
 --                 backgroundImageUrl value
 --         in
---         H.div [ A.class "form-group row align-items-center mb-2" ]
+--         H.div [ A.class "row align-items-center mb-2" ]
 --             [ H.label [ A.class "col-3 col-form-label-sm m-0 text-nowrap" ]
 --                 [ H.text "Sizing" ]
 --             , H.div [ A.class "col-9 btn-group", A.attribute "role" "group" ]
@@ -1349,17 +1341,17 @@ lengthView model node =
 
 wrapRowOptionView : Bool -> Html Msg
 wrapRowOptionView wrapped =
-    H.div [ A.class "custom-control custom-switch" ]
+    H.div [ A.class "form-check form-switch" ]
         [ H.input
             [ E.onCheck WrapRowItemsChanged
             , A.checked wrapped
-            , A.class "custom-control-input"
+            , A.class "form-check-input"
             , A.id "wrap-row-items"
             , A.type_ "checkbox"
             ]
             []
         , H.label
-            [ A.class "custom-control-label"
+            [ A.class "form-check-label"
             , A.for "wrap-row-items"
             ]
             [ H.text "Wrap row items" ]
@@ -1387,7 +1379,7 @@ widthView model { width, widthMin, widthMax } =
                     Maybe.map String.fromInt widthMax
                         |> Maybe.withDefault ""
     in
-    H.div [ A.class "form-group row align-items-center mb-3" ]
+    H.div [ A.class "row align-items-center mb-3" ]
         [ H.label [ A.class "col-3 col-form-label-sm m-0" ]
             [ H.text "Width" ]
         , H.div [ A.class "col-9" ]
@@ -1523,7 +1515,7 @@ heightView model { height, heightMin, heightMax } =
                         |> Maybe.withDefault ""
     in
     H.div []
-        [ H.div [ A.class "form-group row align-items-center  mb-3" ]
+        [ H.div [ A.class "row align-items-center  mb-3" ]
             [ H.label [ A.class "col-3 col-form-label-sm m-0" ]
                 [ H.text "Height" ]
             , H.div [ A.class "col-9" ]
@@ -1678,13 +1670,13 @@ alignmentView model ({ transformation } as node) =
                 _ ->
                     String.fromFloat transformation.offsetY
     in
-    H.div [ A.class "form-group row align-items-center mb-3" ]
+    H.div [ A.class "row align-items-center mb-3" ]
         [ H.label [ A.class "col-3 col-form-label-sm" ]
             [ H.text "Alignment" ]
         , H.div [ A.class "col-9" ]
             [ H.div [ A.class "d-flex align-items-center mb-1" ]
                 [ alignmentView_ model node
-                , H.div [ A.class "w-33 ml-1" ]
+                , H.div [ A.class "w-33 ms-1" ]
                     [ H.input
                         [ A.id (fieldId OffsetXField)
                         , A.class "form-control form-control-sm text-center mx-auto"
@@ -1698,7 +1690,7 @@ alignmentView model ({ transformation } as node) =
                         []
                     ]
                 ]
-            , H.div [ A.class "mr-1" ]
+            , H.div [ A.class "me-1" ]
                 [ H.input
                     [ A.id (fieldId OffsetYField)
                     , A.class "form-control form-control-sm text-center mx-auto w-33"
@@ -1721,12 +1713,12 @@ positionView model { type_, position } =
         setSelected other attrs =
             A.selected (position == other) :: attrs
     in
-    H.div [ A.class "form-group row align-items-center mb-3" ]
+    H.div [ A.class "row align-items-center mb-3" ]
         [ H.label [ A.class "col-3 col-form-label-sm m-0" ]
             [ H.text "Position" ]
         , H.div [ A.class "col-9" ]
             [ Keyed.node "select"
-                [ onPositionSelect PositionChanged, A.class "custom-select custom-select-sm" ]
+                [ onPositionSelect PositionChanged, A.class "form-select form-select-sm" ]
                 (List.map
                     (\position_ ->
                         let
@@ -1779,7 +1771,7 @@ alignmentView_ _ { alignmentX, alignmentY } =
             else
                 None
     in
-    H.div [ A.class "bg-white border rounded ml-auto w-33" ]
+    H.div [ A.class "bg-white border rounded ms-auto w-33" ]
         -- Top align
         [ H.div [ A.class "d-flex justify-content-center" ]
             [ H.button
@@ -1870,7 +1862,7 @@ nextAlignEndState value =
 
 textAlignmentView : Model -> TextAlignment -> Html Msg
 textAlignmentView _ value =
-    H.div [ A.class "form-group row align-items-center mb-0" ]
+    H.div [ A.class "row align-items-center mb-0" ]
         [ H.label [ A.class "col-3 col-form-label-sm m-0 text-nowrap" ]
             [ H.text "Alignment" ]
         , H.div [ A.class "col-9 btn-group", A.attribute "role" "group" ]
@@ -1951,16 +1943,16 @@ fontView model zipper =
                     Document.resolveInheritedFontColor theme.textColor zipper
     in
     H.div []
-        [ H.div [ A.class "form-group" ]
+        [ H.div [ A.class "mb-2" ]
             [ fontFamilyView node.fontFamily resolvedFontFamily (canInherit node)
             ]
         , H.div [ A.class "d-flex" ]
-            [ H.div [ A.class "form-group mr-1 w-25" ]
+            [ H.div [ A.class "mb-2 me-1 w-25" ]
                 [ H.input
                     [ A.id (fieldId FontSizeField)
                     , A.classList
                         [ ( "form-control form-control-sm text-center", True )
-                        , ( "text-muted font-italic", inherited )
+                        , ( "text-muted fst-italic", inherited )
                         ]
                     , A.type_ "number"
                     , A.min (String.fromInt Font.minFontSizeAllowed)
@@ -1972,7 +1964,7 @@ fontView model zipper =
                     []
                     |> addDropdown FontSizeField model.dropDownState (fontSizeItems node)
                 ]
-            , H.div [ A.class "form-group w-75" ]
+            , H.div [ A.class "mb-2 w-75" ]
                 [ fontWeightView resolvedFontFamily node.fontWeight
                 ]
             ]
@@ -2038,7 +2030,7 @@ fontSpacingView model node =
                 _ ->
                     String.fromFloat node.letterSpacing
     in
-    H.div [ A.class "form-group mb-2 row align-items-center" ]
+    H.div [ A.class "mb-2 row align-items-center" ]
         [ H.label [ A.class "col-3 col-form-label-sm m-0 text-nowrap" ]
             [ H.text "Spacing"
             ]
@@ -2093,8 +2085,8 @@ fontFamilyView fontFamily resolvedFontFamily inherit =
     Keyed.node "select"
         [ onFontFamilySelect FontFamilyChanged
         , A.classList
-            [ ( "custom-select custom-select-sm", True )
-            , ( "text-muted font-italic", fontFamily == Inherit )
+            [ ( "form-select form-select-sm", True )
+            , ( "text-muted fst-italic", fontFamily == Inherit )
             ]
         ]
         (inheritOption
@@ -2135,7 +2127,7 @@ fontWeightView fontFamily fontWeight =
             A.selected (fontWeight == other) :: attrs
     in
     Keyed.node "select"
-        [ onFontWeightSelect FontWeightChanged, A.class "custom-select custom-select-sm" ]
+        [ onFontWeightSelect FontWeightChanged, A.class "form-select form-select-sm" ]
         (List.map
             (\weight ->
                 let
