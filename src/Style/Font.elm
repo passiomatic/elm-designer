@@ -5,6 +5,7 @@ module Style.Font exposing
     , FontWeight(..)
     , Local(..)
     , TextAlignment(..)
+    , categoryName
     , findClosestWeight
     , isItalic
     , minFontSizeAllowed
@@ -15,7 +16,8 @@ module Style.Font exposing
     , setTextAlignment
     , setWeight
     , setWordSpacing
-    , weightName, weightNumber
+    , weightName
+    , weightNumber
     )
 
 {-| Font properties.
@@ -272,3 +274,22 @@ setTextAlignment value node =
 --     | Lowercase
 --     | Capitalize
 --     | SmallCaps
+
+
+categoryName : FontCategory -> String
+categoryName category =
+    case category of
+        Serif ->
+            "Serif"
+
+        SansSerif ->
+            "Sans Serif"
+
+        Handwriting ->
+            "Handwriting"
+
+        Display ->
+            "Display"
+
+        Monospace ->
+            "Monospace"
