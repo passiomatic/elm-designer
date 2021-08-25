@@ -165,7 +165,7 @@ viewportsView : Model -> Html Msg
 viewportsView model =
     H.div [ A.class "d-flex align-items-center" ]
         [ H.text "Device"
-        , H.select [ onViewportSelect ViewportChanged, A.class "custom-select custom-select-sm ml-1" ]
+        , H.select [ onViewportSelect ViewportChanged, A.class "form-select form-select-sm ms-1" ]
             (List.map
                 (\viewport ->
                     let
@@ -226,7 +226,7 @@ onViewportSelect msg =
 --         zoom =
 --             round (model.workspaceScale * 100)
 --     in
---     H.div [ A.class "d-flex align-items-center mr-5" ]
+--     H.div [ A.class "d-flex align-items-center me-5" ]
 --         [ Button.button [ Button.light, Button.small ] [ Icons.minusCircle ]
 --         , H.div [ A.class "bp-3 bg-white rounded text-center", A.style "width" "3rem" ] [ H.text (String.fromInt zoom ++ "%") ]
 --         , Button.button [ Button.light, Button.small ] [ Icons.plusCircle ]
@@ -235,7 +235,7 @@ onViewportSelect msg =
 
 rightPaneView : Model -> Html Msg
 rightPaneView model =
-    H.aside [ A.class "pane pane--right border-left" ]
+    H.aside [ A.class "pane pane--right border-start" ]
         [ Tab.config TabMsg
             |> Tab.attrs [ A.class "bpt-2" ]
             |> Tab.items
@@ -278,7 +278,7 @@ codeView model =
                 |> Zipper.tree
     in
     [ H.section [ A.class "section bp-3 d-flex flex-column h-100" ]
-        [ H.div [ A.class "mb-2 font-weight-500" ]
+        [ H.div [ A.class "mb-2 fw-500" ]
             [ H.text ("Generated code for " ++ (T.label node |> .name))
             ]
         , H.div [ A.class "scroll-y flex-fill bg-white bp-1 border" ]
@@ -296,7 +296,7 @@ codeView model =
 
 leftPaneView : Model -> Html Msg
 leftPaneView model =
-    H.aside [ A.class "pane pane--left border-right d-flex flex-column" ]
+    H.aside [ A.class "pane pane--left border-end d-flex flex-column" ]
         [ pageListView model
         , outlineView model
         , libraryView model
@@ -395,7 +395,7 @@ outlineItemView model node children =
             -- Tree node
             if Document.isPageNode node then
                 H.div [ A.class "d-flex flex-column h-100" ]
-                    [ H.div [ A.class "mb-2 font-weight-500" ]
+                    [ H.div [ A.class "mb-2 fw-500" ]
                         [ H.text "Outline" ]
                     , H.ol
                         (A.classList
@@ -515,9 +515,9 @@ pageListView : Model -> Html Msg
 pageListView model =
     H.div [ A.class "bp-3 scroll-y border-bottom", A.style "min-height" "112px", A.style "max-height" "112px" ]
         (H.div [ A.class "d-flex align-items-center justify-content-between mb-2" ]
-            [ H.div [ A.class "font-weight-500" ]
+            [ H.div [ A.class "fw-500" ]
                 [ H.text "Pages" ]
-            , H.button [ A.title "Add page", A.class "btn btn-link p-0 line-height-1 text-dark", E.onClick <| PageAddClicked () ] [ Icons.plusCircleSmall ]
+            , H.button [ A.title "Add page", A.class "btn btn-link p-0 lh-1 text-dark", E.onClick <| PageAddClicked () ] [ Icons.plusCircleSmall ]
             ]
             :: SelectList.indexedMap
                 (\index zipper ->
@@ -550,8 +550,8 @@ pageListView model =
 
 libraryView : Model -> Html Msg
 libraryView _ =
-    H.div [ A.class "bpl-3 bpt-3 scroll-y", A.style "height" "350px", A.style "min-height" "350px" ]
-        (H.div [ A.class "font-weight-500" ]
+    H.div [ A.class "bps-3 bpt-3 scroll-y", A.style "height" "350px", A.style "min-height" "350px" ]
+        (H.div [ A.class "fw-500" ]
             [ H.text "Library" ]
             :: (Library.groups
                     |> List.map
@@ -578,7 +578,7 @@ templateView item =
             :: A.title item.description
             :: DragDrop.draggable DragDropMsg (Insert item.root)
         )
-        [ H.span [ A.class "mr-1" ]
+        [ H.span [ A.class "me-1" ]
             [ item.icon ]
         , H.div []
             [ H.text template.name ]
@@ -642,8 +642,8 @@ pageView model =
                 ]
                 [ H.div [ A.class "chrome__header d-flex justify-content-between" ]
                     [ H.div []
-                        [ H.div [ A.class "chrome-button chrome-button--red mr-2" ] [ H.text "" ]
-                        , H.div [ A.class "chrome-button chrome-button--yellow mr-2" ] [ H.text "" ]
+                        [ H.div [ A.class "chrome-button chrome-button--red me-2" ] [ H.text "" ]
+                        , H.div [ A.class "chrome-button chrome-button--yellow me-2" ] [ H.text "" ]
                         , H.div [ A.class "chrome-button chrome-button--green" ] [ H.text "" ]
                         ]
                     , H.div [] [ H.text "Page Title" ]
