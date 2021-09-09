@@ -11,7 +11,6 @@ port module Ports exposing
     , selectText
     , setDragImage
     , setFontLinks
-    , setupAppMenu
     , showNotification
     , showPageContextMenu
     , showMessageBox
@@ -45,9 +44,6 @@ port setDragImage : Value -> Cmd msg
 
 
 port showPageContextMenu : String -> Cmd msg
-
-
-port setupAppMenu : List MenuItem -> Cmd msg
 
 
 port showNotification :

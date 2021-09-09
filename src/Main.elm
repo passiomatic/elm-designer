@@ -59,7 +59,6 @@ init flags =
     , Cmd.batch
         [ Ports.loadDocument ()
         , Ports.setFontLinks links
-        , Ports.setupAppMenu Library.menuItems
         ]
     )
 
