@@ -1116,7 +1116,7 @@ applyShadow setter value zipper =
     let
         value_ =
             String.toFloat value
-                -- TODO clamp handle negative and positive offset values
+                -- TODO handle negative and positive offset values whule clamping 0-positive blur and size
                 --|> Maybe.map (clamp 0 999)
                 |> Maybe.withDefault 0
     in

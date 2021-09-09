@@ -15,6 +15,7 @@ import Style.Border as Border exposing (BorderCorner, BorderStyle(..), BorderWid
 import Style.Font as Font exposing (..)
 import Style.Input as Input exposing (LabelPosition(..))
 import Style.Layout as Layout exposing (Alignment(..), Length(..), Padding, Position(..), Spacing(..), Transformation)
+import Style.Shadow as Shadow exposing (Shadow, ShadowType(..))
 import Style.Theme as Theme exposing (Theme)
 import Tree as T exposing (Tree)
 
@@ -597,6 +598,25 @@ emitStyles node attrs =
         |> emitAlignY node.alignmentY
         |> emitTransformation node.transformation
         |> emitBackground node.background
+        |> emitShadow node.shadow
+
+
+emitShadow : Shadow -> List Expression -> List Expression
+emitShadow value attrs =
+    if value.offsetX == 0 && value.offsetY == 0 && value.size == 0 && value.blur == 0 then
+        attrs
+
+    else
+        G.apply
+            [ G.fqFun borderModule "shadow"
+            , G.record
+                [ ( "offset", G.tuple [ G.float value.offsetX, G.float value.offsetY ] )
+                , ( "size", G.float value.size )
+                , ( "blur", G.float value.blur )
+                , ( "color", emitColor value.color )
+                ]
+            ]
+            :: attrs
 
 
 emitTransformation : Transformation -> List Expression -> List Expression

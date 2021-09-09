@@ -60,3 +60,13 @@ body {
     transform: translateY(-100%);
   }
 }
+
+// Align widget 
+
+.align-off {
+  color: rgba($black, 0.15);
+}
+
+.align-on {
+  color: $primary;
+}
