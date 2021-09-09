@@ -23,6 +23,7 @@
   @include border-radius($form-select-border-radius, 0);
   @include box-shadow($form-select-box-shadow);
   @include transition($form-select-transition);
+  -webkit-appearance: none;
   appearance: none;
 
   &:focus {
