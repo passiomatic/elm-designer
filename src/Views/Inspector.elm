@@ -694,7 +694,7 @@ addDropdown fieldId_ state items parent =
                 , ( "show", visible )
                 ]
             ]
-            items        
+            items
         , H.button
             [ --A.attribute "aria-expanded" "false"
               A.attribute "aria-haspopup" "true"
@@ -826,128 +826,6 @@ shadowView model { shadow } =
         ]
 
 
-shadowView : Model -> Node -> Html Msg
-shadowView model { shadow } =
-    let
-        offsetX =
-            case model.inspector of
-                EditingField ShadowOffsetXField new ->
-                    new
-
-                _ ->
-                    String.fromFloat shadow.offsetX
-
-        offsetY =
-            case model.inspector of
-                EditingField ShadowOffsetYField new ->
-                    new
-
-                _ ->
-                    String.fromFloat shadow.offsetY
-
-        size =
-            case model.inspector of
-                EditingField ShadowSizeField new ->
-                    new
-
-                _ ->
-                    String.fromFloat shadow.size
-
-        blur =
-            case model.inspector of
-                EditingField ShadowBlurField new ->
-                    new
-
-                _ ->
-                    String.fromFloat shadow.blur
-    in
-    H.section [ A.class "section bp-3  border-bottom" ]
-        [ H.h2 [ A.class "section__title mb-2" ]
-            [ H.text "Shadow" ]
-        , H.div [ A.class "form-group row align-items-center mb-2" ]
-            [ H.label [ A.class "col-3 col-form-label-sm m-0" ]
-                [ H.text "Offset" ]
-            , H.div [ A.class "col-9" ]
-                [ H.div [ A.class "d-flex mb-1" ]
-                    [ H.div [ A.class "w-25 ml-auto mr-1" ]
-                        [ H.label [ A.class "col-form-label-sm m-0 p-0", A.for (fieldId ShadowOffsetXField) ]
-                            [ H.text "X"
-                            ]
-                        , H.input
-                            [ A.id (fieldId ShadowOffsetXField)
-                            , A.type_ "number"
-                            , A.value offsetX
-                            , A.class "form-control form-control-sm text-center"
-                            , E.onFocus (FieldEditingStarted ShadowOffsetXField offsetX)
-                            , E.onBlur FieldEditingFinished
-                            , E.onInput FieldChanged
-                            ]
-                            []
-                        ]
-                    , H.div [ A.class "w-25" ]
-                        [ H.label [ A.class "col-form-label-sm m-0 p-0", A.for (fieldId ShadowOffsetXField) ]
-                            [ H.text "Y"
-                            ]
-                        , H.input
-                            [ A.id (fieldId ShadowOffsetYField)
-                            , A.type_ "number"
-                            , A.value offsetY
-                            , A.class "form-control form-control-sm text-center"
-                            , E.onFocus (FieldEditingStarted ShadowOffsetYField offsetY)
-                            , E.onBlur FieldEditingFinished
-                            , E.onInput FieldChanged
-                            ]
-                            []
-                        ]
-                    ]
-                ]
-            ]
-        , H.div [ A.class "form-group row align-items-center mb-2" ]
-            [ H.label [ A.class "col-3 col-form-label-sm m-0" ]
-                [ H.text "Size" ]
-            , H.div [ A.class "col-9" ]
-                [ H.div [ A.class "d-flex mb-1" ]
-                    [ H.div [ A.class "w-25 ml-auto" ]
-                        [ H.input
-                            [ A.id (fieldId ShadowSizeField)
-                            , A.type_ "number"
-                            , A.min "0"
-                            , A.value size
-                            , A.class "form-control form-control-sm text-center"
-                            , E.onFocus (FieldEditingStarted ShadowSizeField size)
-                            , E.onBlur FieldEditingFinished
-                            , E.onInput FieldChanged
-                            ]
-                            []
-                        ]
-                    ]
-                ]
-            ]
-        , H.div [ A.class "form-group row align-items-center mb-2" ]
-            [ H.label [ A.class "col-3 col-form-label-sm m-0" ]
-                [ H.text "Blur" ]
-            , H.div [ A.class "col-9" ]
-                [ H.div [ A.class "d-flex mb-1" ]
-                    [ H.div [ A.class "w-25 ml-auto" ]
-                        [ H.input
-                            [ A.id (fieldId ShadowBlurField)
-                            , A.type_ "number"
-                            , A.min "0"
-                            , A.value blur
-                            , A.class "form-control form-control-sm text-center"
-                            , E.onFocus (FieldEditingStarted ShadowBlurField blur)
-                            , E.onBlur FieldEditingFinished
-                            , E.onInput FieldChanged
-                            ]
-                            []
-                        ]
-                    ]
-                ]
-            ]
-        , colorView model (Just shadow.color) ShadowColorField ShadowColorChanged
-        ]
-
-
 bordersView : Model -> Node -> Html Msg
 bordersView model { borderColor, borderWidth, borderStyle, borderCorner } =
     let
@@ -1027,9 +905,7 @@ bordersView model { borderColor, borderWidth, borderStyle, borderCorner } =
                 [ H.div [ A.class "d-flex justify-content-between mb-1" ]
                     [ H.div [ A.class "w-25 me-1" ]
                         [ H.div [ A.class "input-group input-group-sm" ]
-                            [  
-                                H.span [ A.class "input-group-text bpx-1" ] [ H.text Entity.ulcorner ]
-                                 
+                            [ H.span [ A.class "input-group-text bpx-1" ] [ H.text Entity.ulcorner ]
                             , H.input
                                 [ A.id (fieldId BorderTopLeftCornerField)
                                 , A.type_ "number"
@@ -1123,9 +999,7 @@ bordersView model { borderColor, borderWidth, borderStyle, borderCorner } =
                 , H.div [ A.class "d-flex justify-content-between" ]
                     [ H.div [ A.class "w-25 me-1" ]
                         [ H.div [ A.class "input-group input-group-sm" ]
-                            [ 
-                                  H.span [ A.class "input-group-text bpx-1" ] [ H.text Entity.llcorner ]
-                                 
+                            [ H.span [ A.class "input-group-text bpx-1" ] [ H.text Entity.llcorner ]
                             , H.input
                                 [ A.id (fieldId BorderBottomLeftCornerField)
                                 , A.type_ "number"
@@ -1269,9 +1143,7 @@ colorHexView model color field =
                         |> Maybe.withDefault ""
     in
     H.div [ A.class "input-group input-group-sm" ]
-        [  
-             H.span [ A.class "input-group-text bpx-1" ] [ H.text "#" ]
-             
+        [ H.span [ A.class "input-group-text bpx-1" ] [ H.text "#" ]
         , H.input
             [ A.id (fieldId field)
             , A.type_ "text"
@@ -1300,7 +1172,7 @@ colorHexView model color field =
 --                 --, A.title "Color opacity"
 --                 ]
 --                 []
---               , H.span [ A.class "input-group-text bpx-1" ] [ H.text "%" ]  
+--               , H.span [ A.class "input-group-text bpx-1" ] [ H.text "%" ]
 --             ]
 --         -- , H.label [ A.for name, A.class "small m-0" ]
 --         --     [ H.text "Opacity" ]
