@@ -1,10 +1,8 @@
 module Library exposing
     ( LibraryItem
-    , MenuItem
     , findTemplate
     , groups
     , items
-    , menuItems
     )
 
 {-
@@ -39,14 +37,6 @@ type alias LibraryItem msg =
     , description : String
     , accelerator : String
     }
-
-
-type alias MenuItem =
-    { label : String
-    , group : String
-    , accelerator : String
-    }
-
 
 basicsLabel =
     "Basics"
@@ -85,18 +75,6 @@ items =
 groups : List ( LibraryItem msg, List (LibraryItem msg) )
 groups =
     List.Extra.gatherEqualsBy .group items
-
-
-menuItems : List MenuItem
-menuItems =
-    items
-        |> List.map
-            (\item ->
-                { label = itemLabel item
-                , group = item.group
-                , accelerator = item.accelerator
-                }
-            )
 
 
 findTemplate : String -> Maybe (Tree Template)

@@ -141,13 +141,66 @@ headerView model =
                         [ Icons.stop ]
     in
     H.header [ A.class "header d-flex justify-content-between align-items-center bp-2 border-bottom" ]
-        [ none
+        [ insertView model
         , viewportsView model
 
         --, modeButton
         , none
         ]
 
+
+insertView model =
+    let
+        visible =
+            case model.dropDownState of
+                Visible id ->
+                    id == InsertDropdown
+
+                Hidden ->
+                    False
+    in
+    H.div
+        [ A.class "dropdown"
+        ]
+        [ H.button
+            [ A.class "btn btn-light btn-sm dropdown-toggle"
+            , A.type_ "button"
+            , E.onClick
+                (DropDownChanged
+                    (if visible then
+                        Hidden
+
+                     else
+                        Visible InsertDropdown
+                    )
+                )
+
+            --, A.id "dropdownMenuButton1"
+            --, A.attribute "aria-expanded" "false"
+            ]
+            [ H.text "Insert" ]
+        , H.ul
+            [ A.classList
+                [ ( "dropdown-menu", True )
+                , ( "show", visible )
+                ]
+            ]
+            (List.map insertItemView Library.items)
+        ]
+
+insertItemView item = 
+    let
+        template =
+            T.label item.root
+    in        
+    H.li []
+        [ H.button
+            [ A.class "dropdown-item"
+            , A.type_ "button"
+            , E.onClick (InsertNodeClicked item.root)
+            ]
+            [ H.text template.name ]
+        ]
 
 
 -- interactiveView : Model -> Html Msg

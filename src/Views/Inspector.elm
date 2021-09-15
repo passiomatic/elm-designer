@@ -27,7 +27,7 @@ import Style.Layout as Layout exposing (..)
 import Style.Theme as Theme
 import Tree as T exposing (Tree)
 import Tree.Zipper as Zipper exposing (Zipper)
-import Views.Common exposing (fieldId, none)
+import Views.Common exposing (widgetId, none)
 
 
 view : Model -> List (Html Msg)
@@ -308,7 +308,7 @@ labelTextView { text } model { type_ } =
             [ H.text "Text" ]
         , H.div [ A.class "col-9" ]
             [ H.input
-                [ A.id (fieldId LabelField)
+                [ A.id (widgetId LabelField)
                 , A.type_ "text"
                 , A.value label_
                 , A.placeholder ""
@@ -381,7 +381,7 @@ imageView image model _ =
         , H.div [ A.class "" ]
             [ H.div [ A.class "" ]
                 [ H.input
-                    [ A.id (fieldId ImageSrcField)
+                    [ A.id (widgetId ImageSrcField)
                     , A.type_ "text"
                     , A.value imageSrc
                     , A.placeholder "https://domain.com/sample.jpg"
@@ -391,7 +391,7 @@ imageView image model _ =
                     , E.onInput FieldChanged
                     ]
                     []
-                , H.label [ A.for (fieldId ImageSrcField), A.class "small m-0" ]
+                , H.label [ A.for (widgetId ImageSrcField), A.class "small m-0" ]
                     [ H.text "Image address" ]
                 ]
             ]
@@ -524,7 +524,7 @@ paddingView model { padding } =
             [ H.div [ A.class "d-flex justify-content-center mb-1" ]
                 [ H.div [ A.class "w-25" ]
                     [ H.input
-                        [ A.id (fieldId PaddingTopField)
+                        [ A.id (widgetId PaddingTopField)
                         , A.type_ "number"
                         , A.min "0"
                         , A.value paddingTop
@@ -539,7 +539,7 @@ paddingView model { padding } =
             , H.div [ A.class "d-flex align-items-center mb-1" ]
                 [ H.div [ A.class "w-25" ]
                     [ H.input
-                        [ A.id (fieldId PaddingLeftField)
+                        [ A.id (widgetId PaddingLeftField)
                         , A.type_ "number"
                         , A.min "0"
                         , A.value paddingLeft
@@ -571,7 +571,7 @@ paddingView model { padding } =
                     ]
                 , H.div [ A.class "w-25" ]
                     [ H.input
-                        [ A.id (fieldId PaddingRightField)
+                        [ A.id (widgetId PaddingRightField)
                         , A.type_ "number"
                         , A.min "0"
                         , A.value paddingRight
@@ -586,7 +586,7 @@ paddingView model { padding } =
             , H.div [ A.class "d-flex justify-content-center" ]
                 [ H.div [ A.class "w-25" ]
                     [ H.input
-                        [ A.id (fieldId PaddingBottomField)
+                        [ A.id (widgetId PaddingBottomField)
                         , A.type_ "number"
                         , A.min "0"
                         , A.value paddingBottom
@@ -674,12 +674,12 @@ spacingYView model { spacing } =
         ]
 
 
-addDropdown fieldId_ state items parent =
+addDropdown widgetId_ state items parent =
     let
         visible =
             case state of
                 Visible id ->
-                    id == fieldId_
+                    id == widgetId_
 
                 Hidden ->
                     False
@@ -690,7 +690,7 @@ addDropdown fieldId_ state items parent =
         , H.div
             [ A.classList
                 [ ( "dropdown-menu", True )
-                , ( fieldId fieldId_ ++ "-dropdown", True )
+                , ( widgetId widgetId_ ++ "-dropdown", True )
                 , ( "show", visible )
                 ]
             ]
@@ -705,7 +705,7 @@ addDropdown fieldId_ state items parent =
                         Hidden
 
                      else
-                        Visible fieldId_
+                        Visible widgetId_
                     )
                 )
 
@@ -758,11 +758,11 @@ shadowView model { shadow } =
             [ H.div [ A.class "col-12" ]
                 [ H.div [ A.class "d-flex" ]
                     [ H.div [ A.class "w-25 ms-auto me-1" ]
-                        [ H.label [ A.class "col-form-label-sm m-0 p-0", A.for (fieldId ShadowOffsetXField) ]
+                        [ H.label [ A.class "col-form-label-sm m-0 p-0", A.for (widgetId ShadowOffsetXField) ]
                             [ H.text "Offset X"
                             ]
                         , H.input
-                            [ A.id (fieldId ShadowOffsetXField)
+                            [ A.id (widgetId ShadowOffsetXField)
                             , A.type_ "number"
                             , A.value offsetX
                             , A.class "form-control form-control-sm text-center"
@@ -773,11 +773,11 @@ shadowView model { shadow } =
                             []
                         ]
                     , H.div [ A.class "w-25 me-1" ]
-                        [ H.label [ A.class "col-form-label-sm m-0 p-0", A.for (fieldId ShadowOffsetXField) ]
+                        [ H.label [ A.class "col-form-label-sm m-0 p-0", A.for (widgetId ShadowOffsetXField) ]
                             [ H.text "Offset Y"
                             ]
                         , H.input
-                            [ A.id (fieldId ShadowOffsetYField)
+                            [ A.id (widgetId ShadowOffsetYField)
                             , A.type_ "number"
                             , A.value offsetY
                             , A.class "form-control form-control-sm text-center"
@@ -788,11 +788,11 @@ shadowView model { shadow } =
                             []
                         ]
                     , H.div [ A.class "w-25 me-1" ]
-                        [ H.label [ A.class "col-form-label-sm m-0 p-0", A.for (fieldId ShadowOffsetXField) ]
+                        [ H.label [ A.class "col-form-label-sm m-0 p-0", A.for (widgetId ShadowOffsetXField) ]
                             [ H.text "Size"
                             ]
                         , H.input
-                            [ A.id (fieldId ShadowSizeField)
+                            [ A.id (widgetId ShadowSizeField)
                             , A.type_ "number"
                             , A.min "0"
                             , A.value size
@@ -804,11 +804,11 @@ shadowView model { shadow } =
                             []
                         ]
                     , H.div [ A.class "w-25" ]
-                        [ H.label [ A.class "col-form-label-sm m-0 p-0", A.for (fieldId ShadowOffsetXField) ]
+                        [ H.label [ A.class "col-form-label-sm m-0 p-0", A.for (widgetId ShadowOffsetXField) ]
                             [ H.text "Blur"
                             ]
                         , H.input
-                            [ A.id (fieldId ShadowBlurField)
+                            [ A.id (widgetId ShadowBlurField)
                             , A.type_ "number"
                             , A.min "0"
                             , A.value blur
@@ -907,7 +907,7 @@ bordersView model { borderColor, borderWidth, borderStyle, borderCorner } =
                         [ H.div [ A.class "input-group input-group-sm" ]
                             [ H.span [ A.class "input-group-text bpx-1" ] [ H.text Entity.ulcorner ]
                             , H.input
-                                [ A.id (fieldId BorderTopLeftCornerField)
+                                [ A.id (widgetId BorderTopLeftCornerField)
                                 , A.type_ "number"
                                 , A.min "0"
                                 , A.value topLeftCorner
@@ -921,7 +921,7 @@ bordersView model { borderColor, borderWidth, borderStyle, borderCorner } =
                         ]
                     , H.div [ A.class "w-25 me-1" ]
                         [ H.input
-                            [ A.id (fieldId BorderTopWidthField)
+                            [ A.id (widgetId BorderTopWidthField)
                             , A.type_ "number"
                             , A.min "0"
                             , A.value topWidth
@@ -935,7 +935,7 @@ bordersView model { borderColor, borderWidth, borderStyle, borderCorner } =
                     , H.div [ A.class "w-25" ]
                         [ H.div [ A.class "input-group input-group-sm" ]
                             [ H.input
-                                [ A.id (fieldId BorderTopRightCornerField)
+                                [ A.id (widgetId BorderTopRightCornerField)
                                 , A.type_ "number"
                                 , A.min "0"
                                 , A.value topRightCorner
@@ -952,7 +952,7 @@ bordersView model { borderColor, borderWidth, borderStyle, borderCorner } =
                 , H.div [ A.class "d-flex justify-content-between align-items-center mb-1" ]
                     [ H.div [ A.class "w-25" ]
                         [ H.input
-                            [ A.id (fieldId BorderLeftWidthField)
+                            [ A.id (widgetId BorderLeftWidthField)
                             , A.type_ "number"
                             , A.min "0"
                             , A.value leftWidth
@@ -982,7 +982,7 @@ bordersView model { borderColor, borderWidth, borderStyle, borderCorner } =
                         ]
                     , H.div [ A.class "w-25" ]
                         [ H.input
-                            [ A.id (fieldId BorderRightWidthField)
+                            [ A.id (widgetId BorderRightWidthField)
                             , A.type_ "number"
                             , A.min "0"
                             , A.value rightWidth
@@ -1001,7 +1001,7 @@ bordersView model { borderColor, borderWidth, borderStyle, borderCorner } =
                         [ H.div [ A.class "input-group input-group-sm" ]
                             [ H.span [ A.class "input-group-text bpx-1" ] [ H.text Entity.llcorner ]
                             , H.input
-                                [ A.id (fieldId BorderBottomLeftCornerField)
+                                [ A.id (widgetId BorderBottomLeftCornerField)
                                 , A.type_ "number"
                                 , A.min "0"
                                 , A.value bottomLeftCorner
@@ -1017,7 +1017,7 @@ bordersView model { borderColor, borderWidth, borderStyle, borderCorner } =
                         ]
                     , H.div [ A.class "w-25 me-1" ]
                         [ H.input
-                            [ A.id (fieldId BorderBottomWidthField)
+                            [ A.id (widgetId BorderBottomWidthField)
                             , A.type_ "number"
                             , A.min "0"
                             , A.value bottomWidth
@@ -1033,7 +1033,7 @@ bordersView model { borderColor, borderWidth, borderStyle, borderCorner } =
                     , H.div [ A.class "w-25" ]
                         [ H.div [ A.class "input-group input-group-sm" ]
                             [ H.input
-                                [ A.id (fieldId BorderBottomRightCornerField)
+                                [ A.id (widgetId BorderBottomRightCornerField)
                                 , A.type_ "number"
                                 , A.min "0"
                                 , A.value bottomRightCorner
@@ -1095,7 +1095,7 @@ borderStyleView model borderStyle =
         ]
 
 
-colorView : Model -> Maybe Color -> Field -> (String -> Msg) -> Html Msg
+colorView : Model -> Maybe Color -> Widget -> (String -> Msg) -> Html Msg
 colorView model color field msg =
     H.div [ A.class "row align-items-center mb-2" ]
         [ H.label [ A.class "col-3 col-form-label-sm m-0" ]
@@ -1125,7 +1125,7 @@ colorPickerView _ value msg =
         []
 
 
-colorHexView : Model -> Maybe Color -> Field -> Html Msg
+colorHexView : Model -> Maybe Color -> Widget -> Html Msg
 colorHexView model color field =
     let
         color_ =
@@ -1145,7 +1145,7 @@ colorHexView model color field =
     H.div [ A.class "input-group input-group-sm" ]
         [ H.span [ A.class "input-group-text bpx-1" ] [ H.text "#" ]
         , H.input
-            [ A.id (fieldId field)
+            [ A.id (widgetId field)
             , A.type_ "text"
             , A.value color_
             , E.onFocus (FieldEditingStarted field color_)
@@ -1161,7 +1161,7 @@ colorHexView model color field =
 -- colorAlphaView : Model -> String -> Color -> Html Msg
 -- colorAlphaView _ name color =
 --     H.div [ A.class "w-33" ]
---         [ H.label [ A.for (fieldId BorderColorField), A.class "small m-0" ]
+--         [ H.label [ A.for (widgetId BorderColorField), A.class "small m-0" ]
 --             [ H.text "Opacity" ]
 --         , H.div [ A.class "input-group input-group-sm" ]
 --             [ H.input
@@ -1225,11 +1225,11 @@ backgroundView model { background } =
                                 value
                 in
                 H.div [ A.class "row align-items-center mb-2" ]
-                    [ H.label [ A.for (fieldId BackgroundImageField), A.class "col-3 col-form-label-sm m-0 text-nowrap" ]
+                    [ H.label [ A.for (widgetId BackgroundImageField), A.class "col-3 col-form-label-sm m-0 text-nowrap" ]
                         [ H.text "Image URL" ]
                     , H.div [ A.class "col-9" ]
                         [ H.input
-                            [ A.id (fieldId BackgroundImageField)
+                            [ A.id (widgetId BackgroundImageField)
                             , A.type_ "text"
                             , A.value value_
                             , A.placeholder ""
@@ -1672,7 +1672,7 @@ alignmentView model ({ transformation } as node) =
                 [ alignmentView_ model node
                 , H.div [ A.class "w-33 ms-1" ]
                     [ H.input
-                        [ A.id (fieldId OffsetXField)
+                        [ A.id (widgetId OffsetXField)
                         , A.class "form-control form-control-sm text-center mx-auto"
                         , A.type_ "number"
                         , A.value offsetX
@@ -1686,7 +1686,7 @@ alignmentView model ({ transformation } as node) =
                 ]
             , H.div [ A.class "me-1" ]
                 [ H.input
-                    [ A.id (fieldId OffsetYField)
+                    [ A.id (widgetId OffsetYField)
                     , A.class "form-control form-control-sm text-center mx-auto w-33"
                     , A.type_ "number"
                     , A.value offsetY
@@ -1943,7 +1943,7 @@ fontView model zipper =
         , H.div [ A.class "d-flex" ]
             [ H.div [ A.class "mb-2 me-1 w-25" ]
                 [ H.input
-                    [ A.id (fieldId FontSizeField)
+                    [ A.id (widgetId FontSizeField)
                     , A.classList
                         [ ( "form-control form-control-sm text-center", True )
                         , ( "text-muted fst-italic", inherited )
@@ -2155,14 +2155,14 @@ emptyView _ _ =
     H.div [] []
 
 
-numericFieldView : Field -> String -> String -> Html Msg
+numericFieldView : Widget -> String -> String -> Html Msg
 numericFieldView field label value =
     H.div [ A.class "w-33" ]
-        [ H.label [ A.class "col-form-label-sm m-0 p-0", A.for (fieldId field) ]
+        [ H.label [ A.class "col-form-label-sm m-0 p-0", A.for (widgetId field) ]
             [ H.text label
             ]
         , H.input
-            [ A.id (fieldId field)
+            [ A.id (widgetId field)
             , A.class "form-control form-control-sm text-center"
             , A.type_ "number"
 

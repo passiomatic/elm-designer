@@ -17,7 +17,6 @@ port module Ports exposing
     )
 
 import Json.Decode exposing (Value)
-import Library exposing (MenuItem)
 import Model exposing (..)
 
 

@@ -1,7 +1,7 @@
 module Model exposing
     ( Context
     , DocumentState(..)
-    , Field(..)
+    , Widget(..)
     , FileDrop(..)
     , Flags
     , Inspector(..)
@@ -78,7 +78,7 @@ type Msg
     | BorderStyleChanged BorderStyle
     | ShadowColorChanged String
     | LabelPositionChanged LabelPosition
-    | FieldEditingStarted Field String
+    | FieldEditingStarted Widget String
     | FieldEditingConfirmed
     | FieldEditingFinished
     | FieldChanged String
@@ -89,7 +89,7 @@ type Msg
     | PageAddClicked ()
     | PageContextMenuClicked NodeId
     | PageDeleteClicked String
-    | InsertNodeClicked String
+    | InsertNodeClicked (Tree Template)
     | DropDownChanged WidgetState
     | DocumentLoaded String
     | Ticked Posix
@@ -109,7 +109,7 @@ type Msg
 
 {-| All editable text fields in the app.
 -}
-type Field
+type Widget
     = FontSizeField
     | FontColorField
     | LetterSpacingField
@@ -148,10 +148,11 @@ type Field
     | ShadowBlurField
     | ShadowColorField
     | ShadowSizeField
+    | InsertDropdown
 
 
 type WidgetState
-    = Visible Field
+    = Visible Widget
     | Hidden
 
 
@@ -162,7 +163,7 @@ type Mode
 
 type Inspector
     = NotEdited
-    | EditingField Field String
+    | EditingField Widget String
     | EditingText
 
 

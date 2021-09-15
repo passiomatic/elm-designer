@@ -37,7 +37,7 @@ import Tree.Zipper as Zipper exposing (Zipper)
 import UUID exposing (Seeds)
 import UndoList
 import Uploader
-import Views.Common as Common exposing (fieldId)
+import Views.Common as Common exposing (widgetId)
 import Views.Editor as Editor
 
 
@@ -258,30 +258,52 @@ update msg model =
             , Cmd.none
             )
 
-        InsertNodeClicked label ->
-            case Library.findTemplate label of
-                Just template ->
-                    let
-                        ( newSeeds, newNode ) =
-                            Document.fromTemplate template model.seeds
+        -- InsertNodeClicked label ->
+        --     case Library.findTemplate label of
+        --         Just template ->
+        --             let
+        --                 ( newSeeds, newNode ) =
+        --                     Document.fromTemplate template model.seeds
 
-                        newPage =
-                            selectedPage model.pages.present
-                                |> Document.insertNode newNode
+        --                 newPage =
+        --                     selectedPage model.pages.present
+        --                         |> Document.insertNode newNode
 
-                        newPages =
-                            SelectList.replaceSelected newPage model.pages.present
-                    in
-                    ( { model
-                        | pages = UndoList.new newPages model.pages
-                        , saveState = Changed model.currentTime
-                        , seeds = newSeeds
-                      }
-                    , Cmd.none
-                    )
+        --                 newPages =
+        --                     SelectList.replaceSelected newPage model.pages.present
+        --             in
+        --             ( { model
+        --                 | pages = UndoList.new newPages model.pages
+        --                 , saveState = Changed model.currentTime
+        --                 , seeds = newSeeds
+        --               }
+        --             , Cmd.none
+        --             )
 
-                Nothing ->
-                    ( model, Cmd.none )
+        --         Nothing ->
+        --             ( model, Cmd.none )
+
+        InsertNodeClicked template -> 
+            let
+                ( newSeeds, newNode ) =
+                    Document.fromTemplate template model.seeds
+
+                newPage =
+                    selectedPage model.pages.present
+                        |> Document.insertNode newNode
+
+                newPages =
+                    SelectList.replaceSelected newPage model.pages.present
+            in
+            ( { model
+                | pages = UndoList.new newPages model.pages
+                , saveState = Changed model.currentTime
+                , seeds = newSeeds
+                }
+            , Cmd.none
+            )
+
+ 
 
         ClipboardCopyClicked ->
             let
@@ -569,7 +591,7 @@ update msg model =
                 -- Stop field and inline editing
                 -- ############
                 ( False, "Escape", EditingField field _ ) ->
-                    ( { model | inspector = NotEdited }, unfocusElement (fieldId field) )
+                    ( { model | inspector = NotEdited }, unfocusElement (widgetId field) )
 
                 ( False, "Escape", EditingText ) ->
                     ( { model | inspector = NotEdited }, Cmd.none )
@@ -965,7 +987,7 @@ subscriptions model =
         , Ports.onDocumentLoad DocumentLoaded
         , Ports.onPageAdd PageAddClicked
         , Ports.onPageDelete PageDeleteClicked
-        , Ports.onInsertNode InsertNodeClicked
+        --, Ports.onInsertNode InsertNodeClicked
         , Ports.onUndo Undo
         , Ports.onRedo Redo
         , Time.every 1000 Ticked

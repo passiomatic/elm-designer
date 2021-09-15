@@ -1,9 +1,9 @@
-module Views.Common exposing (canDropInto, canDropSibling, fieldId, isDragging, none)
+module Views.Common exposing (canDropInto, canDropSibling, widgetId, isDragging, none)
 
 import Document exposing (DragId(..))
 import Html as H exposing (Html)
 import Html5.DragDrop as DragDrop
-import Model exposing (Field(..))
+import Model exposing (Widget(..))
 import Tree as T exposing (Tree)
 
 
@@ -39,8 +39,8 @@ canDropSibling sibling dragDrop =
             False
 
 
-fieldId : Field -> String
-fieldId field =
+widgetId : Widget -> String
+widgetId field =
     case field of
         FontSizeField ->
             "font-size"
@@ -155,6 +155,9 @@ fieldId field =
 
         ShadowBlurField ->
             "shadow-blur"
+        
+        InsertDropdown ->
+            "insert"
 
 
 none =
