@@ -299,6 +299,7 @@ update msg model =
                 | pages = UndoList.new newPages model.pages
                 , saveState = Changed model.currentTime
                 , seeds = newSeeds
+                , dropDownState = Hidden
                 }
             , Cmd.none
             )
