@@ -1,7 +1,7 @@
 module Model exposing
     ( Context
+    , ContextPopup(..)
     , DocumentState(..)
-    , Widget(..)
     , FileDrop(..)
     , Flags
     , Inspector(..)
@@ -11,6 +11,7 @@ module Model exposing
     , Mouse
     , Msg(..)
     , UploadState(..)
+    , Widget(..)
     , WidgetState(..)
     , context
     , initialModel
@@ -20,6 +21,7 @@ module Model exposing
     )
 
 import Bootstrap.Tab as Tab
+import ContextMenu exposing (ContextMenu)
 import Document exposing (..)
 import File exposing (File)
 import Html.Events.Extra.Wheel as Wheel
@@ -30,6 +32,7 @@ import Result exposing (Result(..))
 import SelectList exposing (SelectList)
 import Set exposing (Set)
 import Style.Background as Background exposing (Background)
+import Style.Border exposing (BorderStyle)
 import Style.Font as Font exposing (..)
 import Style.Input as Input exposing (LabelPosition(..))
 import Style.Layout as Layout exposing (..)
@@ -39,7 +42,6 @@ import Tree exposing (Tree)
 import Tree.Zipper as Zipper exposing (Zipper)
 import UUID exposing (Seeds)
 import UndoList exposing (UndoList)
-import Style.Border exposing (BorderStyle)
 
 
 workspaceWidth =
@@ -87,8 +89,7 @@ type Msg
     | WrapRowItemsChanged Bool
     | ClipboardCopyClicked
     | PageAddClicked ()
-    | PageContextMenuClicked NodeId
-    | PageDeleteClicked String
+    | PageDeleteClicked NodeId
     | InsertNodeClicked (Tree Template)
     | DropDownChanged WidgetState
     | DocumentLoaded String
@@ -105,6 +106,11 @@ type Msg
     | TabMsg Tab.State
     | Undo ()
     | Redo ()
+    | ContextMenuMsg (ContextMenu.Msg ContextPopup)
+
+
+type ContextPopup
+    = PageListContextPopup NodeId
 
 
 {-| All editable text fields in the app.
@@ -192,6 +198,7 @@ type alias Model =
     , dropDownState : WidgetState
     , uploadState : UploadState
     , collapsedTreeItems : Set String
+    , contextMenu : ContextMenu ContextPopup
     }
 
 
@@ -269,7 +276,7 @@ type alias Flags =
     }
 
 
-initialModel : Flags -> Model
+initialModel : Flags -> ( Model, Cmd Msg )
 initialModel { width, height, uploadEndpoint, seed1, seed2, seed3, seed4 } =
     let
         seeds =
@@ -281,32 +288,38 @@ initialModel { width, height, uploadEndpoint, seed1, seed2, seed3, seed4 } =
 
         ( newSeeds, emptyDocument ) =
             Document.emptyPageNode seeds 1
-    in
-    { mode = DesignMode
-    , uploadEndpoint = uploadEndpoint
 
-    -- , workspaceScale = 1.0
-    -- , workspaceX = -workspaceWidth // 2 + width // 2
-    -- , workspaceY = 0
-    , windowWidth = width
-    , windowHeight = height
-    , mouseX = 0
-    , mouseY = 0
-    , isMouseButtonDown = False
-    , isAltDown = False
-    , pages = UndoList.fresh <| SelectList.singleton <| Zipper.fromTree emptyDocument
-    , viewport = Fluid
-    , inspector = NotEdited
-    , dragDrop = DragDrop.init
-    , fileDrop = Empty
-    , rightPaneTabState = Tab.customInitialState "tab-design"
-    , seeds = newSeeds
-    , currentTime = Time.millisToPosix 0
-    , saveState = Original
-    , dropDownState = Hidden
-    , uploadState = Ready
-    , collapsedTreeItems = Set.empty
-    }
+        ( contextMenu, cmd ) =
+            ContextMenu.init
+    in
+    ( { mode = DesignMode
+      , uploadEndpoint = uploadEndpoint
+
+      -- , workspaceScale = 1.0
+      -- , workspaceX = -workspaceWidth // 2 + width // 2
+      -- , workspaceY = 0
+      , windowWidth = width
+      , windowHeight = height
+      , mouseX = 0
+      , mouseY = 0
+      , isMouseButtonDown = False
+      , isAltDown = False
+      , pages = UndoList.fresh <| SelectList.singleton <| Zipper.fromTree emptyDocument
+      , viewport = Fluid
+      , inspector = NotEdited
+      , dragDrop = DragDrop.init
+      , fileDrop = Empty
+      , rightPaneTabState = Tab.customInitialState "tab-design"
+      , seeds = newSeeds
+      , currentTime = Time.millisToPosix 0
+      , saveState = Original
+      , dropDownState = Hidden
+      , uploadState = Ready
+      , collapsedTreeItems = Set.empty
+      , contextMenu = contextMenu
+      }
+    , Cmd.map ContextMenuMsg cmd
+    )
 
 
 {-| Get current selected page.

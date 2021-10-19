@@ -7,6 +7,7 @@ import Array
 import Bootstrap.Tab as Tab
 import CodeGen
 import Codecs
+import ContextMenu exposing (ContextMenu, Item)
 import Css exposing (em, percent, px)
 import Dict exposing (Dict)
 import Document exposing (..)
@@ -58,6 +59,7 @@ view model =
                 , H.div [ A.class "d-flex" ]
                     [ workspaceView model
                     ]
+                , contextMenuView model
                 ]
 
             _ ->
@@ -67,6 +69,7 @@ view model =
                     , workspaceView model
                     , rightPaneView model
                     ]
+                , contextMenuView model
                 ]
         )
 
@@ -188,11 +191,12 @@ insertView model =
             (List.map insertItemView Library.items)
         ]
 
-insertItemView item = 
+
+insertItemView item =
     let
         template =
             T.label item.root
-    in        
+    in
     H.li []
         [ H.button
             [ A.class "dropdown-item"
@@ -201,6 +205,7 @@ insertItemView item =
             ]
             [ H.text template.name ]
         ]
+
 
 
 -- interactiveView : Model -> Html Msg
@@ -592,7 +597,7 @@ pageListView model =
                     H.div
                         [ classes
                         , E.onClick (PageSelected index)
-                        , contextMenuHandler (PageContextMenuClicked pageNode.id)
+                        , ContextMenu.open ContextMenuMsg (PageListContextPopup pageNode.id)
                         ]
                         [ H.text pageNode.name
                         ]
@@ -715,6 +720,27 @@ pageView model =
                 ]
 
 
+contextMenuView : Model -> Html Msg
+contextMenuView model =
+    H.div
+        []
+        [ ContextMenu.view
+            ContextMenu.defaultConfig
+            ContextMenuMsg
+            toItemGroups
+            model.contextMenu
+        ]
+
+
+toItemGroups : ContextPopup -> List (List ( Item, Msg ))
+toItemGroups context =
+    case context of
+        PageListContextPopup nodeId ->
+            [ [ ( ContextMenu.item "Delete page", PageDeleteClicked nodeId )
+              ]
+            ]
+
+
 
 -- HELPERS
 
@@ -744,11 +770,6 @@ clickToCollapseHandler =
 
 clickToCollapseHandler_ collapse id =
     E.stopPropagationOn "click" (Decode.succeed ( CollapseNodeClicked collapse id, True ))
-
-
-contextMenuHandler : msg -> Attribute msg
-contextMenuHandler message =
-    E.on "contextmenu" (Decode.succeed message)
 
 
 makeDroppable =

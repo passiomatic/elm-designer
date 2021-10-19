@@ -7,6 +7,7 @@ import Browser.Dom as Dom
 import Browser.Events as BE
 import CodeGen
 import Codecs
+import ContextMenu exposing (ContextMenu)
 import Dict exposing (Dict)
 import Document exposing (DragId(..), DropId(..), Node, Viewport(..))
 import File exposing (File)
@@ -54,11 +55,15 @@ init flags =
     let
         links =
             Fonts.links
+
+        ( model, cmd ) =
+            Model.initialModel flags
     in
-    ( Model.initialModel flags
+    ( model
     , Cmd.batch
         [ Ports.loadDocument ()
         , Ports.setFontLinks links
+        , cmd
         ]
     )
 
@@ -66,6 +71,15 @@ init flags =
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
+        ContextMenuMsg msg_ ->
+            let
+                ( contextMenu, cmd ) =
+                    ContextMenu.update msg_ model.contextMenu
+            in
+            ( { model | contextMenu = contextMenu }
+            , Cmd.map ContextMenuMsg cmd
+            )
+
         -- ###########
         -- Image drag & drop from local filesystem
         -- ###########
@@ -216,11 +230,6 @@ update msg model =
             , cmd
             )
 
-        PageContextMenuClicked id ->
-            ( model
-            , Ports.showPageContextMenu (Document.nodeId id)
-            )
-
         PageAddClicked _ ->
             let
                 ( newSeeds, page ) =
@@ -243,7 +252,7 @@ update msg model =
             let
                 isPage : Zipper Node -> Bool
                 isPage zipper =
-                    Document.nodeId (Zipper.toTree zipper |> T.label).id == id
+                    (Zipper.toTree zipper |> T.label).id == id
 
                 newPages =
                     model.pages.present
@@ -264,11 +273,9 @@ update msg model =
         --             let
         --                 ( newSeeds, newNode ) =
         --                     Document.fromTemplate template model.seeds
-
         --                 newPage =
         --                     selectedPage model.pages.present
         --                         |> Document.insertNode newNode
-
         --                 newPages =
         --                     SelectList.replaceSelected newPage model.pages.present
         --             in
@@ -279,11 +286,9 @@ update msg model =
         --               }
         --             , Cmd.none
         --             )
-
         --         Nothing ->
         --             ( model, Cmd.none )
-
-        InsertNodeClicked template -> 
+        InsertNodeClicked template ->
             let
                 ( newSeeds, newNode ) =
                     Document.fromTemplate template model.seeds
@@ -300,11 +305,9 @@ update msg model =
                 , saveState = Changed model.currentTime
                 , seeds = newSeeds
                 , dropDownState = Hidden
-                }
+              }
             , Cmd.none
             )
-
- 
 
         ClipboardCopyClicked ->
             let
@@ -987,12 +990,13 @@ subscriptions model =
         , BE.onMouseUp (Decode.map (MouseButtonChanged False) mouseDecoder)
         , Ports.onDocumentLoad DocumentLoaded
         , Ports.onPageAdd PageAddClicked
-        , Ports.onPageDelete PageDeleteClicked
+
         --, Ports.onInsertNode InsertNodeClicked
         , Ports.onUndo Undo
         , Ports.onRedo Redo
         , Time.every 1000 Ticked
         , uploadSub
+        , Sub.map ContextMenuMsg (ContextMenu.subscriptions model.contextMenu)
         ]
 
 

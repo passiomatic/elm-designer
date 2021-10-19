@@ -19,6 +19,7 @@
             "elm-community/list-extra": "8.2.2",
             "elm-community/undo-redo": "3.0.0",
             "feathericons/elm-feather": "1.5.0",
+            "jinjor/elm-contextmenu": "2.0.0",
             "joshforisha/elm-html-entities": "1.0.0",
             "justinmimbs/time-extra": "1.1.0",
             "mdgriffith/elm-ui": "1.1.8",
