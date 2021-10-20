@@ -30,6 +30,7 @@ import Style.Theme as Theme
 import Tree as T exposing (Tree)
 import Tree.Zipper as Zipper exposing (Zipper)
 import Views.Common as Common exposing (none)
+import Views.ContextMenus as ContextMenus
 import Views.ElmUI as ElmUI
 import Views.Inspector as Inspector
 
@@ -59,7 +60,7 @@ view model =
                 , H.div [ A.class "d-flex" ]
                     [ workspaceView model
                     ]
-                , contextMenuView model
+                , ContextMenus.pageListView model
                 ]
 
             _ ->
@@ -69,7 +70,7 @@ view model =
                     , workspaceView model
                     , rightPaneView model
                     ]
-                , contextMenuView model
+                , ContextMenus.pageListView model
                 ]
         )
 
@@ -718,27 +719,6 @@ pageView model =
                     [ content
                     ]
                 ]
-
-
-contextMenuView : Model -> Html Msg
-contextMenuView model =
-    H.div
-        []
-        [ ContextMenu.view
-            ContextMenu.defaultConfig
-            ContextMenuMsg
-            toItemGroups
-            model.contextMenu
-        ]
-
-
-toItemGroups : ContextPopup -> List (List ( Item, Msg ))
-toItemGroups context =
-    case context of
-        PageListContextPopup nodeId ->
-            [ [ ( ContextMenu.item "Delete page", PageDeleteClicked nodeId )
-              ]
-            ]
 
 
 
