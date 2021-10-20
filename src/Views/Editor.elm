@@ -49,10 +49,6 @@ view model =
             [ ( "h-100", True )
             , ( "dragging--element", Common.isDragging model.dragDrop )
             ]
-
-        -- Receive files from Electron. This is a workaround since
-        --   we cannot pass Files or Bytes to Elm via ports yet
-        , E.on "files-selected" (filesDecoder FileSelected)
         ]
         (case model.mode of
             PreviewMode ->
@@ -73,11 +69,6 @@ view model =
                 , ContextMenus.pageListView model
                 ]
         )
-
-
-filesDecoder tagger =
-    Decode.field "detail" (Decode.map tagger (Decode.list File.decoder))
-
 
 workspaceView model =
     H.div
