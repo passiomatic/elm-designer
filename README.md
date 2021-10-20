@@ -6,17 +6,7 @@
 
 The application is in early stages of development and supports a subset of [Elm UI][elmui].
 
-Version 0.3 main features are:
-
-* Undo/redo for destructive operations
-* Support for relative positioned children (above, in front, etc.)
-* Support for element shadow
-* Label position for form fields (above, below, left, right and hidden)
-* Border style selector: solid, dashed and dotted
-
-## Download 
-
-Elm Designer is distributed as an Electron app. Right now there are [macOS and Linux binaries][d] to download and you can run Elm Designer sources on Windows via CLI.
+Previosly Elm Designer was an Electrion app, you can still download older versions on the [Releases page][r].
 
 ## About images
 
@@ -31,31 +21,19 @@ By uploading images and referencing them by URL sidesteps a number of issues lik
 
 ## Build Elm Designer from sources
 
-If you need to edit the source files the `makefile` on the repository root contains a bunch on tasks which automate the most common operations.
+Elm Designer uses [Parcel][2] to compile Elm and SASS source. To install all the needed dependencies type:
 
-### Install Parcel
+    npm install 
 
-Elm Designer uses [Parcel][2] to compile Elm and SASS source files. Please read up [these instructions][3] to install Parcel 1.12.4 before building Elm Designer from sources.
+If you need to edit the source files the `package.json` contains a bunch on script entries which automate the most common operations. To run Elm Design locally in dev mode type:
 
-### Run with Electron
-
-You can run [Electron][4] as a command-line app and then point it to the `main.js` entry point.
-
-So, first install Electron and all its dependencies locally:
-
-    npm ci
-
-Then run:
-
-    make run
-
-This will build the app assets with Parcel in production mode, copy the files into the `electron-app` folder in the repo, and finally run Electron itself.
+    npm run dev
 
 [2]: https://parceljs.org
 [3]: https://parceljs.org/getting_started.html
-[4]: https://www.electronjs.org
 [d]: https://github.com/passiomatic/elm-designer/releases/tag/v0.3.0
 [issue1]: https://github.com/passiomatic/elm-designer/issues/1 
 [issue2]: https://github.com/passiomatic/elm-designer/issues/2 
 [issue20]: https://github.com/passiomatic/elm-designer/issues/20
 [elmui]: https://github.com/mdgriffith/elm-ui
+[r]: https://github.com/passiomatic/elm-designer/releases

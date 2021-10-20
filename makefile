@@ -1,17 +1,16 @@
 all: dev
 
-build:
-	parcel build src/index.html --public-url ./ --out-file index.html
+build: clean
+	npm run build
 
-build-no-maps:
-	parcel build src/index.html --no-source-maps --public-url ./ --out-file index.html
+build-no-maps: clean
+	npm run build-no-maps
 
 dev-no-debug:
-	NODE_ENV=production parcel src/index.html
+	npm run dev-no-debug
 
 dev:
-	parcel src/index.html
+	npm run dev
 
 clean: 
-	rm -fR dist
-	rm -fR build
+	npm run clean
