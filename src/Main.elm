@@ -1,7 +1,5 @@
 module Main exposing (main)
 
-import Array
-import Bootstrap.Tab as Tab
 import Browser
 import Browser.Dom as Dom
 import Browser.Events as BE
@@ -14,19 +12,16 @@ import File exposing (File)
 import File.Select as Select
 import Fonts
 import Html.Events as E
-import Html.Events.Extra.Mouse
 import Html5.DragDrop as DragDrop
 import Http exposing (Progress(..))
-import Icons
 import Json.Decode as Decode exposing (Decoder, Value)
 import Library
 import Maybe
 import Model exposing (..)
 import Ports
-import Random exposing (Seed)
 import SelectList exposing (SelectList)
 import Set exposing (Set)
-import Style.Border as Border exposing (BorderCorner, BorderStyle(..), BorderWidth)
+import Style.Border as Border exposing (BorderStyle(..))
 import Style.Font as Font exposing (..)
 import Style.Layout as Layout exposing (..)
 import Style.Shadow as Shadow exposing (Shadow, ShadowType(..))
@@ -39,7 +34,7 @@ import Tree.Zipper as Zipper exposing (Zipper)
 import UUID exposing (Seeds)
 import UndoList
 import Uploader
-import Views.Common as Common exposing (widgetId)
+import Views.Common as Common
 import Views.Editor as Editor
 
 
@@ -601,7 +596,7 @@ update msg model =
                 -- Stop field and inline editing
                 -- ############
                 ( False, "Escape", EditingField field _ ) ->
-                    ( { model | inspector = NotEdited }, unfocusElement (widgetId field) )
+                    ( { model | inspector = NotEdited }, unfocusElement (Common.widgetId field) )
 
                 ( False, "Escape", EditingText ) ->
                     ( { model | inspector = NotEdited }, Cmd.none )
