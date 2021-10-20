@@ -2,11 +2,6 @@ port module Ports exposing
     ( copyToClipboard
     , loadDocument
     , onDocumentLoad
-    , onInsertNode
-    , onPageAdd
-    , onPageDelete
-    , onRedo
-    , onUndo
     , saveDocument
     , selectText
     , setDragImage
@@ -62,21 +57,3 @@ port showMessageBox :
 
 
 port onDocumentLoad : (String -> msg) -> Sub msg
-
-
-port onPageDelete : (String -> msg) -> Sub msg
-
-
-port onPageAdd : (() -> msg) -> Sub msg
-
-
-port onPageDuplicate : (String -> msg) -> Sub msg
-
-
-port onInsertNode : (String -> msg) -> Sub msg
-
-
-port onUndo : (() -> msg) -> Sub msg
-
-
-port onRedo : (() -> msg) -> Sub msg

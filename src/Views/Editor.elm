@@ -198,7 +198,9 @@ insertView model =
                 , ( "show", visible )
                 ]
             ]
-            (insertImageView
+            (insertPageView
+                :: dividerView
+                :: insertImageView
                 :: dividerView
                 :: List.map
                     insertItemView
@@ -219,6 +221,17 @@ insertImageView =
             , E.onClick InsertImageClicked
             ]
             [ H.text "Image..." ]
+        ]
+
+
+insertPageView =
+    H.li []
+        [ H.button
+            [ A.class "dropdown-item"
+            , A.type_ "button"
+            , E.onClick InsertPageClicked
+            ]
+            [ H.text "Page" ]
         ]
 
 
@@ -605,7 +618,7 @@ pageListView model =
         (H.div [ A.class "d-flex align-items-center justify-content-between mb-2" ]
             [ H.div [ A.class "fw-500" ]
                 [ H.text "Pages" ]
-            , H.button [ A.title "Add page", A.class "btn btn-link p-0 lh-1 text-dark", E.onClick <| PageAddClicked () ] [ Icons.plusCircleSmall ]
+            , H.button [ A.title "Add page", A.class "btn btn-link p-0 lh-1 text-dark", E.onClick InsertPageClicked ] [ Icons.plusCircleSmall ]
             ]
             :: SelectList.indexedMap
                 (\index zipper ->

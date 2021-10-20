@@ -232,7 +232,7 @@ update msg model =
             , cmd
             )
 
-        PageAddClicked _ ->
+        InsertPageClicked ->
             let
                 ( newSeeds, page ) =
                     Document.emptyPageNode model.seeds (SelectList.length model.pages.present + 1)
@@ -246,6 +246,7 @@ update msg model =
                 | seeds = newSeeds
                 , pages = UndoList.new newPages model.pages
                 , saveState = Changed model.currentTime
+                , dropDownState = Hidden
               }
             , Cmd.none
             )
@@ -994,11 +995,6 @@ subscriptions model =
         , BE.onMouseDown (Decode.map (MouseButtonChanged True) mouseDecoder)
         , BE.onMouseUp (Decode.map (MouseButtonChanged False) mouseDecoder)
         , Ports.onDocumentLoad DocumentLoaded
-        , Ports.onPageAdd PageAddClicked
-
-        --, Ports.onInsertNode InsertNodeClicked
-        , Ports.onUndo Undo
-        , Ports.onRedo Redo
         , Time.every 1000 Ticked
         , uploadSub
         , Sub.map ContextMenuMsg (ContextMenu.subscriptions model.contextMenu)

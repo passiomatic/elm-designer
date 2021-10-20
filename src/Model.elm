@@ -88,7 +88,7 @@ type Msg
     | ViewportChanged Viewport
     | WrapRowItemsChanged Bool
     | ClipboardCopyClicked
-    | PageAddClicked ()
+    | InsertPageClicked
     | PageDeleteClicked NodeId
     | InsertNodeClicked (Tree Template)
     | InsertImageClicked
