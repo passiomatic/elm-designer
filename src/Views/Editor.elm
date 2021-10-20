@@ -29,6 +29,7 @@ import Set exposing (Set)
 import Style.Theme as Theme
 import Tree as T exposing (Tree)
 import Tree.Zipper as Zipper exposing (Zipper)
+import Uploader
 import Views.Common as Common exposing (none)
 import Views.ContextMenus as ContextMenus
 import Views.ElmUI as ElmUI
@@ -70,6 +71,7 @@ view model =
                 ]
         )
 
+
 workspaceView model =
     H.div
         [ A.classList
@@ -80,7 +82,26 @@ workspaceView model =
         ]
         [ pageView model
         , uploadProgressView model.uploadState
+
+        --, uploadFileView
         ]
+
+
+{-| This is hidden in the UI but needed to trigget the "Pick a file..." native dialog
+-}
+
+
+
+-- uploadFileView =
+--     H.input
+--         [ A.type_ "file"
+--         , A.multiple True
+--         , E.on "change" (Decode.map FileSelected filesDecoder)
+--         ]
+--         []
+-- filesDecoder : Decoder (List File)
+-- filesDecoder =
+--     Decode.at [ "target", "files" ] (Decode.list File.decoder)
 
 
 uploadProgressView uploadState =
@@ -169,9 +190,6 @@ insertView model =
                         Visible InsertDropdown
                     )
                 )
-
-            --, A.id "dropdownMenuButton1"
-            --, A.attribute "aria-expanded" "false"
             ]
             [ H.text "Insert" ]
         , H.ul
@@ -180,7 +198,27 @@ insertView model =
                 , ( "show", visible )
                 ]
             ]
-            (List.map insertItemView Library.items)
+            (insertImageView
+                :: dividerView
+                :: List.map
+                    insertItemView
+                    Library.items
+            )
+        ]
+
+
+dividerView =
+    H.li [] [ H.hr [ A.class "dropdown-divider" ] [] ]
+
+
+insertImageView =
+    H.li []
+        [ H.button
+            [ A.class "dropdown-item"
+            , A.type_ "button"
+            , E.onClick InsertImageClicked
+            ]
+            [ H.text "Image..." ]
         ]
 
 

@@ -91,12 +91,13 @@ type Msg
     | PageAddClicked ()
     | PageDeleteClicked NodeId
     | InsertNodeClicked (Tree Template)
+    | InsertImageClicked
     | DropDownChanged WidgetState
     | DocumentLoaded String
     | Ticked Posix
     | ModeChanged Mode
     | FileDropped NodeId File (List File)
-    | FileSelected (List File)
+    | FileSelected File (List File)
     | FileDragging NodeId
     | FileDragCanceled
     | FileUploading File (List File) Progress

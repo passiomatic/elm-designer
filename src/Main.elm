@@ -11,6 +11,7 @@ import ContextMenu exposing (ContextMenu)
 import Dict exposing (Dict)
 import Document exposing (DragId(..), DropId(..), Node, Viewport(..))
 import File exposing (File)
+import File.Select as Select
 import Fonts
 import Html.Events as E
 import Html.Events.Extra.Mouse
@@ -97,7 +98,7 @@ update msg model =
             , Cmd.none
             )
 
-        FileSelected files ->
+        FileSelected file files ->
             let
                 node =
                     selectedPage model.pages.present
@@ -105,7 +106,8 @@ update msg model =
                         |> T.label
 
                 ( newUploadState, cmd ) =
-                    files
+                    file
+                        :: files
                         |> acceptFiles
                         |> Uploader.uploadNextFile model.uploadEndpoint
             in
@@ -308,6 +310,9 @@ update msg model =
               }
             , Cmd.none
             )
+
+        InsertImageClicked ->
+            ( { model | dropDownState = Hidden }, Select.files acceptedTypes FileSelected )
 
         ClipboardCopyClicked ->
             let
@@ -1035,15 +1040,19 @@ serializeDocument document =
         |> Ports.saveDocument
 
 
-acceptedTypes : Set String
+acceptedTypes : List String
 acceptedTypes =
-    Set.fromList [ "image/jpeg", "image/png", "image/gif", "image/svg+xml" ]
+    [ "image/jpeg", "image/png", "image/gif", "image/svg+xml" ]
 
 
 acceptFiles files =
+    let
+        acceptedTypes_ =
+            Set.fromList acceptedTypes
+    in
     List.filter
         (\f ->
-            Set.member (File.mime f) acceptedTypes
+            Set.member (File.mime f) acceptedTypes_
         )
         files
 
