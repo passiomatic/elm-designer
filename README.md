@@ -30,7 +30,6 @@ If you need to edit the source files the `package.json` contains a bunch on scri
     npm run dev
 
 [2]: https://parceljs.org
-[3]: https://parceljs.org/getting_started.html
 [d]: https://github.com/passiomatic/elm-designer/releases/tag/v0.3.0
 [issue1]: https://github.com/passiomatic/elm-designer/issues/1 
 [issue2]: https://github.com/passiomatic/elm-designer/issues/2 
