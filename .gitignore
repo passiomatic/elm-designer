@@ -3,8 +3,10 @@
 elm-stuff
 # elm-repl generated files
 repl-temp-*
-# Node, Parcel and Electron Builder
+# Node, Parcel
 node_modules
 build
 dist
 .cache
+# Python
+__pycache__/
