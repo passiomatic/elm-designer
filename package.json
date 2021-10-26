@@ -3,7 +3,6 @@
   "productName": "Elm Designer",
   "version": "0.3.0",
   "description": "A code generator for Elm UI",
-  "author": "Andrea Peltrin <designer@passiomatic.com>",
   "repository": "https://github.com/passiomatic/elm-designer",
   "devDependencies": {
     "cssnano": "4.1.10",
