@@ -6,7 +6,7 @@
 
 The application is in early stages of development and supports a subset of [Elm UI][elmui].
 
-Previosly Elm Designer was an Electrion app, you can still download older versions on the [Releases page][r].
+Previously Elm Designer was an Electrion app, you can download binaries on the [Releases page][r].
 
 ## About images
 
