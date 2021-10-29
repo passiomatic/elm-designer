@@ -243,6 +243,9 @@ emitFontLinks tree =
 emitNode : Theme -> Node -> List EmittedNode -> EmittedNode
 emitNode theme node children =
     (case node.type_ of
+        DocumentNode ->
+            emitPage node children -- TODO
+
         PageNode ->
             emitPage node children
 

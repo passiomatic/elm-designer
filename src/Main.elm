@@ -601,9 +601,11 @@ update msg model =
                 ( False, "Escape", EditingText ) ->
                     ( { model | inspector = NotEdited }, Cmd.none )
 
-                -- Track Alt status
                 ( _, "Alt", NotEdited ) ->
                     ( { model | isAltDown = isDown }, Cmd.none )
+
+                ( _, "Meta", NotEdited ) ->
+                    ( { model | isMetaDown = isDown }, Cmd.none )
 
                 _ ->
                     ( model, Cmd.none )
@@ -628,16 +630,21 @@ update msg model =
         --         let
         --             newWorkspaceX =
         --                 model.workspaceX + mouse.movementX
+
         --             newWorkspaceY =
         --                 model.workspaceY + mouse.movementY
+
         --             minLeft =
         --                 -Model.workspaceWidth // 2
+
         --             minTop =
         --                 -Model.workspaceHeight + model.windowHeight
+
         --             newModel =
         --                 { model
         --                     | workspaceX = clamp minLeft 0 newWorkspaceX
         --                     , workspaceY = clamp minTop 0 newWorkspaceY
+
         --                     -- , mouseX = mouse.movementX
         --                     -- , mouseY = mouse.movementY
         --                 }
@@ -645,28 +652,48 @@ update msg model =
         --         ( newModel
         --         , Cmd.none
         --         )
+
         --     else
         --         ( model, Cmd.none )
-        -- MouseWheelChanged wheel ->
-        --     -- Zoom away
-        --     let
-        --         ( mouseX, mouseY ) =
-        --             wheel.mouseEvent.pagePos
-        --         newModel =
-        --             if model.isAltDown then
-        --                 { model
-        --                     | workspaceScale = clamp minWorkspaceScale maxWorkspaceScale (model.workspaceScale + wheel.deltaY * wheelSensibility)
-        --                     , mouseX = round mouseX
-        --                     , mouseY = round mouseY
-        --                 }
-        --             else
-        --                 model
-        --     in
-        --     ( newModel
-        --     , Cmd.none
-        --     )
+
+        -- ###########
+        -- Zoom away
+        -- ###########
+
+        MouseWheelChanged wheel ->
+            let
+                ( mouseX, mouseY ) =
+                    wheel.mouseEvent.pagePos
+
+                newModel =
+                    if model.isMetaDown then
+                        { model
+                            | workspaceScale = clamp minWorkspaceScale maxWorkspaceScale (model.workspaceScale + wheel.deltaY * wheelSensibility)
+                            , mouseX = round mouseX
+                            , mouseY = round mouseY
+                        }
+
+                    else
+                        model
+            in
+            ( newModel
+            , Cmd.none
+            )
+
         _ ->
             ( model, Cmd.none )
+
+
+minWorkspaceScale =
+    0.1
+
+
+maxWorkspaceScale =
+    5.0
+
+
+wheelSensibility =
+    0.01
 
 
 updateField model =

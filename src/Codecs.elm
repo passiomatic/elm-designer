@@ -548,8 +548,11 @@ shadowTypeCodec =
 nodeTypeCodec : Codec NodeType
 nodeTypeCodec =
     Codec.custom
-        (\headingNode paragraphNode textNode rowNode columnNode textColumnNode imageNode buttonNode checkboxNode textFieldNode textFieldMultilineNode radioNode optionNode pageNode value ->
+        (\headingNode paragraphNode textNode rowNode columnNode textColumnNode imageNode buttonNode checkboxNode textFieldNode textFieldMultilineNode radioNode optionNode pageNode documentNode value ->
             case value of
+                DocumentNode ->
+                    documentNode
+
                 HeadingNode data ->
                     headingNode data
 
@@ -606,6 +609,7 @@ nodeTypeCodec =
         |> Codec.variant1 "RadioNode" RadioNode labelCodec
         |> Codec.variant1 "OptionNode" OptionNode textCodec
         |> Codec.variant0 "PageNode" PageNode
+        |> Codec.variant0 "DocumentNode" DocumentNode
         |> Codec.buildCustom
 
 

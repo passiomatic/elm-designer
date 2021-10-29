@@ -18,6 +18,7 @@ import Html as H exposing (Attribute, Html)
 import Html.Attributes as A
 import Html.Entity as Entity
 import Html.Events as E
+import Html.Events.Extra.Wheel as Wheel
 import Html5.DragDrop as DragDrop
 import Icons
 import Json.Decode as Decode exposing (Decoder)
@@ -73,35 +74,31 @@ view model =
 
 
 workspaceView model =
+    let
+        transformAttr =
+            A.style "transform" (Css.translateBy model.workspaceX model.workspaceY ++ " " ++ Css.scaleBy model.workspaceScale)
+
+        originX =
+            Model.workspaceWidth // 2 - model.windowWidth // 2 + model.mouseX
+
+        originY =
+            (min model.workspaceY model.windowHeight // 2) + model.mouseY
+
+        originAttr =
+            A.style "transform-origin" (Css.px originX ++ " " ++ Css.px originY)
+    in
     H.div
         [ A.classList
             [ ( "workspace flex-grow-1 unselectable", True )
             , ( "workspace--design", model.mode == DesignMode )
             , ( "workspace--preview", model.mode == PreviewMode )
             ]
+        --, transformAttr
+        --, originAttr            
         ]
-        [ pageView model
+        [ documentView model
         , uploadProgressView model.uploadState
-
-        --, uploadFileView
         ]
-
-
-{-| This is hidden in the UI but needed to trigget the "Pick a file..." native dialog
--}
-
-
-
--- uploadFileView =
---     H.input
---         [ A.type_ "file"
---         , A.multiple True
---         , E.on "change" (Decode.map FileSelected filesDecoder)
---         ]
---         []
--- filesDecoder : Decoder (List File)
--- filesDecoder =
---     Decode.at [ "target", "files" ] (Decode.list File.decoder)
 
 
 uploadProgressView uploadState =
@@ -159,9 +156,9 @@ headerView model =
     H.header [ A.class "header d-flex justify-content-between align-items-center bp-2 border-bottom" ]
         [ insertView model
         , viewportsView model
+        , zoomView model
 
         --, modeButton
-        , none
         ]
 
 
@@ -320,18 +317,17 @@ onViewportSelect msg =
     E.on "input" (Codecs.viewportDecoder msg)
 
 
-
--- zoomView : Model -> Html Msg
--- zoomView model =
---     let
---         zoom =
---             round (model.workspaceScale * 100)
---     in
---     H.div [ A.class "d-flex align-items-center me-5" ]
---         [ Button.button [ Button.light, Button.small ] [ Icons.minusCircle ]
---         , H.div [ A.class "bp-3 bg-white rounded text-center", A.style "width" "3rem" ] [ H.text (String.fromInt zoom ++ "%") ]
---         , Button.button [ Button.light, Button.small ] [ Icons.plusCircle ]
---         ]
+zoomView : Model -> Html Msg
+zoomView model =
+    let
+        zoom =
+            round (model.workspaceScale * 100)
+    in
+    H.div [ A.class "d-flex bg-white border rounded align-items-center" ]
+        [ H.button [ A.class "btn btn-transparent btn-sm" ] [ Icons.minusCircle ]
+        , H.div [ A.class "text-center small", A.style "width" "3rem" ] [ H.text (String.fromInt zoom ++ "%") ]
+        , H.button [ A.class "btn btn-transparent btn-sm" ] [ Icons.plusCircle ]
+        ]
 
 
 rightPaneView : Model -> Html Msg
@@ -686,8 +682,8 @@ templateView item =
         ]
 
 
-pageView : Model -> Html Msg
-pageView model =
+documentView : Model -> Html Msg
+documentView model =
     let
         tree =
             SelectList.selected model.pages.present
@@ -717,7 +713,8 @@ pageView model =
     case model.mode of
         DesignMode ->
             H.div
-                [ A.classList
+                [ Wheel.onWheel MouseWheelChanged
+                , A.classList
                     [ ( "page", True )
                     , ( "page--design", True )
                     , ( viewportClass, True )
@@ -727,11 +724,11 @@ pageView model =
                 , A.style "min-height" height
                 ]
                 [ content
-                , H.div
-                    [ A.class "page__fold"
-                    , A.style "top" height
-                    ]
-                    [ H.text "Fold" ]
+                -- , H.div
+                --     [ A.class "page__fold"
+                --     , A.style "top" height
+                --     ]
+                --     [ H.text "Fold" ]
                 ]
 
         PreviewMode ->

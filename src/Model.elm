@@ -177,16 +177,16 @@ type Inspector
 type alias Model =
     { mode : Mode
     , uploadEndpoint : String
-
-    -- , workspaceScale : Float
-    -- , workspaceX : Int
-    -- , workspaceY : Int
+    , workspaceScale : Float
+    , workspaceX : Int
+    , workspaceY : Int
     , windowWidth : Int
     , windowHeight : Int
     , mouseX : Int
     , mouseY : Int
     , isMouseButtonDown : Bool
     , isAltDown : Bool
+    , isMetaDown : Bool
     , pages : UndoList (SelectList (Zipper Node))
     , viewport : Viewport
     , inspector : Inspector
@@ -295,16 +295,16 @@ initialModel { width, height, uploadEndpoint, seed1, seed2, seed3, seed4 } =
     in
     ( { mode = DesignMode
       , uploadEndpoint = uploadEndpoint
-
-      -- , workspaceScale = 1.0
-      -- , workspaceX = -workspaceWidth // 2 + width // 2
-      -- , workspaceY = 0
+      , workspaceScale = 1.0
+      , workspaceX = -workspaceWidth // 2 + width // 2
+      , workspaceY = 0
       , windowWidth = width
       , windowHeight = height
       , mouseX = 0
       , mouseY = 0
       , isMouseButtonDown = False
       , isAltDown = False
+      , isMetaDown = False
       , pages = UndoList.fresh <| SelectList.singleton <| Zipper.fromTree emptyDocument
       , viewport = Fluid
       , inspector = NotEdited

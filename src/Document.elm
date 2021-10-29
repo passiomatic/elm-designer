@@ -237,11 +237,15 @@ type NodeType
     | RadioNode LabelData
     | OptionNode TextData
     | PageNode
+    | DocumentNode
 
 
 nodeType : NodeType -> String
 nodeType value =
     case value of
+        DocumentNode -> 
+            "Document"
+            
         HeadingNode heading ->
             "Heading " ++ String.fromInt heading.level
 

@@ -32,7 +32,6 @@ import Views.Common as Common
 
 type RenderedNode
     = RenderedElement Position (Element Msg)
-      --| RenderedPage (Html Msg)
     | RenderedOption (Option NodeId Msg)
 
 
@@ -77,6 +76,9 @@ renderNode ctx node children =
             Document.isSelected node.id ctx.currentNode
     in
     case node.type_ of
+        DocumentNode ->
+            renderDocument ctx node selected children
+
         PageNode ->
             renderPage ctx node selected children
 
@@ -189,6 +191,23 @@ renderRow ctx node selected { wrapped } children =
         |> RenderedElement node.position
 
 
+{-| Render a document as workspace
+-}
+renderDocument : Context -> Node -> Bool -> List RenderedNode -> RenderedNode
+renderDocument ctx node selected children =
+    let
+        renderer attrs =
+            let
+                newAttrs =
+                    attrs
+                        |> makeFileDroppableIf (not <| Common.isDragging ctx.dragDrop) node.id
+            in
+            addChildrenFor E.column newAttrs children
+    in
+    wrapElement ctx node selected renderer
+        |> RenderedElement Normal 
+
+
 {-| Render page as Elm UI column to layout elements vertically one after another, just like a regular HTML page.
 -}
 renderPage : Context -> Node -> Bool -> List RenderedNode -> RenderedNode
@@ -206,8 +225,9 @@ renderPage ctx node selected children =
             else
                 addChildrenFor E.column newAttrs children
     in
+    -- Put all pages "in front" to lay out th in an absolutely positioned fashion 
     wrapElement ctx node selected renderer
-        |> RenderedElement node.position
+        |> RenderedElement InFront
 
 
 renderEmptyPage attrs =
