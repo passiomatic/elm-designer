@@ -17,7 +17,6 @@ module Library exposing
 import Dict
 import Document exposing (..)
 import Element as E exposing (Color)
-import Fonts
 import Html as H exposing (Html)
 import Icons
 import List.Extra
@@ -38,6 +37,7 @@ type alias LibraryItem msg =
     , accelerator : String
     }
 
+
 basicsLabel =
     "Basics"
 
@@ -57,6 +57,7 @@ items =
     , heading3
     , textSnippet
     , paragraph
+    , page
     , row
     , column
     , textColumn
@@ -100,7 +101,6 @@ itemLabel =
 
 
 -- BASICS
-
 
 heading1 : Theme -> LibraryItem msg
 heading1 theme =
@@ -199,6 +199,26 @@ textSnippet theme =
 
 -- LAYOUT
 
+
+page : Theme -> LibraryItem msg
+page theme =
+    { icon = Icons.file
+    , group = layoutLabel
+    , description = ""
+    , accelerator = ""
+    , root =
+        T.singleton
+            { baseTemplate
+                | type_ = PageNode
+                , name = "Page"
+                , width = Layout.fill
+                , height = Layout.fill
+                , fontFamily = Local theme.textFontFamily
+                , fontColor = Local theme.textColor
+                , fontSize = Local theme.textSize
+                , background = Background.Solid theme.backgroundColor
+            }
+    }
 
 row : Theme -> LibraryItem msg
 row theme =

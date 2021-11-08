@@ -113,6 +113,12 @@ type alias Document =
     }
 
 
+{-| UUID namespace for built-in library elements.
+-}
+defaultNamespace =
+    UUID.forName "elm-designer.passiomatic.com" UUID.dnsNamespace
+
+
 type alias NodeId =
     UUID
 
@@ -155,32 +161,7 @@ type alias Node =
 
 
 type alias Template =
-    { name : String
-    , width : Length
-    , height : Length
-    , transformation : Transformation
-    , padding : Padding
-    , spacing : Spacing
-    , fontFamily : Local FontFamily
-    , fontColor : Local Color
-    , fontSize : Local Int
-    , fontWeight : FontWeight
-    , textAlignment : TextAlignment
-
-    -- TODO Needed?
-    -- , letterSpacing : Float
-    -- , wordSpacing : Float
-    , borderColor : Color
-    , borderStyle : BorderStyle
-    , borderWidth : BorderWidth
-    , borderCorner : BorderCorner
-
-    -- , shadow: Shadow
-    , background : Background
-    , alignmentX : Alignment
-    , alignmentY : Alignment
-    , type_ : NodeType
-    }
+    Node 
 
 
 type DragId
@@ -199,8 +180,13 @@ type DropId
 baseTemplate : Template
 baseTemplate =
     { name = ""
+    , id = UUID.forName "node-element" defaultNamespace
     , width = Layout.fit
+    , widthMin  = Nothing 
+    , widthMax = Nothing
     , height = Layout.fit
+    , heightMin = Nothing 
+    , heightMax = Nothing
     , transformation = Layout.untransformed
     , padding = Layout.padding 0
     , spacing = Layout.spacing 0
@@ -208,14 +194,16 @@ baseTemplate =
     , fontColor = Inherit
     , fontSize = Inherit
     , fontWeight = Regular
+    , letterSpacing = 0
+    , wordSpacing = 0
     , textAlignment = TextStart
     , borderColor = Palette.darkCharcoal
     , borderStyle = Solid
     , borderWidth = Border.width 0
     , borderCorner = Border.corner 0
-
-    --, shadow = Border.flat
+    , shadow = Shadow.none
     , background = Background.None
+    , position = Normal
     , alignmentX = None
     , alignmentY = None
     , type_ = PageNode
@@ -243,9 +231,9 @@ type NodeType
 nodeType : NodeType -> String
 nodeType value =
     case value of
-        DocumentNode -> 
+        DocumentNode ->
             "Document"
-            
+
         HeadingNode heading ->
             "Heading " ++ String.fromInt heading.level
 
@@ -344,38 +332,10 @@ fromTemplate template seeds =
                 ( uuid, newSeeds ) =
                     generateId seeds_
 
-                node =
-                    { id = uuid
-                    , name = template_.name
-                    , width = template_.width
-                    , widthMin = Nothing
-                    , widthMax = Nothing
-                    , height = template_.height
-                    , heightMin = Nothing
-                    , heightMax = Nothing
-                    , transformation = template_.transformation
-                    , padding = template_.padding
-                    , spacing = template_.spacing
-                    , fontFamily = template_.fontFamily
-                    , fontColor = template_.fontColor
-                    , fontSize = template_.fontSize
-                    , fontWeight = template_.fontWeight
-                    , letterSpacing = 0
-                    , wordSpacing = 0
-                    , textAlignment = template_.textAlignment
-                    , borderColor = template_.borderColor
-                    , borderStyle = template_.borderStyle
-                    , borderWidth = template_.borderWidth
-                    , borderCorner = template_.borderCorner
-                    , shadow = Shadow.none
-                    , background = template_.background
-                    , position = Normal
-                    , alignmentX = template_.alignmentX
-                    , alignmentY = template_.alignmentY
-                    , type_ = template_.type_
-                    }
+                newNode =
+                    { template_ | id = uuid }
             in
-            ( newSeeds, node )
+            ( newSeeds, newNode )
         )
         seeds
         template
@@ -431,6 +391,13 @@ emptyPageNode seeds index =
     pageNode Theme.defaultTheme seeds [] index
 
 
+-- {-| A startup document with a blank page in it.
+-- -}
+-- defaultDocument : Seeds -> Int -> ( Seeds, Tree Node )
+-- defaultDocument seeds index =
+--     pageNode Theme.defaultTheme seeds [] index
+
+
 {-| Images require the user to drop them _into_ the app workspace so we bypass the pick-from-library process here.
 -}
 imageNode : String -> Seeds -> ( Seeds, Tree Node )
@@ -438,7 +405,7 @@ imageNode url seeds =
     let
         template =
             T.singleton
-                { baseTemplate
+                { baseTemplate 
                     | type_ = ImageNode { src = url, description = "" }
 
                     --, width = Fill
@@ -446,7 +413,6 @@ imageNode url seeds =
                 }
     in
     fromTemplate template seeds
-
 
 
 -- VIEWPORTS
