@@ -89,7 +89,7 @@ workspaceView model =
     in
     H.div
         [ A.class "workspace-wrapper flex-grow-1 unselectable"
-        , Wheel.onWheel MouseWheelChanged
+        --, Wheel.onWheel MouseWheelChanged
         ]
         [ H.div
             [ A.classList
