@@ -88,16 +88,21 @@ workspaceView model =
             A.style "transform-origin" (Css.px originX ++ " " ++ Css.px originY)
     in
     H.div
-        [ A.classList
-            [ ( "workspace flex-grow-1 unselectable", True )
-            , ( "workspace--design", model.mode == DesignMode )
-            , ( "workspace--preview", model.mode == PreviewMode )
-            ]
-        -- TODO
-        --, transformAttr
-        --, originAttr            
+        [ A.class "workspace-wrapper flex-grow-1 unselectable"
         ]
-        [ documentView model
+        [ H.div
+            [ A.classList
+                [ ( "workspace", True )
+                , ( "workspace--design", model.mode == DesignMode )
+                , ( "workspace--preview", model.mode == PreviewMode )
+                ]
+            , A.style "width" (px Model.workspaceWidth)
+            , A.style "height" (px Model.workspaceHeight)
+            , transformAttr
+            , originAttr
+            ]
+            [ documentView model
+            ]
         , uploadProgressView model.uploadState
         ]
 
@@ -725,6 +730,7 @@ documentView model =
                 , A.style "min-height" height
                 ]
                 [ content
+
                 -- , H.div
                 --     [ A.class "page__fold"
                 --     , A.style "top" height

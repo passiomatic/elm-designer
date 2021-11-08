@@ -45,11 +45,11 @@ import UndoList exposing (UndoList)
 
 
 workspaceWidth =
-    4000
+    8000
 
 
 workspaceHeight =
-    4000
+    8000
 
 
 type Msg
