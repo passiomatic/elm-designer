@@ -63,6 +63,7 @@ module Document exposing
     , insertNodeAfter
     , insertNodeBefore
     , isContainer
+    , isDocumentNode
     , isPageNode
     , isSelected
     , nodeId
@@ -161,7 +162,7 @@ type alias Node =
 
 
 type alias Template =
-    Node 
+    Node
 
 
 type DragId
@@ -182,10 +183,10 @@ baseTemplate =
     { name = ""
     , id = UUID.forName "node-element" defaultNamespace
     , width = Layout.fit
-    , widthMin  = Nothing 
+    , widthMin = Nothing
     , widthMax = Nothing
     , height = Layout.fit
-    , heightMin = Nothing 
+    , heightMin = Nothing
     , heightMax = Nothing
     , transformation = Layout.untransformed
     , padding = Layout.padding 0
@@ -281,6 +282,16 @@ isPageNode : Node -> Bool
 isPageNode node =
     case node.type_ of
         PageNode ->
+            True
+
+        _ ->
+            False
+
+
+isDocumentNode : Node -> Bool
+isDocumentNode node =
+    case node.type_ of
+        DocumentNode ->
             True
 
         _ ->
@@ -391,6 +402,7 @@ emptyPageNode seeds index =
     pageNode Theme.defaultTheme seeds [] index
 
 
+
 -- {-| A startup document with a blank page in it.
 -- -}
 -- defaultDocument : Seeds -> Int -> ( Seeds, Tree Node )
@@ -405,7 +417,7 @@ imageNode url seeds =
     let
         template =
             T.singleton
-                { baseTemplate 
+                { baseTemplate
                     | type_ = ImageNode { src = url, description = "" }
 
                     --, width = Fill
@@ -413,6 +425,7 @@ imageNode url seeds =
                 }
     in
     fromTemplate template seeds
+
 
 
 -- VIEWPORTS

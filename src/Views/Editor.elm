@@ -490,8 +490,8 @@ outlineItemView model node children =
                     ]
 
         _ ->
-            -- Tree node
-            if Document.isPageNode node then
+            if Document.isDocumentNode node then
+                -- Top node
                 H.div [ A.class "d-flex flex-column h-100" ]
                     [ H.div [ A.class "mb-2 fw-500" ]
                         [ H.text "Outline" ]
