@@ -53,8 +53,8 @@ module Document exposing
     , baseTemplate
     , canDropInto
     , canDropSibling
+    , defaultDocument
     , duplicateNode
-    , emptyPageNode
     , findDeviceInfo
     , fromTemplate
     , generateId
@@ -335,7 +335,7 @@ generateId seeds =
     UUID.step seeds
 
 
-fromTemplate : Tree Template -> Seeds -> ( Seeds, Tree Node )
+fromTemplate : Tree Node -> Seeds -> ( Seeds, Tree Node )
 fromTemplate template seeds =
     T.mapAccumulate
         (\seeds_ template_ ->
@@ -352,62 +352,21 @@ fromTemplate template seeds =
         template
 
 
-pageNode : Theme -> Seeds -> List (Tree Node) -> Int -> ( Seeds, Tree Node )
-pageNode theme seeds children index =
-    let
-        ( uuid, newSeeds ) =
-            generateId seeds
-
-        page =
-            { id = uuid
-            , name = "Page " ++ String.fromInt index
-            , width = Layout.fill
-            , widthMin = Nothing
-            , widthMax = Nothing
-            , height = Layout.fill
-            , heightMin = Nothing
-            , heightMax = Nothing
-            , transformation = baseTemplate.transformation
-            , padding = baseTemplate.padding
-            , spacing = baseTemplate.spacing
-            , fontFamily = Local theme.textFontFamily
-            , fontColor = Local theme.textColor
-            , fontSize = Local theme.textSize
-            , fontWeight = baseTemplate.fontWeight
-            , letterSpacing = 0
-            , wordSpacing = 0
-            , textAlignment = baseTemplate.textAlignment
-            , borderColor = baseTemplate.borderColor
-            , borderStyle = baseTemplate.borderStyle
-            , borderWidth = baseTemplate.borderWidth
-            , borderCorner = baseTemplate.borderCorner
-            , shadow = Shadow.none
-            , background = Background.Solid theme.backgroundColor
-            , position = Normal
-            , alignmentX = baseTemplate.alignmentX
-            , alignmentY = baseTemplate.alignmentY
-            , type_ = baseTemplate.type_
-            }
-    in
-    ( newSeeds
-    , T.tree page
-        children
-    )
-
-
-{-| An empty page.
+{-| A startup document with a blank page on it.
 -}
-emptyPageNode : Seeds -> Int -> ( Seeds, Tree Node )
-emptyPageNode seeds index =
-    pageNode Theme.defaultTheme seeds [] index
-
-
-
--- {-| A startup document with a blank page in it.
--- -}
--- defaultDocument : Seeds -> Int -> ( Seeds, Tree Node )
--- defaultDocument seeds index =
---     pageNode Theme.defaultTheme seeds [] index
+defaultDocument : Seeds -> Int -> ( Seeds, Tree Node )
+defaultDocument seeds index =
+    let
+        template =
+            T.singleton
+                { baseTemplate
+                    | type_ = DocumentNode
+                    , name = "Document " ++ String.fromInt index
+                    , width = Layout.fill
+                    , height = Layout.fill
+                }
+    in
+    fromTemplate template seeds
 
 
 {-| Images require the user to drop them _into_ the app workspace so we bypass the pick-from-library process here.
@@ -419,8 +378,6 @@ imageNode url seeds =
             T.singleton
                 { baseTemplate
                     | type_ = ImageNode { src = url, description = "" }
-
-                    --, width = Fill
                     , name = "Image"
                 }
     in
@@ -544,6 +501,9 @@ isSelected id zipper =
 isContainer : Node -> Bool
 isContainer node =
     case node.type_ of
+        DocumentNode ->
+            True
+
         PageNode ->
             True
 
@@ -573,6 +533,9 @@ canDropInto container { type_ } =
             False
 
         ( PageNode, _ ) ->
+            True
+
+        ( DocumentNode, _ ) ->
             True
 
         ( RowNode _, _ ) ->

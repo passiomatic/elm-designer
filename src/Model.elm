@@ -287,8 +287,8 @@ initialModel { width, height, uploadEndpoint, seed1, seed2, seed3, seed4 } =
                 (Random.initialSeed seed3)
                 (Random.initialSeed seed4)
 
-        ( newSeeds, emptyDocument ) =
-            Document.emptyPageNode seeds 1
+        ( newSeeds, newDocument ) =
+            Document.defaultDocument seeds 1
 
         ( contextMenu, cmd ) =
             ContextMenu.init
@@ -305,7 +305,7 @@ initialModel { width, height, uploadEndpoint, seed1, seed2, seed3, seed4 } =
       , isMouseButtonDown = False
       , isAltDown = False
       , isMetaDown = False
-      , pages = UndoList.fresh <| SelectList.singleton <| Zipper.fromTree emptyDocument
+      , pages = UndoList.fresh <| SelectList.singleton <| Zipper.fromTree newDocument
       , viewport = Fluid
       , inspector = NotEdited
       , dragDrop = DragDrop.init

@@ -56,6 +56,10 @@ resolveStyleViews model zipper =
     in
     title
         :: (case node.type_ of
+                DocumentNode ->
+                    [
+                    ]
+
                 PageNode ->
                     [ sectionView "Layout"
                         [ spacingYView model node

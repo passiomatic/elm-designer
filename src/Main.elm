@@ -226,25 +226,26 @@ update msg model =
               }
             , cmd
             )
+        
+        -- TODO
+        -- InsertPageClicked ->
+        --     let
+        --         ( newSeeds, page ) =
+        --             Document.emptyPageNode model.seeds (SelectList.length model.pages.present + 1)
 
-        InsertPageClicked ->
-            let
-                ( newSeeds, page ) =
-                    Document.emptyPageNode model.seeds (SelectList.length model.pages.present + 1)
-
-                newPages =
-                    model.pages.present
-                        |> SelectList.selectLast
-                        |> SelectList.insertBefore (Zipper.fromTree page)
-            in
-            ( { model
-                | seeds = newSeeds
-                , pages = UndoList.new newPages model.pages
-                , saveState = Changed model.currentTime
-                , dropDownState = Hidden
-              }
-            , Cmd.none
-            )
+        --         newPages =
+        --             model.pages.present
+        --                 |> SelectList.selectLast
+        --                 |> SelectList.insertBefore (Zipper.fromTree page)
+        --     in
+        --     ( { model
+        --         | seeds = newSeeds
+        --         , pages = UndoList.new newPages model.pages
+        --         , saveState = Changed model.currentTime
+        --         , dropDownState = Hidden
+        --       }
+        --     , Cmd.none
+        --     )
 
         PageDeleteClicked id ->
             let
@@ -685,7 +686,7 @@ update msg model =
 
 
 minWorkspaceScale =
-    0.1
+    0.2
 
 
 maxWorkspaceScale =
@@ -693,7 +694,7 @@ maxWorkspaceScale =
 
 
 wheelSensibility =
-    0.01
+    0.007
 
 
 updateField model =

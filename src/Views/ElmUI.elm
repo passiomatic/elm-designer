@@ -196,16 +196,18 @@ renderRow ctx node selected { wrapped } children =
 renderDocument : Context -> Node -> Bool -> List RenderedNode -> RenderedNode
 renderDocument ctx node selected children =
     let
-        renderer attrs =
-            let
-                newAttrs =
-                    attrs
-                        |> makeFileDroppableIf (not <| Common.isDragging ctx.dragDrop) node.id
-            in
-            addChildrenFor E.column newAttrs children
+        attrs =
+            [ elementClasses ctx node selected
+            , elementId node
+            ]                
+                |> applyWidth node.width node.widthMin node.widthMax
+                |> applyHeight node.height node.heightMin node.heightMax            
+                |> makeDroppableIf (Common.canDropInto node ctx.dragDrop) (AppendTo node.id)
     in
-    wrapElement ctx node selected renderer
-        |> RenderedElement Normal 
+    -- Document doesn't need to be wrapped. Also, pass E.column as a placeholder,
+    --    we'll position all children pages "InFront" anyway
+    addChildrenFor E.column attrs children
+        |> RenderedElement Normal
 
 
 {-| Render page as Elm UI column to layout elements vertically one after another, just like a regular HTML page.
@@ -225,7 +227,7 @@ renderPage ctx node selected children =
             else
                 addChildrenFor E.column newAttrs children
     in
-    -- Put all pages "in front" to lay out th in an absolutely positioned fashion 
+    -- Put all pages "in front" to lay out them in an absolutely positioned fashion 
     wrapElement ctx node selected renderer
         |> RenderedElement InFront
 

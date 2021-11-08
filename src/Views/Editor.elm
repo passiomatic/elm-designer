@@ -89,6 +89,7 @@ workspaceView model =
     in
     H.div
         [ A.class "workspace-wrapper flex-grow-1 unselectable"
+        , Wheel.onWheel MouseWheelChanged
         ]
         [ H.div
             [ A.classList
@@ -400,8 +401,8 @@ codeView model =
 leftPaneView : Model -> Html Msg
 leftPaneView model =
     H.aside [ A.class "pane pane--left border-end d-flex flex-column" ]
-        [ pageListView model
-        , outlineView model
+        [ --pageListView model
+          outlineView model
         , libraryView model
         ]
 
@@ -718,25 +719,26 @@ documentView model =
     in
     case model.mode of
         DesignMode ->
-            H.div
-                [ Wheel.onWheel MouseWheelChanged
-                , A.classList
-                    [ ( "page", True )
-                    , ( "page--design", True )
-                    , ( viewportClass, True )
-                    ]
-                , A.attribute "data-fold" height
-                , A.style "width" width
-                , A.style "min-height" height
-                ]
-                [ content
+            content
+            -- H.div
+            --     [ A.classList
+            --         [--( "page", True )
+            --          --, ( "page--design", True )
+            --          --, ( viewportClass, True )
+            --         ]
 
-                -- , H.div
-                --     [ A.class "page__fold"
-                --     , A.style "top" height
-                --     ]
-                --     [ H.text "Fold" ]
-                ]
+            --     --, A.attribute "data-fold" height
+            --     -- , A.style "width" width
+            --     -- , A.style "min-height" height
+            --     ]
+            --     [ content
+
+            --     -- , H.div
+            --     --     [ A.class "page__fold"
+            --     --     , A.style "top" height
+            --     --     ]
+            --     --     [ H.text "Fold" ]
+            --     ]
 
         PreviewMode ->
             H.div

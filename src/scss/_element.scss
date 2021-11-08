@@ -3,7 +3,6 @@
 // ----------------------
 
 .element {
-  //transition: background-color .2s ease-out;
 }
 
 .element__connect {
@@ -33,14 +32,14 @@
 // ----------------------
 // Selected (design mode only)
 
-.page--design .element--selected {
+.workspace .element--selected {
   outline: 3px solid $primary;
 }
 
 // ----------------------
 // Drag & drop
 
-.page--design .element--dropped:after {
+.workspace .element--dropped:after {
   content: "";
   position: absolute;
   top: 0;
@@ -52,7 +51,7 @@
   pointer-events: none;
 }
 
-.page--design .dragging--file:after {
+.workspace .dragging--file:after {
   content: "";
   position: absolute;
   top: 0;

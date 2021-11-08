@@ -3,9 +3,9 @@
 // 1. Do not stretch chrome/device view
 
 .workspace-wrapper {
-  height: calc(100vh - #{$header-height});
-  overflow: scroll;
+  height: calc(100vh - #{$header-height});  
   position: relative;
+  overflow: scroll;
 }
 
 .workspace {
@@ -13,6 +13,8 @@
   top: 0;
   left: 0;
   z-index: 1;
+  background: white;
+  border: 1px solid $border-color;
 }
 
 // .workspace--design { 
