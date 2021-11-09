@@ -365,9 +365,8 @@ defaultDocument seeds index =
                     , width = Layout.fill
                     , height = Layout.fill
                 }
-                [ 
-                    -- TODO Pass input theme value
-                    emptyPage Theme.defaultTheme
+                [ -- TODO Pass input theme value
+                  emptyPage Theme.defaultTheme
                 ]
     in
     fromTemplate template seeds
@@ -577,7 +576,7 @@ canDropInto container { type_ } =
 canDropSibling : Node -> { a | type_ : NodeType } -> Bool
 canDropSibling sibling { type_ } =
     case ( sibling.type_, type_ ) of
-        -- For OptionNode allow only one case: drop it next to another option
+        -- Only drop radio options next to another option
         ( OptionNode _, OptionNode _ ) ->
             True
 
@@ -587,6 +586,14 @@ canDropSibling sibling { type_ } =
         ( _, OptionNode _ ) ->
             False
 
+        -- Only drop pages next to another page
+        ( PageNode, PageNode ) ->
+            True
+
+        ( _, PageNode ) ->
+            False
+
+        -- Other scenarios
         ( _, RowNode _ ) ->
             True
 
