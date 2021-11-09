@@ -43,6 +43,10 @@ appName =
     "Elm Designer"
 
 
+appVersion =
+    ( 0, 4, 1 )
+
+
 init : Flags -> ( Model, Cmd Msg )
 init flags =
     let
@@ -242,7 +246,6 @@ update msg model =
         --       }
         --     , Cmd.none
         --     )
-
         -- InsertNodeClicked label ->
         --     case Library.findTemplate label of
         --         Just template ->
@@ -269,7 +272,7 @@ update msg model =
                 ( newSeeds, newNode ) =
                     Document.fromTemplate template model.seeds
 
-                newDocument =                    
+                newDocument =
                     Document.insertNode newNode model.document.present
             in
             ( { model
@@ -302,7 +305,7 @@ update msg model =
                         | document = UndoList.mapPresent (\_ -> Zipper.fromTree document.root) model.document
                         , viewport = document.viewport
                         , saveState = Original
-                        }
+                      }
                     , Cmd.none
                     )
 
@@ -482,7 +485,6 @@ update msg model =
                         Nothing ->
                             -- Still going/failed drag and drop operation
                             ( model.seeds, model.document.present, False )
-
             in
             ( { model
                 | dragDrop = newDragDrop

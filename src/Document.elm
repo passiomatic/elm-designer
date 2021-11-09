@@ -99,7 +99,7 @@ import UUID exposing (Seeds, UUID)
 
 
 schemaVersion =
-    3
+    4
 
 
 {-| A serialized document.
