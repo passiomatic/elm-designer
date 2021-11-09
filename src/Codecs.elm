@@ -24,7 +24,6 @@ import Element.Font as Font exposing (Font)
 import Fonts
 import Html.Events as E
 import Json.Decode as D exposing (Decoder)
-import SelectList exposing (SelectList)
 import Set exposing (Set)
 import Style.Background as Background exposing (Background)
 import Style.Border as Border exposing (..)
@@ -53,7 +52,7 @@ documentCodec =
     Codec.object Document
         |> Codec.field "schemaVersion" .schemaVersion Codec.int
         |> Codec.field "lastUpdatedOn" .lastUpdatedOn timeCodec
-        |> Codec.field "pages" .pages (Codec.list (treeCodec nodeCodec))
+        |> Codec.field "root" .root (treeCodec nodeCodec)
         |> Codec.field "viewport" .viewport viewportCodec
         |> Codec.field "collapsedTreeItems" .collapsedTreeItems setCodec
         |> Codec.buildObject

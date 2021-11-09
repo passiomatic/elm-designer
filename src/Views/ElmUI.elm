@@ -18,7 +18,6 @@ import Html5.DragDrop as DragDrop
 import Json.Decode as Decode exposing (Decoder)
 import Model exposing (..)
 import Palette
-import SelectList exposing (SelectList)
 import Style.Background as Background exposing (Background)
 import Style.Border exposing (BorderCorner, BorderStyle(..), BorderWidth)
 import Style.Font as Font exposing (..)

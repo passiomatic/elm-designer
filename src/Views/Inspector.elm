@@ -18,7 +18,6 @@ import Html.Keyed as Keyed
 import Icons
 import Model exposing (..)
 import Palette
-import SelectList exposing (SelectList)
 import Style.Background as Background exposing (Background)
 import Style.Border as Border exposing (BorderStyle(..))
 import Style.Font as Font exposing (..)
@@ -34,7 +33,7 @@ view : Model -> List (Html Msg)
 view model =
     let
         zipper =
-            SelectList.selected model.document.present
+            model.document.present
     in
     [ H.form [ E.onSubmit FieldEditingConfirmed ]
         -- This makes onSubmit to work when hitting enter

@@ -84,7 +84,6 @@ import Element exposing (Color, Orientation(..))
 import Fonts
 import Maybe
 import Palette
-import SelectList exposing (SelectList)
 import Set exposing (Set)
 import Style.Background as Background exposing (Background)
 import Style.Border as Border exposing (BorderCorner, BorderStyle(..), BorderWidth)
@@ -108,7 +107,7 @@ schemaVersion =
 type alias Document =
     { schemaVersion : Int
     , lastUpdatedOn : Posix
-    , pages : List (Tree Node)
+    , root : Tree Node
     , viewport : Viewport
     , collapsedTreeItems : Set String
     }

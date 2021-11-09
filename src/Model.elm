@@ -15,7 +15,6 @@ module Model exposing
     , WidgetState(..)
     , context
     , initialModel
-    , page
     , workspaceHeight
     , workspaceWidth
     )
@@ -29,7 +28,6 @@ import Html5.DragDrop as DragDrop
 import Http exposing (Error, Progress)
 import Random
 import Result exposing (Result(..))
-import SelectList exposing (SelectList)
 import Set exposing (Set)
 import Style.Background as Background exposing (Background)
 import Style.Border exposing (BorderStyle)
@@ -60,7 +58,6 @@ type Msg
     | NodeSelected NodeId
     | TextEditingStarted String
     | CollapseNodeClicked Bool NodeId
-    | PageSelected Int
     | PaddingLockChanged Bool
     | BorderLockChanged Bool
     | WidthChanged Length
@@ -188,7 +185,7 @@ type alias Model =
     , isMouseButtonDown : Bool
     , isAltDown : Bool
     , isMetaDown : Bool
-    , document : UndoList (SelectList (Zipper Node))
+    , document : UndoList (Zipper Node)
     , viewport : Viewport
     , inspector : Inspector
     , dragDrop : DragDrop.Model DragId DropId
@@ -235,7 +232,7 @@ type alias Context =
 
 context : Model -> Context
 context model =
-    { currentNode = SelectList.selected model.document.present
+    { currentNode = model.document.present
     , dragDrop = model.dragDrop
     , fileDrop = model.fileDrop
     , inspector = model.inspector
@@ -306,7 +303,7 @@ initialModel { width, height, uploadEndpoint, seed1, seed2, seed3, seed4 } =
       , isMouseButtonDown = False
       , isAltDown = False
       , isMetaDown = False
-      , document = UndoList.fresh <| SelectList.singleton <| Zipper.fromTree newDocument
+      , document = UndoList.fresh (Zipper.fromTree newDocument)
       , viewport = Fluid
       , inspector = NotEdited
       , dragDrop = DragDrop.init
@@ -322,10 +319,3 @@ initialModel { width, height, uploadEndpoint, seed1, seed2, seed3, seed4 } =
       }
     , Cmd.map ContextMenuMsg cmd
     )
-
-
-{-| Get current selected page.
--}
-page : SelectList (Zipper Node) -> Zipper Node
-page pages =
-    SelectList.selected pages

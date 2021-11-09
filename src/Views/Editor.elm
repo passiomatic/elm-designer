@@ -25,7 +25,6 @@ import Json.Decode as Decode exposing (Decoder)
 import Library exposing (LibraryItem)
 import Model exposing (..)
 import Palette
-import SelectList exposing (SelectList)
 import Set exposing (Set)
 import Style.Theme as Theme
 import Tree as T exposing (Tree)
@@ -378,8 +377,7 @@ codeView : Model -> List (Html Msg)
 codeView model =
     let
         node =
-            page model.document.present
-                |> Zipper.tree
+            Zipper.tree model.document.present
     in
     [ H.section [ A.class "section bp-3 d-flex flex-column h-100" ]
         [ H.div [ A.class "mb-2 fw-500" ]
@@ -411,8 +409,7 @@ outlineView : Model -> Html Msg
 outlineView model =
     let
         tree =
-            SelectList.selected model.document.present
-                |> Zipper.toTree
+            Zipper.toTree model.document.present
     in
     H.div [ A.class "bp-3 scroll-y border-bottom flex-grow-1" ]
         [ T.restructure identity (outlineItemView model) tree
@@ -423,7 +420,7 @@ outlineItemView : Model -> Node -> List (Html Msg) -> Html Msg
 outlineItemView model node children =
     let
         currentNode =
-            SelectList.selected model.document.present
+            model.document.present
 
         collapsed =
             isCollapsed model node
@@ -615,43 +612,6 @@ isCollapsed model node =
     Set.member (Document.nodeId node.id) model.collapsedTreeItems
 
 
-pageListView : Model -> Html Msg
-pageListView model =
-    H.div [ A.class "bp-3 scroll-y border-bottom", A.style "min-height" "112px", A.style "max-height" "112px" ]
-        (H.div [ A.class "d-flex align-items-center justify-content-between mb-2" ]
-            [ H.div [ A.class "fw-500" ]
-                [ H.text "Pages" ]
-            , H.button [ A.title "Add page", A.class "btn btn-link p-0 lh-1 text-dark", E.onClick InsertPageClicked ] [ Icons.plusCircleSmall ]
-            ]
-            :: SelectList.indexedMap
-                (\index zipper ->
-                    let
-                        pageNode =
-                            Zipper.root zipper
-                                |> Zipper.label
-
-                        currentNode =
-                            Zipper.label zipper
-
-                        classes =
-                            A.classList
-                                [ ( "page-item", True )
-                                , ( "bg-primary text-white", index == 0 && currentNode == pageNode )
-                                , ( "bg-gray-200", index == 0 && currentNode /= pageNode )
-                                ]
-                    in
-                    H.div
-                        [ classes
-                        , E.onClick (PageSelected index)
-                        , ContextMenu.open ContextMenuMsg (PageListContextPopup pageNode.id)
-                        ]
-                        [ H.text pageNode.name
-                        ]
-                )
-                model.document.present
-        )
-
-
 libraryView : Model -> Html Msg
 libraryView _ =
     H.div [ A.class "bps-3 bpt-3 scroll-y", A.style "height" "350px", A.style "min-height" "350px" ]
@@ -693,8 +653,7 @@ documentView : Model -> Html Msg
 documentView model =
     let
         tree =
-            SelectList.selected model.document.present
-                |> Zipper.toTree
+            Zipper.toTree model.document.present
 
         ctx =
             Model.context model
