@@ -188,7 +188,7 @@ type alias Model =
     , isMouseButtonDown : Bool
     , isAltDown : Bool
     , isMetaDown : Bool
-    , pages : UndoList (SelectList (Zipper Node))
+    , document : UndoList (SelectList (Zipper Node))
     , viewport : Viewport
     , inspector : Inspector
     , dragDrop : DragDrop.Model DragId DropId
@@ -235,7 +235,7 @@ type alias Context =
 
 context : Model -> Context
 context model =
-    { currentNode = SelectList.selected model.pages.present
+    { currentNode = SelectList.selected model.document.present
     , dragDrop = model.dragDrop
     , fileDrop = model.fileDrop
     , inspector = model.inspector
@@ -306,7 +306,7 @@ initialModel { width, height, uploadEndpoint, seed1, seed2, seed3, seed4 } =
       , isMouseButtonDown = False
       , isAltDown = False
       , isMetaDown = False
-      , pages = UndoList.fresh <| SelectList.singleton <| Zipper.fromTree newDocument
+      , document = UndoList.fresh <| SelectList.singleton <| Zipper.fromTree newDocument
       , viewport = Fluid
       , inspector = NotEdited
       , dragDrop = DragDrop.init

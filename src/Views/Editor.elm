@@ -378,7 +378,7 @@ codeView : Model -> List (Html Msg)
 codeView model =
     let
         node =
-            page model.pages.present
+            page model.document.present
                 |> Zipper.tree
     in
     [ H.section [ A.class "section bp-3 d-flex flex-column h-100" ]
@@ -411,7 +411,7 @@ outlineView : Model -> Html Msg
 outlineView model =
     let
         tree =
-            SelectList.selected model.pages.present
+            SelectList.selected model.document.present
                 |> Zipper.toTree
     in
     H.div [ A.class "bp-3 scroll-y border-bottom flex-grow-1" ]
@@ -423,7 +423,7 @@ outlineItemView : Model -> Node -> List (Html Msg) -> Html Msg
 outlineItemView model node children =
     let
         currentNode =
-            SelectList.selected model.pages.present
+            SelectList.selected model.document.present
 
         collapsed =
             isCollapsed model node
@@ -648,7 +648,7 @@ pageListView model =
                         [ H.text pageNode.name
                         ]
                 )
-                model.pages.present
+                model.document.present
         )
 
 
@@ -693,7 +693,7 @@ documentView : Model -> Html Msg
 documentView model =
     let
         tree =
-            SelectList.selected model.pages.present
+            SelectList.selected model.document.present
                 |> Zipper.toTree
 
         ctx =

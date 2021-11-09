@@ -99,7 +99,7 @@ update msg model =
         FileSelected file files ->
             let
                 node =
-                    selectedPage model.pages.present
+                    selectedPage model.document.present
                         |> Zipper.tree
                         |> T.label
 
@@ -150,7 +150,7 @@ update msg model =
                             Document.imageNode (String.trim url) model.seeds
 
                         zipper =
-                            selectedPage model.pages.present
+                            selectedPage model.document.present
 
                         newPage =
                             case model.fileDrop of
@@ -178,7 +178,7 @@ update msg model =
 
                             else
                                 model.fileDrop
-                        , pages = UndoList.mapPresent (SelectList.replaceSelected newPage) model.pages
+                        , document = UndoList.mapPresent (SelectList.replaceSelected newPage) model.document
                         , seeds = newSeeds
                         , saveState = Changed model.currentTime
                       }
@@ -205,7 +205,7 @@ update msg model =
                                         { schemaVersion = Document.schemaVersion
                                         , lastUpdatedOn = now
                                         , pages =
-                                            model.pages.present
+                                            model.document.present
                                                 |> SelectList.toList
                                                 |> List.map Zipper.toTree
                                         , viewport = model.viewport
@@ -255,13 +255,13 @@ update msg model =
                     (Zipper.toTree zipper |> T.label).id == id
 
                 newPages =
-                    model.pages.present
+                    model.document.present
                         |> SelectList.attempt (SelectList.selectBeforeIf isPage)
                         |> SelectList.attempt (SelectList.selectAfterIf isPage)
                         |> SelectList.attempt SelectList.delete
             in
             ( { model
-                | pages = UndoList.new newPages model.pages
+                | document = UndoList.new newPages model.document
                 , saveState = Changed model.currentTime
               }
             , Cmd.none
@@ -294,14 +294,14 @@ update msg model =
                     Document.fromTemplate template model.seeds
 
                 newPage =
-                    selectedPage model.pages.present
+                    selectedPage model.document.present
                         |> Document.insertNode newNode
 
                 newPages =
-                    SelectList.replaceSelected newPage model.pages.present
+                    SelectList.replaceSelected newPage model.document.present
             in
             ( { model
-                | pages = UndoList.new newPages model.pages
+                | document = UndoList.new newPages model.document
                 , saveState = Changed model.currentTime
                 , seeds = newSeeds
                 , dropDownState = Hidden
@@ -315,7 +315,7 @@ update msg model =
         ClipboardCopyClicked ->
             let
                 code =
-                    selectedPage model.pages.present
+                    selectedPage model.document.present
                         |> Zipper.tree
                         |> CodeGen.emit Theme.defaultTheme model.viewport
             in
@@ -330,7 +330,7 @@ update msg model =
                         head :: rest ->
                             -- Select the first page of the list
                             ( { model
-                                | pages = UndoList.mapPresent (\_ -> SelectList.fromLists [] head rest) model.pages
+                                | document = UndoList.mapPresent (\_ -> SelectList.fromLists [] head rest) model.document
                                 , viewport = document.viewport
                                 , saveState = Original
                               }
@@ -375,7 +375,7 @@ update msg model =
 
         PageSelected index ->
             ( { model
-                | pages =
+                | document =
                     UndoList.mapPresent
                         (\pages ->
                             case SelectList.selectBy index pages of
@@ -386,7 +386,7 @@ update msg model =
                                     -- Fall back to first page
                                     SelectList.selectHead pages
                         )
-                        model.pages
+                        model.document
 
                 -- Quit editing when user selects a new page
                 , inspector = NotEdited
@@ -396,7 +396,7 @@ update msg model =
 
         NodeSelected id ->
             ( { model
-                | pages =
+                | document =
                     UndoList.mapPresent
                         (\pages ->
                             SelectList.updateSelected
@@ -407,7 +407,7 @@ update msg model =
                                 )
                                 pages
                         )
-                        model.pages
+                        model.document
 
                 -- Quit editing when user selects a new node
                 , inspector = NotEdited
@@ -536,23 +536,23 @@ update msg model =
                                     ( newSeeds_, addDroppedNode model dropId node newZipper, True )
 
                                 Nothing ->
-                                    ( model.seeds, selectedPage model.pages.present, False )
+                                    ( model.seeds, selectedPage model.document.present, False )
 
                         Nothing ->
                             -- Still going/failed drag and drop operation
-                            ( model.seeds, selectedPage model.pages.present, False )
+                            ( model.seeds, selectedPage model.document.present, False )
 
                 newPages_ =
-                    SelectList.replaceSelected newPages model.pages.present
+                    SelectList.replaceSelected newPages model.document.present
             in
             ( { model
                 | dragDrop = newDragDrop
-                , pages =
+                , document =
                     if hasNewUndo then
-                        UndoList.new newPages_ model.pages
+                        UndoList.new newPages_ model.document
 
                     else
-                        UndoList.mapPresent (\_ -> newPages_) model.pages
+                        UndoList.mapPresent (\_ -> newPages_) model.document
                 , seeds = newSeeds
                 , saveState = Changed model.currentTime
               }
@@ -580,7 +580,7 @@ update msg model =
                 ( False, "Backspace", NotEdited ) ->
                     -- TODO remove node from model.collapsedTreeItems
                     ( { model
-                        | pages = UndoList.new (SelectList.updateSelected Document.removeNode model.pages.present) model.pages
+                        | document = UndoList.new (SelectList.updateSelected Document.removeNode model.document.present) model.document
                         , saveState = Changed model.currentTime
                       }
                     , Cmd.none
@@ -621,10 +621,10 @@ update msg model =
                 ( model, Cmd.none )
 
         Undo _ ->
-            ( { model | pages = UndoList.undo model.pages }, Cmd.none )
+            ( { model | document = UndoList.undo model.document }, Cmd.none )
 
         Redo _ ->
-            ( { model | pages = UndoList.redo model.pages }, Cmd.none )
+            ( { model | document = UndoList.redo model.document }, Cmd.none )
 
         -- MouseMoved mouse ->
         --     if model.isMouseButtonDown && model.mode == PanMode then
@@ -896,7 +896,7 @@ getDroppedNode : Model -> DragId -> ( Seeds, Maybe (Tree Node), Zipper Node )
 getDroppedNode model dragId =
     let
         currentZipper =
-            selectedPage model.pages.present
+            selectedPage model.document.present
     in
     case dragId of
         Move node ->
@@ -957,13 +957,13 @@ selectedPage pages =
 
 
 applyChange : Model -> (a -> Zipper Node -> Zipper Node) -> a -> ( Model, Cmd Msg )
-applyChange ({ pages, currentTime } as model) updater newValue =
+applyChange model updater newValue =
     let
         newPages =
-            SelectList.updateSelected (updater newValue) model.pages.present
+            SelectList.updateSelected (updater newValue) model.document.present
     in
     ( { model
-        | pages = UndoList.new newPages model.pages
+        | document = UndoList.new newPages model.document
         , saveState = Changed model.currentTime
       }
     , Cmd.none
