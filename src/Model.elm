@@ -108,6 +108,7 @@ type Msg
     | Undo ()
     | Redo ()
     | ContextMenuMsg (ContextMenu.Msg ContextPopup)
+    | WindowSizeChanged Int Int
 
 
 type ContextPopup

@@ -89,7 +89,7 @@ workspaceView model =
     in
     H.div
         [ A.class "workspace-wrapper flex-grow-1 unselectable"
-        --, Wheel.onWheel MouseWheelChanged
+        , Wheel.onWithOptions { stopPropagation = False, preventDefault = False } MouseWheelChanged
         ]
         [ H.div
             [ A.classList
@@ -720,26 +720,24 @@ documentView model =
     case model.mode of
         DesignMode ->
             content
-            -- H.div
-            --     [ A.classList
-            --         [--( "page", True )
-            --          --, ( "page--design", True )
-            --          --, ( viewportClass, True )
-            --         ]
 
-            --     --, A.attribute "data-fold" height
-            --     -- , A.style "width" width
-            --     -- , A.style "min-height" height
-            --     ]
-            --     [ content
-
-            --     -- , H.div
-            --     --     [ A.class "page__fold"
-            --     --     , A.style "top" height
-            --     --     ]
-            --     --     [ H.text "Fold" ]
-            --     ]
-
+        -- H.div
+        --     [ A.classList
+        --         [--( "page", True )
+        --          --, ( "page--design", True )
+        --          --, ( viewportClass, True )
+        --         ]
+        --     --, A.attribute "data-fold" height
+        --     -- , A.style "width" width
+        --     -- , A.style "min-height" height
+        --     ]
+        --     [ content
+        --     -- , H.div
+        --     --     [ A.class "page__fold"
+        --     --     , A.style "top" height
+        --     --     ]
+        --     --     [ H.text "Fold" ]
+        --     ]
         PreviewMode ->
             H.div
                 [ A.classList

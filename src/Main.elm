@@ -67,6 +67,9 @@ init flags =
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
+        WindowSizeChanged w h ->
+            ( { model | windowWidth = w, windowHeight = h }, Cmd.none )
+
         ContextMenuMsg msg_ ->
             let
                 ( contextMenu, cmd ) =
@@ -226,13 +229,12 @@ update msg model =
               }
             , cmd
             )
-        
+
         -- TODO
         -- InsertPageClicked ->
         --     let
         --         ( newSeeds, page ) =
         --             Document.emptyPageNode model.seeds (SelectList.length model.pages.present + 1)
-
         --         newPages =
         --             model.pages.present
         --                 |> SelectList.selectLast
@@ -246,7 +248,6 @@ update msg model =
         --       }
         --     , Cmd.none
         --     )
-
         PageDeleteClicked id ->
             let
                 isPage : Zipper Node -> Bool
@@ -631,21 +632,16 @@ update msg model =
         --         let
         --             newWorkspaceX =
         --                 model.workspaceX + mouse.movementX
-
         --             newWorkspaceY =
         --                 model.workspaceY + mouse.movementY
-
         --             minLeft =
         --                 -Model.workspaceWidth // 2
-
         --             minTop =
         --                 -Model.workspaceHeight + model.windowHeight
-
         --             newModel =
         --                 { model
         --                     | workspaceX = clamp minLeft 0 newWorkspaceX
         --                     , workspaceY = clamp minTop 0 newWorkspaceY
-
         --                     -- , mouseX = mouse.movementX
         --                     -- , mouseY = mouse.movementY
         --                 }
@@ -653,14 +649,11 @@ update msg model =
         --         ( newModel
         --         , Cmd.none
         --         )
-
         --     else
         --         ( model, Cmd.none )
-
         -- ###########
         -- Zoom away
         -- ###########
-
         MouseWheelChanged wheel ->
             let
                 ( mouseX, mouseY ) =
@@ -1017,6 +1010,7 @@ subscriptions model =
         , BE.onKeyUp (Decode.map (KeyChanged False) keysDecoder)
         , BE.onMouseDown (Decode.map (MouseButtonChanged True) mouseDecoder)
         , BE.onMouseUp (Decode.map (MouseButtonChanged False) mouseDecoder)
+        , BE.onResize WindowSizeChanged
         , Ports.onDocumentLoad DocumentLoaded
         , Time.every 1000 Ticked
         , uploadSub
