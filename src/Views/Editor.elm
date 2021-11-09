@@ -419,9 +419,6 @@ outlineView model =
 outlineItemView : Model -> Node -> List (Html Msg) -> Html Msg
 outlineItemView model node children =
     let
-        currentNode =
-            model.document.present
-
         collapsed =
             isCollapsed model node
 
@@ -453,7 +450,7 @@ outlineItemView model node children =
             [ A.classList
                 [ ( "tree__label", True )
                 , ( "tree__label--leaf", True )
-                , ( "bg-primary text-white", Document.isSelected node.id currentNode )
+                , ( "bg-primary text-white", Document.isSelected node.id model.document.present )
                 ]
             ]
 
@@ -461,14 +458,15 @@ outlineItemView model node children =
             [ A.classList
                 [ ( "tree__label", True )
                 , ( "tree__item--dropping", isDroppingInto node.id model.dragDrop )
-                , ( "bg-primary text-white", Document.isSelected node.id currentNode )
+                , ( "bg-primary text-white", Document.isSelected node.id model.document.present )
                 ]
             ]
     in
     case children of
         [] ->
-            if Document.isPageNode node then
-                emptyPageNotice model node
+            if Document.isDocumentNode node then
+                -- Top node
+                emptyDocumentNotice model node
 
             else
                 -- Tree leaf
@@ -539,7 +537,7 @@ outlineItemView model node children =
                     ]
 
 
-emptyPageNotice model node =
+emptyDocumentNotice model node =
     H.div
         (A.classList
             [ ( "d-flex flex-column border border-dashed justify-content-center rounded text-center text-muted h-100", True )

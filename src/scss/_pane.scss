@@ -16,19 +16,6 @@
   min-width: 21em;
 }
 
-// Page list
-
-.page-item {
-  padding: 0.25rem 0.25rem;
-  border-radius: 3px;
-  @extend .unselectable;
-  @include font-size($input-font-size-sm);
-}
-
-.page-item:hover {
-  background: $gray-200;
-}
-
 // Library
 
 .template {

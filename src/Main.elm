@@ -11,11 +11,9 @@ import Document exposing (DragId(..), DropId(..), Node, Viewport(..))
 import File exposing (File)
 import File.Select as Select
 import Fonts
-import Html.Events as E
 import Html5.DragDrop as DragDrop
 import Http exposing (Progress(..))
 import Json.Decode as Decode exposing (Decoder, Value)
-import Library
 import Maybe
 import Model exposing (..)
 import Ports
