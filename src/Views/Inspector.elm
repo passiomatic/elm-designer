@@ -62,7 +62,7 @@ resolveStyleViews model zipper =
 
                 PageNode ->
                     [ sectionView "Layout"
-                        [ spacingYView model node
+                        [ lengthView model node                        
                         , paddingView model node
                         ]
                     , sectionView "Text"
