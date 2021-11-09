@@ -358,15 +358,38 @@ defaultDocument : Seeds -> Int -> ( Seeds, Tree Node )
 defaultDocument seeds index =
     let
         template =
-            T.singleton
+            T.tree
                 { baseTemplate
                     | type_ = DocumentNode
                     , name = "Document " ++ String.fromInt index
                     , width = Layout.fill
                     , height = Layout.fill
                 }
+                [ 
+                    -- TODO Pass input theme value
+                    emptyPage Theme.defaultTheme
+                ]
     in
     fromTemplate template seeds
+
+
+emptyPage : Theme -> Tree Node
+emptyPage theme =
+    T.singleton
+        { baseTemplate
+            | type_ = PageNode
+            , name = "Page"
+            , width = Layout.px 375
+            , height = Layout.px 667
+            , transformation = Transformation (8000 / 2) (8000 / 2) 0 1.0
+            , fontFamily = Local theme.textFontFamily
+            , fontColor = Local theme.textColor
+            , fontSize = Local theme.textSize
+            , borderWidth = Border.width 1
+            , borderColor = Palette.darkGrey
+            , position = InFront
+            , background = Background.Solid theme.backgroundColor
+        }
 
 
 {-| Images require the user to drop them _into_ the app workspace so we bypass the pick-from-library process here.
