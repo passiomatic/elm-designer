@@ -63,7 +63,8 @@ view model =
             _ ->
                 [ headerView model
                 , H.div [ A.class "d-flex" ]
-                    [ leftPaneView model
+                    [ 
+                    leftPaneView model
                     , workspaceView model
                     , rightPaneView model
                     ]
@@ -81,20 +82,20 @@ workspaceView model =
             Model.workspaceWidth // 2 - model.windowWidth // 2 + model.mouseX
 
         originY =
-            (min model.workspaceY model.windowHeight // 2) + model.mouseY
+            Model.workspaceHeight // 2 - model.windowHeight // 2 + model.mouseY
 
         originAttr =
             A.style "transform-origin" (Css.px originX ++ " " ++ Css.px originY)
     in
     H.div
         [ A.class "workspace-wrapper flex-grow-1 unselectable"
-        , Wheel.onWithOptions { stopPropagation = False, preventDefault = False } MouseWheelChanged
+        , Wheel.onWithOptions { stopPropagation = True, preventDefault = True } MouseWheelChanged
         ]
         [ H.div
             [ A.classList
                 [ ( "workspace", True )
                 , ( "workspace--design", model.mode == DesignMode )
-                , ( "workspace--preview", model.mode == PreviewMode )
+                --, ( "workspace--preview", model.mode == PreviewMode )
                 ]
             , A.style "width" (px Model.workspaceWidth)
             , A.style "height" (px Model.workspaceHeight)

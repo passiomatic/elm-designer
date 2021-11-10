@@ -624,11 +624,11 @@ minWorkspaceScale =
 
 
 maxWorkspaceScale =
-    5.0
+    4.0
 
 
 wheelSensibility =
-    0.007
+    0.005
 
 
 updateField model =
