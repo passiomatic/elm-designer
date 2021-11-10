@@ -47,7 +47,7 @@ maxTreeLabelLength =
 view model =
     H.node "main"
         [ A.classList
-            [ ( "h-100", True )
+            [ ( "d-flex flex-column", True )
             , ( "dragging--element", Common.isDragging model.dragDrop )
             ]
         ]
