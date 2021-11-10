@@ -22,24 +22,21 @@
   //display: none;
 }
 
- 
-// .element__connect.vis,
-// .element__nudge.vis {
-//   display: block;
-// }
- 
-
 // ----------------------
 // Selected (design mode only)
 
-.workspace .element--selected {
+.element--selected {
   outline: 3px solid $primary;
+}
+
+.element--Document.element--selected {
+  outline: none;
 }
 
 // ----------------------
 // Drag & drop
 
-.workspace .element--dropped:after {
+.element--dropped:after {
   content: "";
   position: absolute;
   top: 0;
@@ -51,7 +48,7 @@
   pointer-events: none;
 }
 
-.workspace .dragging--file:after {
+.dragging--file:after {
   content: "";
   position: absolute;
   top: 0;
@@ -80,6 +77,6 @@
 }
 
 // Disallow image dragging while in design mode
-.page--design .element > img {
+.element > img {
   -webkit-user-drag: none;
 }

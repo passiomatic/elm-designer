@@ -190,7 +190,7 @@ renderRow ctx node selected { wrapped } children =
         |> RenderedElement node.position
 
 
-{-| Render a document as workspace
+{-| Render a document as workspace.
 -}
 renderDocument : Context -> Node -> Bool -> List RenderedNode -> RenderedNode
 renderDocument ctx node selected children =
@@ -198,6 +198,7 @@ renderDocument ctx node selected children =
         attrs =
             [ elementClasses ctx node selected
             , elementId node
+            , onClick (NodeSelected node.id)
             ]                
                 |> applyWidth node.width node.widthMin node.widthMax
                 |> applyHeight node.height node.heightMin node.heightMax            
@@ -991,6 +992,7 @@ elementClasses ctx node selected =
             [ ( "element", True )
             , ( "element--dropped", isDroppingInto dropId ctx.dragDrop )
             , ( "element--selected", selected )
+            , ( "element--" ++ nodeType node.type_, True )
             , ( "dragging--file", isDroppingFileInto node.id ctx.fileDrop )
             ]
         )
