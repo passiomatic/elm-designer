@@ -55,6 +55,7 @@ module Document exposing
     , canDropSibling
     , defaultDocument
     , duplicateNode
+    , emptyPage
     , findDeviceInfo
     , fromTemplate
     , fromTemplateAt
@@ -76,7 +77,7 @@ module Document exposing
     , schemaVersion
     , selectNodeWith
     , selectParentOf
-    , viewports, emptyPage
+    , viewports
     )
 
 import Css
@@ -348,7 +349,7 @@ fromTemplateAt position template seeds =
                         PageNode ->
                             { template_
                                 | id = uuid
-                                , transformation = Transformation( toFloat position.x) (toFloat position.y) 0 1.0
+                                , transformation = Transformation (toFloat position.x) (toFloat position.y) 0 1.0
                             }
 
                         _ ->
