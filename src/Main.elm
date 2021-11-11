@@ -469,7 +469,7 @@ update msg model =
                     DragDrop.update msg_ model.bindingDragDrop
 
                 zipper =
-                    selectedPage model.pages
+                    model.document.present
 
                 newZipper =
                     case dragDropResult of
@@ -487,7 +487,7 @@ update msg model =
             in
             ( { model
                 | bindingDragDrop = newDragDrop
-                , pages = SelectList.replaceSelected newZipper model.pages
+                , document = UndoList.new newZipper model.document
                 , saveState = Changed model.currentTime
               }
             , Cmd.none

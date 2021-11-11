@@ -133,7 +133,7 @@ renderTextColumn ctx node selected children =
             let
                 newAttrs =
                     attrs
-                        |> makeFileDroppableIf (not <| Common.isDragging ctx.dragDrop) node.id
+                        --|> makeDroppableIf (not <| Common.isDragging ctx.nodeDragDrop) node.id
             in
             if List.isEmpty children then
                 E.textColumn newAttrs [ placeholderText "Empty Text Column" ]
@@ -152,7 +152,7 @@ renderColumn ctx node selected children =
             let
                 newAttrs =
                     attrs
-                        |> makeFileDroppableIf (not <| Common.isDragging ctx.dragDrop) node.id
+                        |> makeFileDroppableIf (not <| Common.isDragging ctx.nodeDragDrop) node.id
             in
             if List.isEmpty children then
                 E.column newAttrs [ placeholderText "Empty Column" ]
@@ -171,7 +171,7 @@ renderRow ctx node selected { wrapped } children =
             let
                 newAttrs =
                     attrs
-                        |> makeFileDroppableIf (not <| Common.isDragging ctx.dragDrop) node.id
+                        |> makeFileDroppableIf (not <| Common.isDragging ctx.nodeDragDrop) node.id
 
                 nodeRenderer =
                     if wrapped then
@@ -202,7 +202,7 @@ renderDocument ctx node selected children =
             ]                
                 |> applyWidth node.width node.widthMin node.widthMax
                 |> applyHeight node.height node.heightMin node.heightMax            
-                |> makeDroppableIf (Common.canDropInto node ctx.dragDrop) (AppendTo node.id)
+                |> makeDroppableIf (Common.canDropInto node ctx.nodeDragDrop) (AppendTo node.id)
     in
     -- Document doesn't need to be wrapped. Also, pass E.column as a placeholder,
     --    we'll position all children pages "InFront" anyway
@@ -219,7 +219,7 @@ renderPage ctx node selected children =
             let
                 newAttrs =
                     attrs
-                        |> makeFileDroppableIf (not <| Common.isDragging ctx.dragDrop) node.id
+                        |> makeFileDroppableIf (not <| Common.isDragging ctx.nodeDragDrop) node.id
             in
             if List.isEmpty children then
                 renderEmptyPage newAttrs
@@ -910,7 +910,7 @@ wrapElement ctx node selected renderer =
          --  , E.onRight (E.el [E.alignTop, E.moveLeft 14 ] (E.html <| H.div [ A.class "element__nudge" ] []))
          --  , E.onLeft (E.el [E.alignTop, E.moveRight 14 ] (E.html <| H.div [ A.class "element__nudge" ] []))
          ]
-            |> makeDroppableIf (Common.canDropInto node ctx.dragDrop) (AppendTo node.id)
+            |> makeDroppableIf (Common.canDropInto node ctx.nodeDragDrop) (AppendTo node.id)
             |> applyWidth node.width node.widthMin node.widthMax
             |> applyHeight node.height node.heightMin node.heightMax
             |> applyAlignX node.alignmentX
@@ -983,13 +983,15 @@ elementId node =
 
 
 elementClasses ctx node selected =
+    let
+        dropId =
+            AppendTo node.id
+    in
     E.htmlAttribute
         (A.classList
             [ ( "element", True )
-            , ( "element--dropped", isDroppingInto (AppendTo node.id) ctx.nodeDragDrop )
-            , ( "element--dropped", isBinding node.id ctx.bindingDragDrop )
+            , ( "element--dropped", isDroppingInto dropId ctx.nodeDragDrop )
             , ( "element--selected", selected )
-            , ( "element--bound", isBound node )
             , ( "element--" ++ nodeType node.type_, True )
             , ( "dragging--file", isDroppingFileInto node.id ctx.fileDrop )
             ]
@@ -1033,20 +1035,6 @@ isDroppingFileInto nodeId fileDrop =
             False
 
 
-isBinding nodeId dragDrop =
-    case DragDrop.getDropId dragDrop of
-        Just nodeId_ ->
-            nodeId_ == nodeId
-
-        Nothing ->
-            False
-
-
-isBound : Node -> Bool
-isBound node =
-    node.binding /= Unbound
-
-
 placeholderText label =
     -- FIXME: textColumn seems to not honor E.height E.fill
     E.el
@@ -1074,21 +1062,10 @@ onDoubleClick msg =
     E.htmlAttribute (Html.Events.stopPropagationOn "dblclick" (Decode.succeed ( msg, True )))
 
 
-makeNodeDroppableIf pred dropId attrs =
+makeDroppableIf pred dropId attrs =
     if pred then
         attrs
             ++ (DragDrop.droppable DragDropMsg dropId
-                    |> List.map E.htmlAttribute
-               )
-
-    else
-        attrs
-
-
-makeBindableIf pred nodeId attrs =
-    if pred then
-        attrs
-            ++ (DragDrop.droppable BindingDragDropMsg nodeId
                     |> List.map E.htmlAttribute
                )
 
@@ -1109,12 +1086,6 @@ makeFileDroppableIf pred nodeId attrs =
 
     else
         attrs
-
-
-{-| Is user either dragging nodes or binding fields?
--}
-isDragging ctx =
-    Common.isDragging ctx.nodeDragDrop || Common.isDragging ctx.bindingDragDrop
 
 
 {-| Stop given event and prevent default behavior.
