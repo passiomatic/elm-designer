@@ -102,6 +102,7 @@ itemLabel =
 
 -- BASICS
 
+
 heading1 : Theme -> LibraryItem msg
 heading1 theme =
     { icon = Icons.type_
@@ -207,19 +208,9 @@ page theme =
     , description = ""
     , accelerator = ""
     , root =
-        T.singleton
-            { baseTemplate
-                | type_ = PageNode
-                , name = "Page"
-                , width = Layout.px 375
-                , height = Layout.px 667                
-                , fontFamily = Local theme.textFontFamily
-                , fontColor = Local theme.textColor
-                , fontSize = Local theme.textSize
-                , position = InFront
-                , background = Background.Solid theme.backgroundColor
-            }
+        Document.emptyPage theme { x = 0, y = 0 }
     }
+
 
 row : Theme -> LibraryItem msg
 row theme =

@@ -76,7 +76,7 @@ module Document exposing
     , schemaVersion
     , selectNodeWith
     , selectParentOf
-    , viewports
+    , viewports, emptyPage
     )
 
 import Css
@@ -344,7 +344,15 @@ fromTemplateAt position template seeds =
                     generateId seeds_
 
                 newNode =
-                    { template_ | id = uuid }
+                    case template_.type_ of
+                        PageNode ->
+                            { template_
+                                | id = uuid
+                                , transformation = Transformation( toFloat position.x) (toFloat position.y) 0 1.0
+                            }
+
+                        _ ->
+                            { template_ | id = uuid }
             in
             ( newSeeds, newNode )
         )
