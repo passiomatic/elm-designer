@@ -57,6 +57,7 @@ module Document exposing
     , duplicateNode
     , findDeviceInfo
     , fromTemplate
+    , fromTemplateAt
     , generateId
     , imageNode
     , insertNode
@@ -334,8 +335,8 @@ generateId seeds =
     UUID.step seeds
 
 
-fromTemplate : Tree Node -> Seeds -> ( Seeds, Tree Node )
-fromTemplate template seeds =
+fromTemplateAt : { a | x : Int, y : Int } -> Tree Node -> Seeds -> ( Seeds, Tree Node )
+fromTemplateAt position template seeds =
     T.mapAccumulate
         (\seeds_ template_ ->
             let
@@ -351,6 +352,11 @@ fromTemplate template seeds =
         template
 
 
+fromTemplate : Tree Node -> Seeds -> ( Seeds, Tree Node )
+fromTemplate template seeds =
+    fromTemplateAt { x = 0, y = 0 } template seeds
+
+
 {-| A startup document with a blank page on it.
 -}
 defaultDocument : Seeds -> Int -> ( Seeds, Tree Node )
@@ -364,27 +370,25 @@ defaultDocument seeds index =
                     , width = Layout.fill
                     , height = Layout.fill
                 }
-                [ -- TODO Pass input theme value
-                  emptyPage Theme.defaultTheme
+                [ -- TODO Pass actual theme value
+                  emptyPage Theme.defaultTheme { x = 100, y = 100 }
                 ]
     in
     fromTemplate template seeds
 
 
-emptyPage : Theme -> Tree Node
-emptyPage theme =
+emptyPage : Theme -> { a | x : Int, y : Int } -> Tree Node
+emptyPage theme position =
     T.singleton
         { baseTemplate
             | type_ = PageNode
             , name = "Page"
             , width = Layout.px 375
             , height = Layout.px 667
-            , transformation = Transformation 100 100 0 1.0
+            , transformation = Transformation (toFloat position.x) (toFloat position.y) 0 1.0
             , fontFamily = Local theme.textFontFamily
             , fontColor = Local theme.textColor
             , fontSize = Local theme.textSize
-            , borderWidth = Border.width 1
-            , borderColor = Palette.darkGrey
             , position = InFront
             , background = Background.Solid theme.backgroundColor
         }

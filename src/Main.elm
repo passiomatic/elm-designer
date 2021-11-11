@@ -470,10 +470,12 @@ update msg model =
 
                 ( newSeeds, newDocument, hasNewUndo ) =
                     case dragDropResult of
-                        Just ( dragId, dropId, _ ) ->
+                        Just ( dragId, dropId, position ) ->
                             let
                                 ( newSeeds_, maybeNode, newZipper ) =
-                                    getDroppedNode model dragId
+                                    getDroppedNode model dragId position
+
+                                --_ = Debug.log "Position->" position
                             in
                             case maybeNode of
                                 Just node ->
@@ -831,17 +833,13 @@ updateField model =
             ( model, Cmd.none )
 
 
-{-| Figure out _what_ user just dropped: template or node?
+{-| Figure out _what_ user just dropped.
 -}
-getDroppedNode : Model -> DragId -> ( Seeds, Maybe (Tree Node), Zipper Node )
-getDroppedNode model dragId =
-    let
-        currentZipper =
-            model.document.present
-    in
+getDroppedNode : Model -> DragId -> { a | x : Int, y : Int } -> ( Seeds, Maybe (Tree Node), Zipper Node )
+getDroppedNode model dragId position =
     case dragId of
         Move node ->
-            case Document.selectNodeWith node.id currentZipper of
+            case Document.selectNodeWith node.id model.document.present of
                 Just zipper ->
                     if model.isAltDown then
                         -- Duplicate node
@@ -860,14 +858,14 @@ getDroppedNode model dragId =
                         ( model.seeds, Just (Zipper.tree zipper), newZipper )
 
                 Nothing ->
-                    ( model.seeds, Nothing, currentZipper )
+                    ( model.seeds, Nothing, model.document.present )
 
-        Insert template ->
+        Insert node ->
             let
                 ( newSeeds, newNode ) =
-                    Document.fromTemplate template model.seeds
+                    Document.fromTemplateAt position node model.seeds
             in
-            ( newSeeds, Just newNode, currentZipper )
+            ( newSeeds, Just newNode, model.document.present )
 
 
 {-| Figure out _where_ user just dropped the node.

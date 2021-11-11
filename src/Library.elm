@@ -211,11 +211,12 @@ page theme =
             { baseTemplate
                 | type_ = PageNode
                 , name = "Page"
-                , width = Layout.fill
-                , height = Layout.fill
+                , width = Layout.px 375
+                , height = Layout.px 667                
                 , fontFamily = Local theme.textFontFamily
                 , fontColor = Local theme.textColor
                 , fontSize = Local theme.textSize
+                , position = InFront
                 , background = Background.Solid theme.backgroundColor
             }
     }
