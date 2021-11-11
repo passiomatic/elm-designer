@@ -2,7 +2,7 @@ module Views.Common exposing
     ( canBind
     , canDropInto
     , canDropSibling
-    , fieldId
+    , widgetId
     , isDragging
     , none
     )

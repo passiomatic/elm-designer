@@ -322,6 +322,7 @@ initialModel { width, height, uploadEndpoint, seed1, seed2, seed3, seed4 } =
       , viewport = Fluid
       , inspector = NotEdited
       , dragDrop = DragDrop.init
+      , bindingDragDrop = DragDrop.init
       , fileDrop = Empty
       , rightPaneTabState = Tab.customInitialState "tab-design"
       , seeds = newSeeds
@@ -330,7 +331,7 @@ initialModel { width, height, uploadEndpoint, seed1, seed2, seed3, seed4 } =
       , dropDownState = Hidden
       , uploadState = Ready
       , collapsedTreeItems = Set.empty
-      , contextMenu = contextMenu
+      , contextMenu = contextMenu      
       }
     , Cmd.map ContextMenuMsg cmd
     )
