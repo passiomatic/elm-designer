@@ -63,8 +63,7 @@ view model =
             _ ->
                 [ headerView model
                 , H.div [ A.class "d-flex" ]
-                    [ 
-                    leftPaneView model
+                    [ leftPaneView model
                     , workspaceView model
                     , rightPaneView model
                     ]
@@ -76,7 +75,13 @@ view model =
 workspaceView model =
     let
         transformAttr =
-            A.style "transform" (Css.translateBy model.workspaceX model.workspaceY ++ " " ++ Css.scaleBy model.workspaceScale)
+            A.style "transform" (Css.scaleBy model.workspaceScale)
+
+        topAttr =
+            A.style "top" (px model.workspaceX)
+
+        leftAttr =
+            A.style "left" (px model.workspaceY)
 
         originX =
             Model.workspaceWidth // 2 - model.windowWidth // 2 + model.mouseX
@@ -84,23 +89,26 @@ workspaceView model =
         originY =
             Model.workspaceHeight // 2 - model.windowHeight // 2 + model.mouseY
 
-        originAttr =
+        transformOriginAttr =
             A.style "transform-origin" (Css.px originX ++ " " ++ Css.px originY)
     in
     H.div
         [ A.class "workspace-wrapper flex-grow-1 unselectable"
-        , Wheel.onWithOptions { stopPropagation = True, preventDefault = True } MouseWheelChanged
+
+        -- FIXME: Find a more descriptive way to pass isMetaDown information
+        , Wheel.onWithOptions { stopPropagation = True, preventDefault = model.isMetaDown } MouseWheelChanged
         ]
         [ H.div
             [ A.classList
                 [ ( "workspace", True )
                 , ( "workspace--design", model.mode == DesignMode )
-                --, ( "workspace--preview", model.mode == PreviewMode )
                 ]
             , A.style "width" (px Model.workspaceWidth)
             , A.style "height" (px Model.workspaceHeight)
+            --, topAttr
+            --, leftAttr
             , transformAttr
-            , originAttr
+            , transformOriginAttr
             ]
             [ documentView model
             ]
