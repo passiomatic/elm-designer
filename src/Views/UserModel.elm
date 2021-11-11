@@ -41,7 +41,7 @@ view model =
 
 
 header =
-    H.div [ A.class "font-weight-500 mb-3" ]
+    H.div [ A.class "fw-500 mb-3" ]
         [ H.text "Model" ]
 
 
@@ -51,7 +51,7 @@ userTypeView name userType accum =
             H.div [ A.class "border rounded mb-3" ]
                 [ H.table [ A.class "table table-striped table-borderless table-user-model mb-0" ]
                     [ H.caption [ A.style "caption-side" "top", A.class "section__title bpx-1 bpy-2" ] [ H.text ("type alias " ++ name) ]
-                    , H.thead [ A.class "border-bottom border-top" ]
+                    , H.thead [ A.class "border-end border-start" ]
                         [ H.tr []
                             [ H.th [ A.class "w-33" ]
                                 [ H.text "Field"
@@ -71,7 +71,7 @@ userTypeView name userType accum =
             H.div [ A.class "border rounded mb-3" ]
                 [ H.table [ A.class "table table-striped table-borderless table-user-model mb-0" ]
                     [ H.caption [ A.style "caption-side" "top", A.class "section__title bpx-1 bpy-2" ] [ H.text ("type " ++ name) ]
-                    , H.thead [ A.class "border-bottom border-top" ]
+                    , H.thead [ A.class "border-end border-start" ]
                         [ H.tr []
                             [ H.th [ A.class "w-33" ]
                                 [ H.text "Constructor"
