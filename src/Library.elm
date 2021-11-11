@@ -1,10 +1,8 @@
 module Library exposing
     ( LibraryItem
-    , MenuItem
     , findTemplate
     , groups
     , items
-    , menuItems
     )
 
 {-
@@ -19,12 +17,13 @@ module Library exposing
 import Dict
 import Document exposing (..)
 import Element as E exposing (Color)
-import Fonts
 import Html as H exposing (Html)
 import Icons
 import List.Extra
 import Palette
+import Style.Background as Background exposing (Background(..))
 import Style.Font as Font exposing (..)
+import Style.Input as Input exposing (LabelPosition(..))
 import Style.Layout as Layout exposing (..)
 import Style.Theme as Theme exposing (Theme)
 import Tree as T exposing (Tree)
@@ -35,13 +34,6 @@ type alias LibraryItem msg =
     , icon : Html msg
     , group : String
     , description : String
-    , accelerator : String
-    }
-
-
-type alias MenuItem =
-    { label : String
-    , group : String
     , accelerator : String
     }
 
@@ -65,6 +57,7 @@ items =
     , heading3
     , textSnippet
     , paragraph
+    , page
     , row
     , column
     , textColumn
@@ -83,18 +76,6 @@ items =
 groups : List ( LibraryItem msg, List (LibraryItem msg) )
 groups =
     List.Extra.gatherEqualsBy .group items
-
-
-menuItems : List MenuItem
-menuItems =
-    items
-        |> List.map
-            (\item ->
-                { label = itemLabel item
-                , group = item.group
-                , accelerator = item.accelerator
-                }
-            )
 
 
 findTemplate : String -> Maybe (Tree Template)
@@ -218,6 +199,17 @@ textSnippet theme =
 
 
 -- LAYOUT
+
+
+page : Theme -> LibraryItem msg
+page theme =
+    { icon = Icons.file
+    , group = layoutLabel
+    , description = ""
+    , accelerator = ""
+    , root =
+        Document.emptyPage theme { x = 0, y = 0 }
+    }
 
 
 row : Theme -> LibraryItem msg
@@ -351,7 +343,7 @@ buttonHelper theme name border background =
                 , borderWidth = theme.borderWidth
                 , borderColor = border
                 , borderCorner = theme.borderCorner
-                , backgroundColor = Just background
+                , background = Solid background
                 , fontColor = Local (contrastColor background theme.textColor Palette.white)
                 , textAlignment = TextCenter
                 , type_ = ButtonNode { text = "Button Label" }
@@ -386,7 +378,7 @@ radio theme =
             { baseTemplate
                 | name = "Radio Selection"
                 , spacing = Layout.spacingXY 0 (Theme.xsmall theme)
-                , type_ = RadioNode { text = "Radio Selection", position = LabelRight }
+                , type_ = RadioNode { text = "Radio Selection", position = LabelAbove }
             }
             [ T.singleton
                 { baseTemplate

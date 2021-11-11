@@ -8,10 +8,10 @@ module Style.Font exposing
     , minFontSizeAllowed
     , setColor
     , setFamily
-    , setSize
-    , setWeight
     , setLetterSpacing
+    , setSize
     , setTextAlignment
+    , setWeight
     , setWordSpacing
     , weightName
     )
@@ -20,7 +20,6 @@ module Style.Font exposing
 -}
 
 import Element exposing (Color)
-import Element.Font exposing (letterSpacing)
 
 
 minFontSizeAllowed =
@@ -187,61 +186,61 @@ weightNumber value =
             900
 
         HeavyItalic ->
-            900
+            901
 
         ExtraBold ->
             800
 
         ExtraBoldItalic ->
-            800
+            801
 
         Bold ->
             700
 
         BoldItalic ->
-            700
+            701
 
         SemiBold ->
             600
 
         SemiBoldItalic ->
-            600
+            601
 
         Medium ->
             500
 
         MediumItalic ->
-            500
+            501
 
         Regular ->
             400
 
         Italic ->
-            400
+            401
 
         Light ->
             300
 
         LightItalic ->
-            300
+            301
 
         ExtraLight ->
             200
 
         ExtraLightItalic ->
-            200
+            201
 
         Hairline ->
             100
 
         HairlineItalic ->
-            100
+            101
 
 
 type TextAlignment
-    = TextLeft
-    | TextCenter
-    | TextRight
+    = TextCenter
+    | TextStart
+    | TextEnd
     | TextJustify
 
 

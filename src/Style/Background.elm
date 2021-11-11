@@ -1,6 +1,8 @@
 module Style.Background exposing
     ( Background(..)
-    , setBackgroundColor
+    , isImage
+    , isNone
+    , isSolid
     , setBackground
     )
 
@@ -11,17 +13,38 @@ import Element exposing (Color)
 
 
 type Background
-    = Cropped String
-    | Uncropped String
-    | Tiled String
+    = Solid Color
+    | Image String
     | None
-
-
-setBackgroundColor : Maybe Color -> { a | backgroundColor : Maybe Color } -> { a | backgroundColor : Maybe Color }
-setBackgroundColor value node =
-    { node | backgroundColor = value }
 
 
 setBackground : Background -> { a | background : Background } -> { a | background : Background }
 setBackground value node =
     { node | background = value }
+
+
+isSolid value =
+    case value of
+        Solid _ ->
+            True
+
+        _ ->
+            False
+
+
+isImage value =
+    case value of
+        Image _ ->
+            True
+
+        _ ->
+            False
+
+
+isNone value =
+    case value of
+        None ->
+            True
+
+        _ ->
+            False

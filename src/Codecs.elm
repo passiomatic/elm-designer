@@ -1,10 +1,14 @@
 module Codecs exposing
     ( encodeFontFamily
     , encodeFontWeight
+    , encodeLabelPosition
+    , encodePosition
     , encodeViewport
     , fontFamilyDecoder
     , fontWeightDecoder
     , fromString
+    , labelPositionDecoder
+    , positionDecoder
     , toString
     , viewportDecoder
     )
@@ -15,16 +19,18 @@ module Codecs exposing
 import Codec exposing (Codec, Error, Value)
 import Document exposing (..)
 import Element exposing (Color, Orientation(..))
+import Element.Border exposing (shadow)
 import Element.Font as Font exposing (Font)
 import Fonts
 import Html.Events as E
 import Json.Decode as D exposing (Decoder)
-import SelectList exposing (SelectList)
 import Set exposing (Set)
 import Style.Background as Background exposing (Background)
 import Style.Border as Border exposing (..)
 import Style.Font as Font exposing (..)
+import Style.Input as Input exposing (LabelPosition(..))
 import Style.Layout as Layout exposing (..)
+import Style.Shadow as Shadow exposing (Shadow, ShadowType(..))
 import Time exposing (Posix)
 import Tree as T exposing (Tree)
 import UUID
@@ -46,7 +52,7 @@ documentCodec =
     Codec.object Document
         |> Codec.field "schemaVersion" .schemaVersion Codec.int
         |> Codec.field "lastUpdatedOn" .lastUpdatedOn timeCodec
-        |> Codec.field "pages" .pages (Codec.list (treeCodec nodeCodec))
+        |> Codec.field "root" .root (treeCodec nodeCodec)
         |> Codec.field "viewport" .viewport viewportCodec
         |> Codec.field "collapsedTreeItems" .collapsedTreeItems setCodec
         |> Codec.buildObject
@@ -99,7 +105,11 @@ nodeCodec =
         |> Codec.field "id" .id nodeIdCodec
         |> Codec.field "name" .name Codec.string
         |> Codec.field "width" .width lengthCodec
+        |> Codec.field "widthMin" .widthMin (Codec.maybe Codec.int)
+        |> Codec.field "widthMax" .widthMax (Codec.maybe Codec.int)
         |> Codec.field "height" .height lengthCodec
+        |> Codec.field "heightMin" .heightMin (Codec.maybe Codec.int)
+        |> Codec.field "heightMax" .heightMax (Codec.maybe Codec.int)
         |> Codec.field "transformation" .transformation transformationCodec
         |> Codec.field "padding" .padding paddingCodec
         |> Codec.field "spacing" .spacing spacingCodec
@@ -114,8 +124,9 @@ nodeCodec =
         |> Codec.field "borderStyle" .borderStyle borderStyleCodec
         |> Codec.field "borderWidth" .borderWidth borderWidthCodec
         |> Codec.field "borderCorner" .borderCorner borderCornerCodec
-        |> Codec.field "backgroundColor" .backgroundColor (Codec.maybe colorCodec)
+        |> Codec.field "shadow" .shadow shadowCodec
         |> Codec.field "background" .background backgroundCodec
+        |> Codec.field "position" .position positionCodec
         |> Codec.field "alignmentX" .alignmentX alignmentCodec
         |> Codec.field "alignmentY" .alignmentY alignmentCodec
         |> Codec.field "binding" .binding bindingCodec
@@ -156,17 +167,56 @@ localCodec codec =
         |> Codec.buildCustom
 
 
+positionCodec : Codec Position
+positionCodec =
+    Codec.custom
+        (\above below onStart onEnd inFront behindContent normal value_ ->
+            case value_ of
+                Above ->
+                    above
+
+                Below ->
+                    below
+
+                OnStart ->
+                    onStart
+
+                OnEnd ->
+                    onEnd
+
+                InFront ->
+                    inFront
+
+                BehindContent ->
+                    behindContent
+
+                Normal ->
+                    normal
+        )
+        |> Codec.variant0 "Above" Above
+        |> Codec.variant0 "Below" Below
+        |> Codec.variant0 "OnStart" OnStart
+        |> Codec.variant0 "OnEnd" OnEnd
+        |> Codec.variant0 "InFront" InFront
+        |> Codec.variant0 "BehindContent" BehindContent
+        |> Codec.variant0 "Normal" Normal
+        |> Codec.buildCustom
+
+
+positionDecoder : (Position -> msg) -> Decoder msg
+positionDecoder tagger =
+    E.targetValue
+        |> D.andThen (fromResult << Codec.decodeString positionCodec)
+        |> D.map tagger
+
+
+encodePosition : Position -> String
+encodePosition value =
+    Codec.encodeToString 0 positionCodec value
+
+
 lengthCodec : Codec Length
 lengthCodec =
-    Codec.object Length
-        |> Codec.field "strategy" .strategy strategyCodec
-        |> Codec.field "min" .min (Codec.maybe Codec.int)
-        |> Codec.field "max" .max (Codec.maybe Codec.int)
-        |> Codec.buildObject
-
-
-strategyCodec : Codec Strategy
-strategyCodec =
     Codec.custom
         (\px content fill auto value_ ->
             case value_ of
@@ -365,23 +415,23 @@ fontWeightDecoder tagger =
 textAlignmentCodec : Codec TextAlignment
 textAlignmentCodec =
     Codec.custom
-        (\textLeft textCenter textRight textJustify value ->
+        (\textStart textCenter textEnd textJustify value ->
             case value of
-                TextLeft ->
-                    textLeft
+                TextStart ->
+                    textStart
 
                 TextCenter ->
                     textCenter
 
-                TextRight ->
-                    textRight
+                TextEnd ->
+                    textEnd
 
                 TextJustify ->
                     textJustify
         )
-        |> Codec.variant0 "TextLeft" TextLeft
+        |> Codec.variant0 "TextStart" TextStart
         |> Codec.variant0 "TextCenter" TextCenter
-        |> Codec.variant0 "TextRight" TextRight
+        |> Codec.variant0 "TextEnd" TextEnd
         |> Codec.variant0 "TextJustify" TextJustify
         |> Codec.buildCustom
 
@@ -389,23 +439,19 @@ textAlignmentCodec =
 backgroundCodec : Codec Background
 backgroundCodec =
     Codec.custom
-        (\cropped uncropped tiled none value ->
+        (\image solid none value ->
             case value of
-                Background.Cropped i ->
-                    cropped i
+                Background.Image value_ ->
+                    image value_
 
-                Background.Uncropped i ->
-                    uncropped i
-
-                Background.Tiled i ->
-                    tiled i
+                Background.Solid value_ ->
+                    solid value_
 
                 Background.None ->
                     none
         )
-        |> Codec.variant1 "Cropped" Background.Cropped Codec.string
-        |> Codec.variant1 "Uncropped" Background.Uncropped Codec.string
-        |> Codec.variant1 "Tiled" Background.Tiled Codec.string
+        |> Codec.variant1 "Image" Background.Image Codec.string
+        |> Codec.variant1 "Solid" Background.Solid colorCodec
         |> Codec.variant0 "None" Background.None
         |> Codec.buildCustom
 
@@ -471,11 +517,42 @@ borderWidthCodec =
         |> Codec.buildObject
 
 
+shadowCodec : Codec Shadow
+shadowCodec =
+    Codec.object Shadow
+        |> Codec.field "offsetX" .offsetX Codec.float
+        |> Codec.field "offsetY" .offsetY Codec.float
+        |> Codec.field "size" .size Codec.float
+        |> Codec.field "blur" .blur Codec.float
+        |> Codec.field "color" .color colorCodec
+        |> Codec.field "type" .type_ shadowTypeCodec
+        |> Codec.buildObject
+
+
+shadowTypeCodec : Codec ShadowType
+shadowTypeCodec =
+    Codec.custom
+        (\inner outer value ->
+            case value of
+                Inner ->
+                    inner
+
+                Outer ->
+                    outer
+        )
+        |> Codec.variant0 "Inner" Inner
+        |> Codec.variant0 "Outer" Outer
+        |> Codec.buildCustom
+
+
 nodeTypeCodec : Codec NodeType
 nodeTypeCodec =
     Codec.custom
-        (\headingNode paragraphNode textNode rowNode columnNode textColumnNode imageNode buttonNode checkboxNode textFieldNode textFieldMultilineNode radioNode optionNode pageNode value ->
+        (\headingNode paragraphNode textNode rowNode columnNode textColumnNode imageNode buttonNode checkboxNode textFieldNode textFieldMultilineNode radioNode optionNode pageNode documentNode value ->
             case value of
+                DocumentNode ->
+                    documentNode
+
                 HeadingNode data ->
                     headingNode data
 
@@ -532,6 +609,7 @@ nodeTypeCodec =
         |> Codec.variant1 "RadioNode" RadioNode labelCodec
         |> Codec.variant1 "OptionNode" OptionNode textCodec
         |> Codec.variant0 "PageNode" PageNode
+        |> Codec.variant0 "DocumentNode" DocumentNode
         |> Codec.buildCustom
 
 
@@ -617,6 +695,18 @@ labelPositionCodec =
         |> Codec.variant0 "LabelRight" LabelRight
         |> Codec.variant0 "LabelHidden" LabelHidden
         |> Codec.buildCustom
+
+
+labelPositionDecoder : (LabelPosition -> msg) -> Decoder msg
+labelPositionDecoder tagger =
+    E.targetValue
+        |> D.andThen (fromResult << Codec.decodeString labelPositionCodec)
+        |> D.map tagger
+
+
+encodeLabelPosition : LabelPosition -> String
+encodeLabelPosition value =
+    Codec.encodeToString 0 labelPositionCodec value
 
 
 headingCodec : Codec HeadingData

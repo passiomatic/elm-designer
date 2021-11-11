@@ -14,6 +14,7 @@ module Icons exposing
     , chevronRight
     , coloredSquare
     , edit
+    , file
     , image
     , info
     , layout
@@ -57,6 +58,12 @@ largeSize =
 link : Html msg
 link =
     I.link2
+        |> I.withSize smallSize
+        |> I.toHtml []
+
+file : Html msg
+file =
+    I.file
         |> I.withSize smallSize
         |> I.toHtml []
 

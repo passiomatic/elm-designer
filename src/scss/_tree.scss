@@ -24,8 +24,11 @@
   @extend .unselectable;
   display: flex;
   @include font-size($input-font-size-sm);
+}
+
+.tree .tree .tree__label {
+  // Indent second+ level 
   margin-left: .325rem;
-  //transition: background-color 0.07s ease-out;
 }
 
 .tree__label span {

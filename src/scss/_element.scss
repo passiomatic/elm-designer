@@ -3,16 +3,38 @@
 // ----------------------
 
 .element {
-  transition: background-color .2s ease-out;
+}
+
+.element__connect {
+  width: 12px;
+  height: 12px;
+  background: #fff;
+  border: 1px solid $primary;
+  border-radius: 50%;
+  //display: none;
+}
+
+.element__nudge {
+  width: 12px;
+  height: 12px;
+  background: #fff;
+  border: 1px solid $primary;
+  //display: none;
 }
 
 // ----------------------
 // Selected (design mode only)
 
-.page--design .element--selected {
-  //@extend .unselectable;
-  outline: 3px double $primary;
-  //box-shadow: 0 0 0 1px $primary;
+.element--selected {
+  outline: 3px solid $primary;
+}
+
+.element--Document.element--selected {
+  outline: none;
+}
+
+.element--Page {
+  border: 2px solid $border-color !important;
 }
 
 .page--design .element--selected.element--bound {
@@ -22,19 +44,27 @@
 // ----------------------
 // Drag & drop
 
-.page--design .element--dropped {
-  background: rgba($primary, 0.1);
-}
-
-.page--design .dragging--file:after {
-  content: '';
+.element--dropped:after {
+  content: "";
   position: absolute;
   top: 0;
   left: 0;
   bottom: 0;
   right: 0;
   z-index: 1;
-  background: rgba($secondary, 0.2);
+  background: rgba($primary, 0.1); // Overlay background color
+  pointer-events: none;
+}
+
+.dragging--file:after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
+  z-index: 1;
+  background: rgba($purple, 0.15); // Overlay background color
   pointer-events: none;
 }
 
@@ -50,11 +80,11 @@
 }
 
 // Make the inline text editor to honor node text aligment
-.element textarea  {
+.element textarea {
   text-align: inherit;
 }
 
 // Disallow image dragging while in design mode
-.page--design .element>img { 
-    -webkit-user-drag: none;
+.element > img {
+  -webkit-user-drag: none;
 }

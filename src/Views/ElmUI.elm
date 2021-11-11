@@ -2,7 +2,6 @@ module Views.ElmUI exposing (render)
 
 {- Elm UI renderer for the page node element. -}
 
-import Debug
 import Document exposing (..)
 import Element as E exposing (Color, Element, Orientation(..))
 import Element.Background as Background
@@ -16,39 +15,29 @@ import Html as H exposing (Html)
 import Html.Attributes as A
 import Html.Events
 import Html5.DragDrop as DragDrop
-import Icons
 import Json.Decode as Decode exposing (Decoder)
 import Model exposing (..)
 import Palette
-import SelectList exposing (SelectList)
 import Style.Background as Background exposing (Background)
 import Style.Border exposing (BorderCorner, BorderStyle(..), BorderWidth)
 import Style.Font as Font exposing (..)
+import Style.Input as Input exposing (LabelPosition(..))
 import Style.Layout as Layout exposing (..)
+import Style.Shadow as Shadow exposing (Shadow, ShadowType(..))
 import Tree as T exposing (Tree)
 import Tree.Zipper as Zipper exposing (Zipper)
 import Views.Common as Common
 
 
 type RenderedNode
-    = RenderedElement (Element Msg)
+    = RenderedElement Position (Element Msg)
     | RenderedOption (Option NodeId Msg)
 
 
 render : Context -> Tree Node -> Html Msg
 render ctx tree =
-    let
-        rootElement node =
-            case node of
-                RenderedElement el ->
-                    el
-
-                RenderedOption _ ->
-                    -- We don't have any radio option at top level
-                    E.none
-    in
     T.restructure identity (renderNode ctx) tree
-        |> rootElement
+        |> root
         |> (case ( ctx.mode, ctx.inspector ) of
                 ( DesignMode, NotEdited ) ->
                     -- Avoid focus rings in design mode while not editing any text/fields
@@ -60,6 +49,16 @@ render ctx tree =
                 ( _, _ ) ->
                     E.layout []
            )
+
+
+root node =
+    case node of
+        RenderedElement _ el ->
+            el
+
+        RenderedOption _ ->
+            -- We don't have any radio option at top level
+            E.none
 
 
 noFocusStyle =
@@ -76,20 +75,24 @@ renderNode ctx node children =
             Document.isSelected node.id ctx.currentNode
     in
     case node.type_ of
+        DocumentNode ->
+            renderDocument ctx node selected children
+
         PageNode ->
             renderPage ctx node selected children
 
         ParagraphNode data ->
-            renderParagraph ctx node selected data
+            renderEditableText ctx node selected data.text renderParagraph
+
+        HeadingNode data ->
+            -- Render as paragraph so it has text wrapping and line spacing settings
+            renderEditableText ctx node selected data.text renderParagraph
 
         TextNode data ->
-            renderText ctx node selected data
+            renderEditableText ctx node selected data.text renderText
 
         ImageNode data ->
             renderImage ctx node selected data
-
-        HeadingNode data ->
-            renderHeading ctx node selected data
 
         ColumnNode ->
             renderColumn ctx node selected children
@@ -126,78 +129,85 @@ renderNode ctx node children =
 renderTextColumn : Context -> Node -> Bool -> List RenderedNode -> RenderedNode
 renderTextColumn ctx node selected children =
     let
-        newChildren =
-            if List.length children == 0 then
-                [ placeholderText "Empty Text Column" ]
+        renderer attrs =
+            let
+                newAttrs =
+                    attrs
+                        |> makeFileDroppableIf (not <| Common.isDragging ctx.dragDrop) node.id
+            in
+            if List.isEmpty children then
+                E.textColumn newAttrs [ placeholderText "Empty Text Column" ]
 
             else
-                elements children
-
-        attrs =
-            [ elementClasses ctx node selected
-            , elementId node
-            , onClick (NodeSelected node.id)
-            ]
-                |> makeNodeDroppableIf (Common.canDropInto node ctx.nodeDragDrop) (AppendTo node.id)
-                |> makeFileDroppableIf (not <| isDragging ctx) node.id
-                |> makeBindableIf (Common.canBind node ctx.bindingDragDrop) node.id
-                |> applyAllStyles node
+                addChildrenFor E.textColumn newAttrs children
     in
-    E.textColumn attrs newChildren
-        |> RenderedElement
+    wrapElement ctx node selected renderer
+        |> RenderedElement node.position
 
 
 renderColumn : Context -> Node -> Bool -> List RenderedNode -> RenderedNode
 renderColumn ctx node selected children =
     let
-        newChildren =
-            if List.length children == 0 then
-                [ placeholderText "Empty Column" ]
+        renderer attrs =
+            let
+                newAttrs =
+                    attrs
+                        |> makeFileDroppableIf (not <| Common.isDragging ctx.dragDrop) node.id
+            in
+            if List.isEmpty children then
+                E.column newAttrs [ placeholderText "Empty Column" ]
 
             else
-                elements children
-
-        attrs =
-            [ elementClasses ctx node selected
-            , elementId node
-            , onClick (NodeSelected node.id)
-            ]
-                |> makeNodeDroppableIf (Common.canDropInto node ctx.nodeDragDrop) (AppendTo node.id)
-                |> makeFileDroppableIf (not <| isDragging ctx) node.id
-                |> makeBindableIf (Common.canBind node ctx.bindingDragDrop) node.id
-                |> applyAllStyles node
+                addChildrenFor E.column newAttrs children
     in
-    E.column attrs newChildren
-        |> RenderedElement
+    wrapElement ctx node selected renderer
+        |> RenderedElement node.position
 
 
 renderRow : Context -> Node -> Bool -> RowData -> List RenderedNode -> RenderedNode
 renderRow ctx node selected { wrapped } children =
     let
-        newChildren =
-            if List.length children == 0 then
-                [ placeholderText "Empty Row" ]
+        renderer attrs =
+            let
+                newAttrs =
+                    attrs
+                        |> makeFileDroppableIf (not <| Common.isDragging ctx.dragDrop) node.id
+
+                nodeRenderer =
+                    if wrapped then
+                        E.wrappedRow
+
+                    else
+                        E.row
+            in
+            if List.isEmpty children then
+                nodeRenderer newAttrs [ placeholderText "Empty Row" ]
 
             else
-                elements children
+                addChildrenFor nodeRenderer newAttrs children
+    in
+    wrapElement ctx node selected renderer
+        |> RenderedElement node.position
 
+
+{-| Render a document as workspace.
+-}
+renderDocument : Context -> Node -> Bool -> List RenderedNode -> RenderedNode
+renderDocument ctx node selected children =
+    let
         attrs =
             [ elementClasses ctx node selected
             , elementId node
             , onClick (NodeSelected node.id)
-            ]
-                |> makeNodeDroppableIf (Common.canDropInto node ctx.nodeDragDrop) (AppendTo node.id)
-                |> makeFileDroppableIf (not <| isDragging ctx) node.id
-                |> makeBindableIf (Common.canBind node ctx.bindingDragDrop) node.id
-                |> applyAllStyles node
+            ]                
+                |> applyWidth node.width node.widthMin node.widthMax
+                |> applyHeight node.height node.heightMin node.heightMax            
+                |> makeDroppableIf (Common.canDropInto node ctx.dragDrop) (AppendTo node.id)
     in
-    (if wrapped then
-        E.wrappedRow attrs newChildren
-
-     else
-        E.row attrs newChildren
-    )
-        |> RenderedElement
+    -- Document doesn't need to be wrapped. Also, pass E.column as a placeholder,
+    --    we'll position all children pages "InFront" anyway
+    addChildrenFor E.column attrs children
+        |> RenderedElement Normal
 
 
 {-| Render page as Elm UI column to layout elements vertically one after another, just like a regular HTML page.
@@ -205,23 +215,21 @@ renderRow ctx node selected { wrapped } children =
 renderPage : Context -> Node -> Bool -> List RenderedNode -> RenderedNode
 renderPage ctx node selected children =
     let
-        attrs =
-            [ elementClasses ctx node selected
-            , elementId node
-            , onClick (NodeSelected node.id)
-            ]
-                |> makeNodeDroppableIf (Common.canDropInto node ctx.nodeDragDrop) (AppendTo node.id)
-                |> makeFileDroppableIf (not <| isDragging ctx) node.id
-                |> makeBindableIf (Common.canBind node ctx.bindingDragDrop) node.id
-                |> applyAllStyles node
-    in
-    RenderedElement
-        (if List.isEmpty children then
-            renderEmptyPage attrs
+        renderer attrs =
+            let
+                newAttrs =
+                    attrs
+                        |> makeFileDroppableIf (not <| Common.isDragging ctx.dragDrop) node.id
+            in
+            if List.isEmpty children then
+                renderEmptyPage newAttrs
 
-         else
-            E.column attrs (elements children)
-        )
+            else
+                addChildrenFor E.column newAttrs children
+    in
+    -- Put all pages "in front" to lay out them in an absolutely positioned fashion 
+    wrapElement ctx node selected renderer
+        |> RenderedElement InFront
 
 
 renderEmptyPage attrs =
@@ -248,65 +256,72 @@ renderEmptyPage attrs =
 renderImage : Context -> Node -> Bool -> ImageData -> RenderedNode
 renderImage ctx node selected image =
     let
-        attrs =
-            [ elementClasses ctx node selected
-            , elementId node
-            , onClick (NodeSelected node.id)
-            ]
-                |> makeBindableIf (Common.canBind node ctx.bindingDragDrop) node.id
-                |> clipIf (Style.Border.isRounded node.borderCorner)
-                |> applyAllStyles node
+        renderer attrs =
+            let
+                newAttrs =
+                    attrs
+                        |> clipIf (Style.Border.isRounded node.borderCorner)
+            in
+            E.image newAttrs image
     in
-    E.image attrs image
-        |> RenderedElement
+    wrapElement ctx node selected renderer
+        |> RenderedElement node.position
 
 
-renderParagraph : Context -> Node -> Bool -> TextData -> RenderedNode
-renderParagraph ctx node selected { text } =
-    renderParagraphHelper ctx node selected text
-
-
-renderHeading : Context -> Node -> Bool -> HeadingData -> RenderedNode
-renderHeading ctx node selected heading =
-    -- Use a paragraph here since it allows to wrap text and to set a line height
-    renderParagraphHelper ctx node selected heading.text
-
-
-renderParagraphHelper : Context -> Node -> Bool -> String -> RenderedNode
-renderParagraphHelper ctx node selected text =
+renderEditableText :
+    Context
+    -> Node
+    -> Bool
+    -> String
+    -> (Node -> List (E.Attribute Msg) -> String -> Element Msg)
+    -> RenderedNode
+renderEditableText ctx node selected text nodeRenderer =
     let
-        attrs =
-            [ elementClasses ctx node selected
-            , elementId node
-            ]
-                |> makeBindableIf (Common.canBind node ctx.bindingDragDrop) node.id
-                |> applyAllStyles node
+        renderer attrs =
+            case ( ctx.inspector, selected ) of
+                ( EditingText, True ) ->
+                    -- While editing capture the click events but do nothing so the event won't bubble up
+                    textEditor
+                        (onDoubleClick NoOp
+                            :: onClick NoOp
+                            :: attrs
+                            |> forceBackgroundColor node.background
+                        )
+                        text
+
+                _ ->
+                    nodeRenderer node attrs text
     in
-    case ( ctx.inspector, selected ) of
-        ( EditingText, True ) ->
-            -- While editing capture the click events but do nothing so the event won't bubble up
-            textEditor
-                (onDoubleClick NoOp
-                    :: onClick NoOp
-                    :: attrs
-                    |> forceBackgroundColor node.backgroundColor
-                )
-                text
-                |> RenderedElement
+    wrapElement ctx node selected renderer
+        |> RenderedElement node.position
 
-        _ ->
-            E.paragraph
-                (onDoubleClick (TextEditingStarted node.id)
-                    :: onClick (NodeSelected node.id)
-                    :: attrs
-                )
-                (if String.trim text == "" then
-                    [ E.text "Double click to edit text" ]
 
-                 else
-                    renderLines text
-                )
-                |> RenderedElement
+renderParagraph node attrs text =
+    E.paragraph
+        (onDoubleClick (TextEditingStarted textEditorId)
+            :: onClick (NodeSelected node.id)
+            :: attrs
+        )
+        (if String.trim text == "" then
+            [ E.text "Double click to edit text" ]
+
+         else
+            renderLines text
+        )
+
+
+renderText node attrs text =
+    E.el
+        (onDoubleClick (TextEditingStarted textEditorId)
+            :: onClick (NodeSelected node.id)
+            :: attrs
+        )
+        (if String.trim text == "" then
+            E.text "Double click to edit text"
+
+         else
+            E.text text
+        )
 
 
 renderLines : String -> List (Element msg)
@@ -320,244 +335,107 @@ break =
     E.html (H.br [] [])
 
 
-renderText : Context -> Node -> Bool -> TextData -> RenderedNode
-renderText ctx node selected { text } =
-    let
-        attrs =
-            [ elementClasses ctx node selected
-            , elementId node
-            ]
-                |> makeBindableIf (Common.canBind node ctx.bindingDragDrop) node.id
-                |> applyAllStyles node
-    in
-    case ( ctx.inspector, selected ) of
-        ( EditingText, True ) ->
-            -- While editing capture the click events but do nothing so the event won't bubble up
-            textEditor
-                (onDoubleClick NoOp
-                    :: onClick NoOp
-                    :: attrs
-                    |> forceBackgroundColor node.backgroundColor
-                )
-                text
-                |> RenderedElement
-
-        _ ->
-            E.el
-                (onDoubleClick (TextEditingStarted node.id)
-                    :: onClick (NodeSelected node.id)
-                    :: attrs
-                )
-                (if String.trim text == "" then
-                    E.text "Double click to edit text"
-
-                 else
-                    E.text text
-                )
-                |> RenderedElement
-
-
 renderTextField : Context -> Node -> Bool -> LabelData -> RenderedNode
 renderTextField ctx node selected label =
     let
-        attrs =
-            -- Deactivate field while in design mode
-            [ E.htmlAttribute (A.readonly (ctx.mode == DesignMode))
-            , E.width E.fill
-            ]
-                |> makeBindableIf (Common.canBind node ctx.bindingDragDrop) node.id
-                |> applyChildStyles node
+        renderer attrs =
+            let
+                newAttrs =
+                    -- Deactivate field while in design mode
+                    E.htmlAttribute (A.readonly (ctx.mode == DesignMode))
+                        :: attrs
+            in
+            Input.text
+                newAttrs
+                { onChange = \_ -> NoOp
+                , text = ""
+                , placeholder = Nothing
+                , label = labelPosition label.position [ Font.color ctx.theme.labelColor ] label.text
+                }
     in
-    E.el
-        ([ elementClasses ctx node selected
-         , elementId node
-         , onClick (NodeSelected node.id)
-         ]
-            |> applyWidth node.width
-            |> applyHeight node.height
-            |> applyAlignX node.alignmentX
-            |> applyAlignY node.alignmentY
-        )
-        (Input.text
-            attrs
-            { onChange = \s -> NoOp
-            , text = ""
-            , placeholder = Nothing
-
-            -- TODO Espose label.position in the inspector
-            , label = Input.labelAbove [ Font.color ctx.theme.labelColor ] (E.text label.text)
-            }
-        )
-        |> RenderedElement
+    wrapElement ctx node selected renderer
+        |> RenderedElement node.position
 
 
 renderTextFieldMultiline : Context -> Node -> Bool -> LabelData -> RenderedNode
 renderTextFieldMultiline ctx node selected label =
     let
-        attrs =
-            -- Deactivate field while in design mode
-            [ E.htmlAttribute (A.readonly (ctx.mode == DesignMode))
-            , E.width E.fill
-            ]
-                |> makeBindableIf (Common.canBind node ctx.bindingDragDrop) node.id
-                |> applyChildStyles node
+        renderer attrs =
+            let
+                newAttrs =
+                    -- Deactivate field while in design mode
+                    E.htmlAttribute (A.readonly (ctx.mode == DesignMode))
+                        :: attrs
+            in
+            Input.multiline
+                newAttrs
+                { onChange = \_ -> NoOp
+                , text = ""
+                , placeholder = Nothing
+                , spellcheck = False
+                , label =
+                    labelPosition label.position [ Font.color ctx.theme.labelColor ] label.text
+                }
     in
-    E.el
-        ([ elementClasses ctx node selected
-         , elementId node
-         , onClick (NodeSelected node.id)
-         ]
-            |> applyWidth node.width
-            |> applyHeight node.height
-            |> applyAlignX node.alignmentX
-            |> applyAlignY node.alignmentY
-        )
-        (Input.multiline
-            attrs
-            { onChange = \s -> NoOp
-            , text = ""
-            , placeholder = Nothing
-            , spellcheck = False
-
-            -- TODO Espose label.position in the inspector
-            , label = Input.labelAbove [ Font.color ctx.theme.labelColor ] (E.text label.text)
-            }
-        )
-        |> RenderedElement
-
-
-
---renderLabel : Context -> Node -> Label ->  List (Element Msg) -> Label Msg
--- renderLabel ctx node label =
---     let
---         selected =
---             Document.isSelected node.id ctx.currentNode
---         classes =
---             A.classList
---                 [ ( "element", True )
---                 , ( "element--selected", selected )
---                 ]
---         attrs =
---             [ onClick (NodeSelected node.id)
---             --, E.htmlAttribute (A.readonly True)
---             , E.htmlAttribute classes
---             , elementId node
---             ]
---                 |> applyStandardStyles node
---     in
---     -- TODO Honor label.position
---     Input.labelAbove attrs (E.text label.text)
+    wrapElement ctx node selected renderer
+        |> RenderedElement node.position
 
 
 renderButton : Context -> Node -> Bool -> TextData -> RenderedNode
 renderButton ctx node selected { text } =
     let
-        attrs =
-            [ E.width E.fill
-            ]
-                |> makeBindableIf (Common.canBind node ctx.bindingDragDrop) node.id
-                |> applyChildStyles node
+        renderer attrs =
+            Input.button
+                attrs
+                { onPress = Nothing
+                , label = E.text text
+                }
     in
-    E.el
-        ([ elementClasses ctx node selected
-         , elementId node
-         , onClick (NodeSelected node.id)
-         ]
-            |> applyWidth node.width
-            |> applyHeight node.height
-            |> applyAlignX node.alignmentX
-            |> applyAlignY node.alignmentY
-        )
-        (Input.button
-            attrs
-            { onPress = Nothing
-            , label = E.text text
-            }
-        )
-        |> RenderedElement
+    wrapElement ctx node selected renderer
+        |> RenderedElement node.position
 
 
 renderCheckbox : Context -> Node -> Bool -> LabelData -> RenderedNode
 renderCheckbox ctx node selected label =
     let
-        attrs =
-            [ E.width E.fill
-            ]
-                |> makeBindableIf (Common.canBind node ctx.bindingDragDrop) node.id
-                |> applyChildStyles node
+        renderer attrs =
+            Input.checkbox
+                attrs
+                { onChange = \_ -> NoOp
+                , icon = Input.defaultCheckbox
+                , checked = True
+                , label = labelPosition label.position [ Font.color ctx.theme.labelColor ] label.text
+                }
     in
-    E.el
-        ([ elementClasses ctx node selected
-         , elementId node
-         , onClick (NodeSelected node.id)
-         ]
-            |> applyWidth node.width
-            |> applyHeight node.height
-            |> applyAlignX node.alignmentX
-            |> applyAlignY node.alignmentY
-        )
-        (Input.checkbox
-            attrs
-            { onChange = \s -> NoOp
-            , icon = Input.defaultCheckbox
-            , checked = True
-            , label =
-                Input.labelRight
-                    [ Font.color ctx.theme.labelColor ]
-                    (E.text label.text)
-            }
-        )
-        |> RenderedElement
+    wrapElement ctx node selected renderer
+        |> RenderedElement node.position
 
 
 renderRadio : Context -> Node -> Bool -> LabelData -> List RenderedNode -> RenderedNode
 renderRadio ctx node selected label children =
     let
-        attrs =
-            [ E.width E.fill
-            ]
-                |> applyChildStyles node
+        renderer attrs =
+            Input.radio
+                attrs
+                { onChange = \_ -> NoOp
+                , selected = Nothing
+                , label = labelPosition label.position [ Font.color ctx.theme.labelColor ] label.text
+                , options =
+                    options children
+                }
     in
-    E.el
-        ([ elementClasses ctx node selected
-         , elementId node
-         , onClick (NodeSelected node.id)
-         ]
-            |> makeNodeDroppableIf (Common.canDropInto node ctx.nodeDragDrop) (AppendTo node.id)
-            |> makeBindableIf (Common.canBind node ctx.bindingDragDrop) node.id
-            |> applyWidth node.width
-            |> applyHeight node.height
-            |> applyAlignX node.alignmentX
-            |> applyAlignY node.alignmentY
-        )
-        (Input.radio
-            attrs
-            { onChange = \s -> NoOp
-            , selected = Nothing
-            , label =
-                Input.labelAbove
-                    [ Font.color ctx.theme.labelColor
-                    ]
-                    (E.text label.text)
-            , options =
-                options children
-            }
-        )
-        |> RenderedElement
+    wrapElement ctx node selected renderer
+        |> RenderedElement node.position
 
 
 renderOption : Context -> Node -> Bool -> TextData -> RenderedNode
 renderOption ctx node selected { text } =
     let
-        attrs =
-            [ elementClasses ctx node selected
-            , elementId node
-            , onClick (NodeSelected node.id)
-            ]
-                |> makeBindableIf (Common.canBind node ctx.bindingDragDrop) node.id
-                |> applyAllStyles node
+        renderer attrs =
+            E.el attrs (E.text text)
     in
-    Input.option node.id (E.el attrs (E.text text))
+    wrapElement ctx node selected renderer
+        |> Input.option node.id
         |> RenderedOption
 
 
@@ -565,39 +443,16 @@ renderOption ctx node selected { text } =
 -- STYLES
 
 
-applyAllStyles : Node -> List (E.Attribute Msg) -> List (E.Attribute Msg)
-applyAllStyles node attrs =
+applyStyles : Node -> List (E.Attribute Msg) -> List (E.Attribute Msg)
+applyStyles node attrs =
     attrs
         |> applyBorderCorner node.borderCorner
         |> applyBorderWidth node.borderWidth
         |> applyBorderColor node.borderColor
-        |> applyPadding node.padding
-        |> applyWidth node.width
-        |> applyHeight node.height
-        |> applySpacing node.spacing
-        |> applyTransformation node.transformation
-        |> applyFontSize node.fontSize
-        |> applyFontFamily node.fontFamily
-        |> applyFontColor node.fontColor
-        |> applyFontWeight node.fontWeight
-        |> applyLetterSpacing node.letterSpacing
-        |> applyWordSpacing node.wordSpacing
-        |> applyTextAlign node.textAlignment
-        |> applyAlignX node.alignmentX
-        |> applyAlignY node.alignmentY
-        |> applyBackground node.background
-        |> applyBackgroundColor node.backgroundColor
-
-
-applyChildStyles : Node -> List (E.Attribute Msg) -> List (E.Attribute Msg)
-applyChildStyles node attrs =
-    attrs
-        |> applyBorderCorner node.borderCorner
-        |> applyBorderWidth node.borderWidth
-        |> applyBorderColor node.borderColor
+        |> applyBorderStyle node.borderStyle
+        |> applyShadow node.shadow
         |> applyPadding node.padding
         |> applySpacing node.spacing
-        |> applyTransformation node.transformation
         |> applyFontSize node.fontSize
         |> applyFontFamily node.fontFamily
         |> applyFontColor node.fontColor
@@ -606,12 +461,31 @@ applyChildStyles node attrs =
         |> applyWordSpacing node.wordSpacing
         |> applyTextAlign node.textAlignment
         |> applyBackground node.background
-        |> applyBackgroundColor node.backgroundColor
 
 
 
 -- applyExplain attrs =
 --     E.explain Debug.todo :: attrs
+
+
+applyShadow : Shadow -> List (E.Attribute Msg) -> List (E.Attribute Msg)
+applyShadow value attrs =
+    let
+        renderer = 
+            case value.type_ of 
+                Inner -> 
+                    Border.innerShadow
+
+                Outer ->
+                    Border.shadow
+    in
+    renderer
+        { offset = ( value.offsetX, value.offsetY )
+        , size = value.size
+        , blur = value.blur
+        , color = value.color
+        }
+        :: attrs
 
 
 applyTransformation : Transformation -> List (E.Attribute Msg) -> List (E.Attribute Msg)
@@ -646,8 +520,8 @@ applyOffsetY { offsetY } attrs =
 
 
 applyRotation { rotation } attrs =
-    if rotation > 0 then
-        E.rotate (degrees rotation) :: attrs
+    if rotation /= 0 then
+        E.rotate rotation :: attrs
 
     else
         attrs
@@ -663,67 +537,51 @@ applySpacing value attrs =
             E.spacingXY x y :: attrs
 
 
-applyWidth : Length -> List (E.Attribute Msg) -> List (E.Attribute Msg)
-applyWidth value attrs =
-    -- TODO merge with applyHeight
-    case value.strategy of
+applyWidth =
+    applyLength E.width
+
+
+applyHeight =
+    applyLength E.height
+
+
+applyLength : (E.Length -> E.Attribute Msg) -> Length -> Maybe Int -> Maybe Int -> List (E.Attribute Msg) -> List (E.Attribute Msg)
+applyLength fn value min max attrs =
+    case value of
         Px value_ ->
             (E.px value_
-                |> applyMinLength value.min
-                |> applyMaxLength value.max
-                |> E.width
+                |> applyMinLength min
+                |> applyMaxLength max
+                |> fn
             )
                 :: attrs
 
         Content ->
             (E.shrink
-                |> applyMinLength value.min
-                |> applyMaxLength value.max
-                |> E.width
+                |> applyMinLength min
+                |> applyMaxLength max
+                |> fn
             )
                 :: attrs
 
         Fill portion ->
             (E.fillPortion portion
-                |> applyMinLength value.min
-                |> applyMaxLength value.max
-                |> E.width
+                |> applyMinLength min
+                |> applyMaxLength max
+                |> fn
             )
                 :: attrs
 
         Unspecified ->
-            attrs
-
-
-applyHeight : Length -> List (E.Attribute Msg) -> List (E.Attribute Msg)
-applyHeight value attrs =
-    case value.strategy of
-        Px value_ ->
-            (E.px value_
-                |> applyMinLength value.min
-                |> applyMaxLength value.max
-                |> E.height
-            )
-                :: attrs
-
-        Content ->
+            -- Emit "shrink" as default to specify min/max values anyway.
+            --   This is probably fixed in Elm UI 2 since we can emit min/max
+            --   values indipendently of element width/height values
             (E.shrink
-                |> applyMinLength value.min
-                |> applyMaxLength value.max
-                |> E.height
+                |> applyMinLength min
+                |> applyMaxLength max
+                |> fn
             )
                 :: attrs
-
-        Fill portion ->
-            (E.fillPortion portion
-                |> applyMinLength value.min
-                |> applyMaxLength value.max
-                |> E.height
-            )
-                :: attrs
-
-        Unspecified ->
-            attrs
 
 
 applyMinLength : Maybe Int -> E.Length -> E.Length
@@ -805,6 +663,19 @@ applyBorderColor value attrs =
     Border.color value :: attrs
 
 
+applyBorderStyle : BorderStyle -> List (E.Attribute Msg) -> List (E.Attribute Msg)
+applyBorderStyle value attrs =
+    case value of
+        Solid ->
+            Border.solid :: attrs
+
+        Dashed ->
+            Border.dashed :: attrs
+
+        Dotted ->
+            Border.dotted :: attrs
+
+
 applyPadding : Padding -> List (E.Attribute Msg) -> List (E.Attribute Msg)
 applyPadding value attrs =
     E.paddingEach
@@ -829,7 +700,7 @@ applyWordSpacing value attrs =
 applyTextAlign : TextAlignment -> List (E.Attribute Msg) -> List (E.Attribute Msg)
 applyTextAlign value attrs =
     case value of
-        TextLeft ->
+        TextStart ->
             -- Default
             --Font.alignLeft :: attrs
             attrs
@@ -837,7 +708,7 @@ applyTextAlign value attrs =
         TextCenter ->
             Font.center :: attrs
 
-        TextRight ->
+        TextEnd ->
             Font.alignRight :: attrs
 
         TextJustify ->
@@ -944,42 +815,127 @@ applyFontWeight value attrs =
 applyBackground : Background -> List (E.Attribute Msg) -> List (E.Attribute Msg)
 applyBackground value attrs =
     case value of
-        Background.Cropped url ->
-            Background.image url :: attrs
+        Background.Image value_ ->
+            if value_ /= "" then
+                Background.image value_ :: attrs
 
-        Background.Uncropped url ->
-            Background.uncropped url :: attrs
+            else
+                attrs
 
-        Background.Tiled url ->
-            Background.tiled url :: attrs
-
-        Background.None ->
-            attrs
-
-
-applyBackgroundColor : Maybe Color -> List (E.Attribute Msg) -> List (E.Attribute Msg)
-applyBackgroundColor value attrs =
-    case value of
-        Just value_ ->
+        Background.Solid value_ ->
             Background.color value_ :: attrs
 
-        Nothing ->
+        Background.None ->
             attrs
 
 
 forceBackgroundColor value attrs =
     -- When we use in-place text editor we want to override Elm UI white background
     --   color for multiline input if and only if the element being edited
-    --   doesn't have a specified background color
-    if value == Nothing then
-        applyBackgroundColor (Just Palette.transparent) attrs
+    --   doesn't have a background color already
+    case value of
+        Background.None ->
+            applyBackground (Background.Solid Palette.transparent) attrs
 
-    else
-        attrs
+        _ ->
+            attrs
 
 
 
 -- HELPERS
+
+
+addChildrenFor renderer attrs children =
+    let
+        ( newAttrs, newChildren ) =
+            List.foldl
+                (\node ( accumAttrs, accumChildren ) ->
+                    addChild node accumAttrs accumChildren
+                )
+                ( attrs, [] )
+                children
+    in
+    renderer newAttrs newChildren
+
+
+addChild :
+    RenderedNode
+    -> List (E.Attribute Msg)
+    -> List (Element Msg)
+    -> ( List (E.Attribute Msg), List (Element Msg) )
+addChild node attrs children =
+    case node of
+        RenderedElement Above el ->
+            ( E.above el :: attrs, children )
+
+        RenderedElement Below el ->
+            ( E.below el :: attrs, children )
+
+        RenderedElement OnStart el ->
+            ( E.onLeft el :: attrs, children )
+
+        RenderedElement OnEnd el ->
+            ( E.onRight el :: attrs, children )
+
+        RenderedElement InFront el ->
+            ( E.inFront el :: attrs, children )
+
+        RenderedElement BehindContent el ->
+            ( E.behindContent el :: attrs, children )
+
+        RenderedElement Normal el ->
+            -- Do not reverse children list
+            ( attrs, children ++ [ el ] )
+
+        RenderedOption _ ->
+            ( attrs, children )
+
+
+wrapElement : Context -> Node -> Bool -> (List (E.Attribute Msg) -> Element Msg) -> Element Msg
+wrapElement ctx node selected renderer =
+    let
+        attrs =
+            [ E.width E.fill
+            , E.height E.fill
+            ]
+                |> applyStyles node
+    in
+    E.el
+        ([ elementClasses ctx node selected
+         , elementId node
+         , onClick (NodeSelected node.id)
+
+         --, E.onRight (E.el [ E.centerY, E.moveLeft 14 ] (E.html <| H.div [ A.class "element__connect" ] []))
+         --  , E.onRight (E.el [E.alignBottom, E.moveLeft 14 ] (E.html <| H.div [ A.class "element__nudge" ] []))
+         --  , E.onRight (E.el [E.alignTop, E.moveLeft 14 ] (E.html <| H.div [ A.class "element__nudge" ] []))
+         --  , E.onLeft (E.el [E.alignTop, E.moveRight 14 ] (E.html <| H.div [ A.class "element__nudge" ] []))
+         ]
+            |> makeDroppableIf (Common.canDropInto node ctx.dragDrop) (AppendTo node.id)
+            |> applyWidth node.width node.widthMin node.widthMax
+            |> applyHeight node.height node.heightMin node.heightMax
+            |> applyAlignX node.alignmentX
+            |> applyAlignY node.alignmentY
+            |> applyTransformation node.transformation
+        )
+        (renderer attrs)
+
+
+labelPosition position attrs text =
+    case position of
+        LabelAbove ->
+            Input.labelAbove attrs (E.text text)
+
+        LabelBelow ->
+            Input.labelBelow attrs (E.text text)
+
+        LabelLeft ->
+            Input.labelLeft attrs (E.text text)
+
+        LabelRight ->
+            Input.labelRight attrs (E.text text)
+
+        LabelHidden ->
+            Input.labelHidden text
 
 
 clipIf pred attrs =
@@ -1006,20 +962,20 @@ options children =
         children
 
 
-elements : List RenderedNode -> List (Element Msg)
-elements children =
-    List.foldr
-        (\node accum ->
-            case node of
-                RenderedElement el ->
-                    el :: accum
 
-                _ ->
-                    -- Ignore everything else
-                    accum
-        )
-        []
-        children
+-- elements : List RenderedNode -> List (Element Msg)
+-- elements children =
+--     List.foldr
+--         (\node accum ->
+--             case node of
+--                 RenderedElement _ el ->
+--                     el :: accum
+--                 _ ->
+--                     -- Ignore everything else
+--                     accum
+--         )
+--         []
+--         children
 
 
 elementId node =
@@ -1034,13 +990,23 @@ elementClasses ctx node selected =
             , ( "element--dropped", isBinding node.id ctx.bindingDragDrop )
             , ( "element--selected", selected )
             , ( "element--bound", isBound node )
+            , ( "element--" ++ nodeType node.type_, True )
             , ( "dragging--file", isDroppingFileInto node.id ctx.fileDrop )
             ]
         )
 
 
+textEditorId =
+    "text-editor"
+
+
 textEditor attrs text =
-    Input.multiline attrs
+    let
+        newAttrs =
+            E.htmlAttribute (A.id textEditorId)
+                :: attrs
+    in
+    Input.multiline newAttrs
         { onChange = TextChanged
         , text = text
         , placeholder = Nothing
@@ -1082,18 +1048,22 @@ isBound node =
 
 
 placeholderText label =
-    -- Center to make it work for rows, columns and text columns
+    -- FIXME: textColumn seems to not honor E.height E.fill
     E.el
         [ Font.color Palette.lightCharcoal
-        , Font.center
-        , E.centerX
-        , E.padding 8
         , E.width E.fill
+        , E.height E.fill
         , Border.width 1
         , Border.dotted
         , Border.color Palette.lightCharcoal
         ]
-        (E.text label)
+        (E.el
+            [ E.centerX
+            , E.centerY
+            , E.padding 8
+            ]
+            (E.text label)
+        )
 
 
 onClick msg =

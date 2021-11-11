@@ -1,13 +1,14 @@
 /*!
- * Bootstrap v4.3.1 (https://getbootstrap.com/)
- * Copyright 2011-2019 The Bootstrap Authors
- * Copyright 2011-2019 Twitter, Inc.
- * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+ * Bootstrap v5.0.2 (https://getbootstrap.com/)
+ * Copyright 2011-2021 The Bootstrap Authors
+ * Copyright 2011-2021 Twitter, Inc.
+ * Licensed under MIT (https://github.com/twbs/bootstrap/blob/main/LICENSE)
  */
 
 // Setup vars
 
 @import "bootstrap/functions";
+@import "bootstrap/mixins";
 
 $header-height: 46px;
 
@@ -15,7 +16,6 @@ $header-height: 46px;
 
 $primary: #3b7cd1;
 $primary-light: scale-color($primary, $saturation: -12%, $lightness: 82% );
-$secondary: rgb(92, 53, 102);
 $success: rgb(78, 154, 6);
 $info: rgb(114, 159, 207);
 $warning: rgb(237, 212, 0);
@@ -35,22 +35,20 @@ $dropdown-font-size: $font-size-base;
 $dropdown-item-padding-x: 1rem;
 $input-line-height: 1.4;
 $input-line-height-sm: $input-line-height;
-$input-line-height-lg: $input-line-height;
+//$input-line-height-lg: $input-line-height;
 
 $btn-line-height: $input-line-height;
-$btn-line-height-sm: $input-line-height;
-$btn-line-height-lg: $input-line-height;
+//$btn-line-height-sm: $input-line-height;
+//$btn-line-height-lg: $input-line-height;
 
+//$input-font-size-sm: 0.75rem;                  
 $input-padding-x-sm: 0.1875rem;
-
-$form-group-margin-bottom: 0.5rem;
-$label-margin-bottom: 0.375rem;
 
 $table-cell-padding: .5rem .325rem;
 $table-accent-bg: rgba($dark, .05);
-//$table-striped-order: even;
 
 @import "bootstrap/variables";
+@import "bootstrap/utilities";
 
 // Code
 
@@ -65,12 +63,12 @@ $nav-tabs-link-active-border-color: $nav-tabs-link-active-bg;
 
 // Other Bootstrap elements
 
-@import "bootstrap/mixins";
+// Layout & components
 @import "bootstrap/root";
 @import "bootstrap/reboot";
 @import "bootstrap/type";
 @import "bootstrap/images";
-@import "bootstrap/code";
+@import "bootstrap/containers";
 @import "bootstrap/grid";
 @import "bootstrap/tables";
 @import "bootstrap/forms";
@@ -78,28 +76,31 @@ $nav-tabs-link-active-border-color: $nav-tabs-link-active-bg;
 @import "bootstrap/transitions";
 @import "bootstrap/dropdown";
 @import "bootstrap/button-group";
-@import "bootstrap/input-group";
-@import "bootstrap/custom-forms";
 @import "bootstrap/nav";
-//@import "bootstrap/navbar";
+@import "bootstrap/navbar";
 //@import "bootstrap/card";
+//@import "bootstrap/accordion";
 //@import "bootstrap/breadcrumb";
-//@import "bootstrap/pagination";
+@import "bootstrap/pagination";
 @import "bootstrap/badge";
-//@import "bootstrap/jumbotron";
 @import "bootstrap/alert";
 @import "bootstrap/progress";
-//@import "bootstrap/media";
 @import "bootstrap/list-group";
 @import "bootstrap/close";
 //@import "bootstrap/toasts";
-//@import "bootstrap/modal";
-//@import "bootstrap/tooltip";
+@import "bootstrap/modal";
+@import "bootstrap/tooltip";
 //@import "bootstrap/popover";
 //@import "bootstrap/carousel";
 @import "bootstrap/spinners";
-@import "bootstrap/utilities";
-//@import "bootstrap/print";
+@import "bootstrap/offcanvas";
+
+// Helpers
+@import "bootstrap/helpers";
+
+// Utilities
+@import "bootstrap/utilities/api";
+// scss-docs-end import-stack
 
 @import "utilities";
 @import "ui";

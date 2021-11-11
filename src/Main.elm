@@ -1,32 +1,27 @@
 module Main exposing (main)
 
-import Array
-import Bootstrap.Tab as Tab
 import Browser
 import Browser.Dom as Dom
 import Browser.Events as BE
 import CodeGen
 import Codecs
+import ContextMenu exposing (ContextMenu)
 import Dict exposing (Dict)
 import Document exposing (DragId(..), DropId(..), Node, Viewport(..))
 import File exposing (File)
+import File.Select as Select
 import Fonts
-import Html.Events as E
-import Html.Events.Extra.Mouse
 import Html5.DragDrop as DragDrop
 import Http exposing (Progress(..))
-import Icons
 import Json.Decode as Decode exposing (Decoder, Value)
-import Library
 import Maybe
 import Model exposing (..)
 import Ports
-import Random exposing (Seed)
-import SelectList exposing (SelectList)
 import Set exposing (Set)
-import Style.Border as Border exposing (BorderCorner, BorderStyle(..), BorderWidth)
+import Style.Border as Border exposing (BorderStyle(..))
 import Style.Font as Font exposing (..)
 import Style.Layout as Layout exposing (..)
+import Style.Shadow as Shadow exposing (Shadow, ShadowType(..))
 import Style.Theme as Theme exposing (Theme)
 import Task
 import Time
@@ -34,8 +29,9 @@ import Time.Extra as Time exposing (Interval(..))
 import Tree as T exposing (Tree)
 import Tree.Zipper as Zipper exposing (Zipper)
 import UUID exposing (Seeds)
+import UndoList
 import Uploader
-import Views.Common as Common exposing (fieldId)
+import Views.Common as Common
 import Views.Editor as Editor
 
 
@@ -47,23 +43,43 @@ appName =
     "Elm Designer"
 
 
+appVersion =
+    ( 0, 4, 0 )
+
+
 init : Flags -> ( Model, Cmd Msg )
 init flags =
     let
         links =
             Fonts.links
+
+        ( model, cmd ) =
+            Model.initialModel flags
     in
-    ( Model.initialModel flags
+    ( model
     , Cmd.batch
         [ Ports.loadDocument ()
         , Ports.setFontLinks links
-        , Ports.setupAppMenu Library.menuItems
+        , cmd
         ]
     )
 
 
+update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
+        WindowSizeChanged w h ->
+            ( { model | windowWidth = w, windowHeight = h }, Cmd.none )
+
+        ContextMenuMsg msg_ ->
+            let
+                ( contextMenu, cmd ) =
+                    ContextMenu.update msg_ model.contextMenu
+            in
+            ( { model | contextMenu = contextMenu }
+            , Cmd.map ContextMenuMsg cmd
+            )
+
         -- ###########
         -- Image drag & drop from local filesystem
         -- ###########
@@ -81,15 +97,16 @@ update msg model =
             , Cmd.none
             )
 
-        FileSelected files ->
+        FileSelected file files ->
             let
                 node =
-                    selectedPage model.pages
+                    model.document.present
                         |> Zipper.tree
                         |> T.label
 
                 ( newUploadState, cmd ) =
-                    files
+                    file
+                        :: files
                         |> acceptFiles
                         |> Uploader.uploadNextFile model.uploadEndpoint
             in
@@ -134,9 +151,9 @@ update msg model =
                             Document.imageNode (String.trim url) model.seeds
 
                         zipper =
-                            selectedPage model.pages
+                            model.document.present
 
-                        newPage =
+                        newDocument =
                             case model.fileDrop of
                                 DroppedInto parentId ->
                                     Document.selectNodeWith parentId zipper
@@ -162,7 +179,7 @@ update msg model =
 
                             else
                                 model.fileDrop
-                        , pages = SelectList.replaceSelected newPage model.pages
+                        , document = UndoList.new newDocument model.document
                         , seeds = newSeeds
                         , saveState = Changed model.currentTime
                       }
@@ -185,18 +202,15 @@ update msg model =
                             -- Save only if document hasn't been modified in saveInterval seconds
                             if Time.diff Second Time.utc since now > saveInterval then
                                 let
-                                    doc =
+                                    document =
                                         { schemaVersion = Document.schemaVersion
                                         , lastUpdatedOn = now
-                                        , pages =
-                                            model.pages
-                                                |> SelectList.toList
-                                                |> List.map Zipper.toTree
+                                        , root = Zipper.toTree model.document.present
                                         , viewport = model.viewport
                                         , collapsedTreeItems = model.collapsedTreeItems
                                         }
                                 in
-                                ( Saved now, serializeDocument doc )
+                                ( Saved now, serializeDocument document )
 
                             else
                                 ( model.saveState, Cmd.none )
@@ -214,74 +228,69 @@ update msg model =
             , cmd
             )
 
-        PageContextMenuClicked id ->
-            ( model
-            , Ports.showPageContextMenu (Document.nodeId id)
-            )
-
-        PageAddClicked _ ->
+        -- TODO
+        -- InsertPageClicked ->
+        --     let
+        --         ( newSeeds, page ) =
+        --             Document.emptyPageNode model.seeds (SelectList.length model.pages.present + 1)
+        --         newPages =
+        --             model.pages.present
+        --                 |> SelectList.selectLast
+        --                 |> SelectList.insertBefore (Zipper.fromTree page)
+        --     in
+        --     ( { model
+        --         | seeds = newSeeds
+        --         , pages = UndoList.new newPages model.pages
+        --         , saveState = Changed model.currentTime
+        --         , dropDownState = Hidden
+        --       }
+        --     , Cmd.none
+        --     )
+        -- InsertNodeClicked label ->
+        --     case Library.findTemplate label of
+        --         Just template ->
+        --             let
+        --                 ( newSeeds, newNode ) =
+        --                     Document.fromTemplate template model.seeds
+        --                 newPage =
+        --                     selectedPage model.pages.present
+        --                         |> Document.insertNode newNode
+        --                 newPages =
+        --                     SelectList.replaceSelected newPage model.pages.present
+        --             in
+        --             ( { model
+        --                 | pages = UndoList.new newPages model.pages
+        --                 , saveState = Changed model.currentTime
+        --                 , seeds = newSeeds
+        --               }
+        --             , Cmd.none
+        --             )
+        --         Nothing ->
+        --             ( model, Cmd.none )
+        InsertNodeClicked template ->
             let
-                ( newSeeds, page ) =
-                    Document.emptyPageNode model.seeds (SelectList.length model.pages + 1)
+                ( newSeeds, newNode ) =
+                    Document.fromTemplate template model.seeds
 
-                newPages =
-                    model.pages
-                        |> SelectList.selectLast
-                        |> SelectList.insertBefore (Zipper.fromTree page)
+                newDocument =
+                    Document.insertNode newNode model.document.present
             in
             ( { model
-                | seeds = newSeeds
-                , pages = newPages
+                | document = UndoList.new newDocument model.document
                 , saveState = Changed model.currentTime
+                , seeds = newSeeds
+                , dropDownState = Hidden
               }
             , Cmd.none
             )
 
-        PageDeleteClicked id ->
-            let
-                isPage : Zipper Node -> Bool
-                isPage zipper =
-                    Document.nodeId (Zipper.toTree zipper |> T.label).id == id
-
-                newPages =
-                    model.pages
-                        |> SelectList.attempt (SelectList.selectBeforeIf isPage)
-                        |> SelectList.attempt (SelectList.selectAfterIf isPage)
-                        |> SelectList.attempt SelectList.delete
-            in
-            ( { model
-                | pages = newPages
-                , saveState = Changed model.currentTime
-              }
-            , Cmd.none
-            )
-
-        InsertNodeClicked label ->
-            case Library.findTemplate label of
-                Just template ->
-                    let
-                        ( newSeeds, newNode ) =
-                            Document.fromTemplate template model.seeds
-
-                        newPage =
-                            selectedPage model.pages
-                                |> Document.insertNode newNode
-                    in
-                    ( { model
-                        | pages = SelectList.replaceSelected newPage model.pages
-                        , saveState = Changed model.currentTime
-                        , seeds = newSeeds
-                      }
-                    , Cmd.none
-                    )
-
-                Nothing ->
-                    ( model, Cmd.none )
+        InsertImageClicked ->
+            ( { model | dropDownState = Hidden }, Select.files acceptedTypes FileSelected )
 
         ClipboardCopyClicked ->
             let
                 code =
-                    selectedPage model.pages
+                    model.document.present
                         |> Zipper.tree
                         |> CodeGen.emit Theme.defaultTheme model.viewport
             in
@@ -292,19 +301,13 @@ update msg model =
         DocumentLoaded value ->
             case Codecs.fromString value of
                 Ok document ->
-                    case List.map Zipper.fromTree document.pages of
-                        head :: rest ->
-                            -- Select the first page of the list
-                            ( { model
-                                | pages = SelectList.fromLists [] head rest
-                                , viewport = document.viewport
-                                , saveState = Original
-                              }
-                            , Cmd.none
-                            )
-
-                        [] ->
-                            ( model, Cmd.none )
+                    ( { model
+                        | document = UndoList.mapPresent (\_ -> Zipper.fromTree document.root) model.document
+                        , viewport = document.viewport
+                        , saveState = Original
+                      }
+                    , Cmd.none
+                    )
 
                 Err reason ->
                     -- let
@@ -339,39 +342,16 @@ update msg model =
             , Cmd.none
             )
 
-        PageSelected index ->
-            let
-                newPages =
-                    case SelectList.selectBy index model.pages of
-                        Just pages ->
-                            SelectList.updateSelected Zipper.root pages
-
-                        Nothing ->
-                            -- Fall back to first page
-                            SelectList.selectHead model.pages
-            in
-            ( { model
-                | pages = newPages
-
-                -- Quit editing when user selects a new page
-                , inspector = NotEdited
-              }
-            , Cmd.none
-            )
-
         NodeSelected id ->
-            let
-                newPages =
-                    SelectList.updateSelected
-                        (\page ->
-                            Document.selectNodeWith id page
-                                -- Fallback to root node if given node cannot be found
-                                |> Maybe.withDefault (Zipper.root page)
-                        )
-                        model.pages
-            in
             ( { model
-                | pages = newPages
+                | document =
+                    UndoList.mapPresent
+                        (\document ->
+                            Document.selectNodeWith id document
+                                -- Fallback to root node if given node cannot be found
+                                |> Maybe.withDefault (Zipper.root document)
+                        )
+                        model.document
 
                 -- Quit editing when user selects a new node
                 , inspector = NotEdited
@@ -379,17 +359,13 @@ update msg model =
             , Cmd.none
             )
 
-        TextEditingStarted id ->
-            let
-                elementId =
-                    Document.nodeId id
-            in
+        TextEditingStarted editorId ->
             ( { model
                 | inspector = EditingText
               }
             , Cmd.batch
-                [ focusElement elementId
-                , Ports.selectText elementId
+                [ focusElement editorId
+                , Ports.selectText editorId
                 ]
             )
 
@@ -397,250 +373,95 @@ update msg model =
             applyChange model Document.applyText value
 
         PaddingLockChanged value ->
-            applyChangeAndFinish model Document.applyPaddingLock value
+            applyChange model Document.applyPaddingLock value
 
         BorderLockChanged value ->
-            applyChangeAndFinish model Document.applyBorderLock value
-
-        FieldEditingStarted field oldValue ->
-            ( { model
-                | inspector = EditingField field oldValue oldValue
-              }
-            , Cmd.none
-            )
+            applyChange model Document.applyBorderLock value
 
         FieldChanged newValue ->
             case model.inspector of
-                EditingField field oldValue _ ->
-                    ( { model | inspector = EditingField field oldValue newValue }
+                EditingField field _ ->
+                    ( { model | inspector = EditingField field newValue }
                     , Cmd.none
                     )
 
                 _ ->
                     ( model, Cmd.none )
 
+        FieldEditingStarted field oldValue ->
+            ( { model
+                | inspector = EditingField field oldValue
+              }
+            , Cmd.none
+            )
+
+        FieldEditingConfirmed ->
+            updateField model
+
         FieldEditingFinished ->
-            case model.inspector of
-                -- ###########
-                -- Label
-                -- ###########
-                EditingField LabelField oldValue newValue ->
-                    applyChangeAndFinish model Document.applyLabel newValue
-
-                -- ###########
-                -- Width
-                -- ###########
-                EditingField WidthPxField oldValue newValue ->
-                    applyChangeAndFinish model
-                        (Document.applyWidthWith
-                            (\value length ->
-                                case value of
-                                    Just value_ ->
-                                        Layout.setStrategy (Layout.px value_) length
-
-                                    Nothing ->
-                                        Layout.setStrategy Unspecified length
-                            )
-                        )
-                        newValue
-
-                EditingField WidthPortionField oldValue newValue ->
-                    applyChangeAndFinish model
-                        (Document.applyWidthWith
-                            (\value length ->
-                                case value of
-                                    Just value_ ->
-                                        Layout.setStrategy (Layout.portion value_) length
-
-                                    Nothing ->
-                                        Layout.setStrategy (Layout.portion 1) length
-                            )
-                        )
-                        newValue
-
-                EditingField WidthMinField oldValue newValue ->
-                    applyChangeAndFinish model (Document.applyWidthWith Layout.setMinLength) newValue
-
-                EditingField WidthMaxField oldValue newValue ->
-                    applyChangeAndFinish model (Document.applyWidthWith Layout.setMaxLength) newValue
-
-                -- ###########
-                -- Height
-                -- ###########
-                EditingField HeightPxField oldValue newValue ->
-                    applyChangeAndFinish model
-                        (Document.applyHeightWith
-                            (\value length ->
-                                case value of
-                                    Just value_ ->
-                                        Layout.setStrategy (Layout.px value_) length
-
-                                    Nothing ->
-                                        Layout.setStrategy Unspecified length
-                            )
-                        )
-                        newValue
-
-                EditingField HeightPortionField oldValue newValue ->
-                    applyChangeAndFinish model
-                        (Document.applyHeightWith
-                            (\value length ->
-                                case value of
-                                    Just value_ ->
-                                        Layout.setStrategy (Layout.portion value_) length
-
-                                    Nothing ->
-                                        Layout.setStrategy (Layout.portion 1) length
-                            )
-                        )
-                        newValue
-
-                EditingField HeightMinField oldValue newValue ->
-                    applyChangeAndFinish model (Document.applyHeightWith Layout.setMinLength) newValue
-
-                EditingField HeightMaxField oldValue newValue ->
-                    applyChangeAndFinish model (Document.applyHeightWith Layout.setMaxLength) newValue
-
-                -- ###########
-                -- Transformation
-                -- ###########
-                EditingField OffsetXField oldValue newValue ->
-                    applyChangeAndFinish model (Document.applyOffset Layout.setOffsetX) newValue
-
-                EditingField OffsetYField oldValue newValue ->
-                    applyChangeAndFinish model (Document.applyOffset Layout.setOffsetY) newValue
-
-                -- ###########
-                -- Font size
-                -- ###########
-                EditingField FontSizeField oldValue newValue ->
-                    applyChangeAndFinish model Document.applyFontSize newValue
-
-                -- ###########
-                -- Font color
-                -- ###########
-                EditingField FontColorField oldValue newValue ->
-                    applyChangeAndFinish model Document.applyFontColor newValue
-
-                -- ###########
-                -- Letter Spacing
-                -- ###########
-                EditingField LetterSpacingField oldValue newValue ->
-                    applyChangeAndFinish model Document.applyLetterSpacing newValue
-
-                -- ###########
-                -- Word Spacing
-                -- ###########
-                EditingField WordSpacingField oldValue newValue ->
-                    applyChangeAndFinish model Document.applyWordSpacing newValue
-
-                -- ###########
-                -- Background
-                -- ###########
-                EditingField BackgroundColorField oldValue newValue ->
-                    applyChangeAndFinish model Document.applyBackgroundColor newValue
-
-                EditingField BackgroundImageField oldValue newValue ->
-                    applyChangeAndFinish model Document.applyBackgroundUrl newValue
-
-                -- ###########
-                -- Borders
-                -- ###########
-                EditingField BorderColorField oldValue newValue ->
-                    applyChangeAndFinish model Document.applyBorderColor newValue
-
-                EditingField BorderTopLeftCornerField oldValue newValue ->
-                    applyChangeAndFinish model (Document.applyBorderCorner Border.setTopLeftCorner) newValue
-
-                EditingField BorderTopRightCornerField oldValue newValue ->
-                    applyChangeAndFinish model (Document.applyBorderCorner Border.setTopRightCorner) newValue
-
-                EditingField BorderBottomRightCornerField oldValue newValue ->
-                    applyChangeAndFinish model (Document.applyBorderCorner Border.setBottomRightCorner) newValue
-
-                EditingField BorderBottomLeftCornerField oldValue newValue ->
-                    applyChangeAndFinish model (Document.applyBorderCorner Border.setBottomLeftCorner) newValue
-
-                EditingField BorderTopWidthField oldValue newValue ->
-                    applyChangeAndFinish model (Document.applyBorderWidth Border.setTopWidth) newValue
-
-                EditingField BorderRightWidthField oldValue newValue ->
-                    applyChangeAndFinish model (Document.applyBorderWidth Border.setRightWidth) newValue
-
-                EditingField BorderBottomWidthField oldValue newValue ->
-                    applyChangeAndFinish model (Document.applyBorderWidth Border.setBottomWidth) newValue
-
-                EditingField BorderLeftWidthField oldValue newValue ->
-                    applyChangeAndFinish model (Document.applyBorderWidth Border.setLeftWidth) newValue
-
-                -- ###########
-                -- Padding
-                -- ###########
-                EditingField PaddingTopField oldValue newValue ->
-                    applyChangeAndFinish model (Document.applyPadding Layout.setPaddingTop) newValue
-
-                EditingField PaddingRightField oldValue newValue ->
-                    applyChangeAndFinish model (Document.applyPadding Layout.setPaddingRight) newValue
-
-                EditingField PaddingBottomField oldValue newValue ->
-                    applyChangeAndFinish model (Document.applyPadding Layout.setPaddingBottom) newValue
-
-                EditingField PaddingLeftField oldValue newValue ->
-                    applyChangeAndFinish model (Document.applyPadding Layout.setPaddingLeft) newValue
-
-                -- ###########
-                -- Spacing
-                -- ###########
-                EditingField SpacingXField oldValue newValue ->
-                    applyChangeAndFinish model (Document.applySpacing Layout.setSpacingX) newValue
-
-                EditingField SpacingYField oldValue newValue ->
-                    applyChangeAndFinish model (Document.applySpacing Layout.setSpacingY) newValue
-
-                _ ->
-                    ( model, Cmd.none )
+            let
+                ( newModel, cmd ) =
+                    updateField model
+            in
+            ( { newModel | inspector = NotEdited }, cmd )
 
         WrapRowItemsChanged value ->
-            applyChangeAndFinish model Document.applyWrapRowItems value
+            applyChange model Document.applyWrapRowItems value
 
         TextAlignChanged value ->
-            applyChangeAndFinish model Document.applyTextAlign value
+            applyChange model Document.applyTextAlign value
+
+        LabelPositionChanged value ->
+            applyChange model Document.applyLabelPosition value
 
         FontWeightChanged value ->
-            applyChangeAndFinish model Document.applyFontWeight value
+            applyChange model Document.applyFontWeight value
 
         FontSizeChanged value ->
-            applyChangeAndFinish model Document.applyFontSize value
+            let
+                ( newModel, cmd ) =
+                    applyChange model Document.applyFontSize value
+            in
+            ( { newModel | dropDownState = Hidden }, cmd )
 
         FontFamilyChanged family ->
-            applyChangeAndFinish model Document.applyFontFamily family
+            applyChange model Document.applyFontFamily family
+
+        BorderStyleChanged value ->
+            applyChange model Document.applyBorderStyle value
 
         BackgroundColorChanged value ->
-            applyChangeAndFinish model Document.applyBackgroundColor value
+            applyChange model Document.applyBackgroundColor value
 
-        BackgroundSizingChanged value ->
-            applyChangeAndFinish model Document.applyBackground value
+        BackgroundChanged value ->
+            applyChange model Document.applyBackground value
 
         BorderColorChanged value ->
-            applyChangeAndFinish model Document.applyBorderColor value
+            applyChange model Document.applyBorderColor value
+
+        ShadowColorChanged value ->
+            applyChange model Document.applyShadowColor value
 
         FontColorChanged value ->
-            applyChangeAndFinish model Document.applyFontColor value
+            applyChange model Document.applyFontColor value
 
         AlignmentXChanged value ->
-            applyChangeAndFinish model Document.applyAlignX value
+            applyChange model Document.applyAlignX value
 
         AlignmentYChanged value ->
-            applyChangeAndFinish model Document.applyAlignY value
+            applyChange model Document.applyAlignY value
 
         AlignmentChanged value ->
-            applyChangeAndFinish model Document.applyAlign value
+            applyChange model Document.applyAlign value
 
         HeightChanged value ->
-            applyChangeAndFinish model Document.applyHeight value
+            applyChange model Document.applyHeight value
 
         WidthChanged value ->
-            applyChangeAndFinish model Document.applyWidth value
+            applyChange model Document.applyWidth value
+
+        PositionChanged value ->
+            applyChange model Document.applyPosition value
 
         BindingDragDropMsg msg_ ->
             let
@@ -677,27 +498,34 @@ update msg model =
                 ( newDragDrop, dragDropResult ) =
                     DragDrop.update msg_ model.dragDrop
 
-                ( newSeeds, newPages ) =
+                ( newSeeds, newDocument, hasNewUndo ) =
                     case dragDropResult of
-                        Just ( dragId, dropId, _ ) ->
+                        Just ( dragId, dropId, position ) ->
                             let
                                 ( newSeeds_, maybeNode, newZipper ) =
-                                    getDroppedNode model dragId
+                                    getDroppedNode model dragId position
+
+                                --_ = Debug.log "Position->" position
                             in
                             case maybeNode of
                                 Just node ->
-                                    ( newSeeds_, addDroppedNode model dropId node newZipper )
+                                    ( newSeeds_, addDroppedNode model dropId node newZipper, True )
 
                                 Nothing ->
-                                    ( model.seeds, selectedPage model.pages )
+                                    ( model.seeds, model.document.present, False )
 
                         Nothing ->
-                            -- Ongoing/failed drag and drop operation
-                            ( model.seeds, selectedPage model.pages )
+                            -- Still going/failed drag and drop operation
+                            ( model.seeds, model.document.present, False )
             in
             ( { model
                 | dragDrop = newDragDrop
-                , pages = SelectList.replaceSelected newPages model.pages
+                , document =
+                    if hasNewUndo then
+                        UndoList.new newDocument model.document
+
+                    else
+                        UndoList.mapPresent (\_ -> newDocument) model.document
                 , seeds = newSeeds
                 , saveState = Changed model.currentTime
               }
@@ -725,7 +553,7 @@ update msg model =
                 ( False, "Backspace", NotEdited ) ->
                     -- TODO remove node from model.collapsedTreeItems
                     ( { model
-                        | pages = SelectList.updateSelected Document.removeNode model.pages
+                        | document = UndoList.new (Document.removeNode model.document.present) model.document
                         , saveState = Changed model.currentTime
                       }
                     , Cmd.none
@@ -742,15 +570,17 @@ update msg model =
                 -- ############
                 -- Stop field and inline editing
                 -- ############
-                ( False, "Escape", EditingField field _ _ ) ->
-                    ( { model | inspector = NotEdited }, unfocusElement (fieldId field) )
+                ( False, "Escape", EditingField field _ ) ->
+                    ( { model | inspector = NotEdited }, unfocusElement (Common.widgetId field) )
 
                 ( False, "Escape", EditingText ) ->
                     ( { model | inspector = NotEdited }, Cmd.none )
 
-                -- Track Alt status
                 ( _, "Alt", NotEdited ) ->
                     ( { model | isAltDown = isDown }, Cmd.none )
+
+                ( _, "Meta", NotEdited ) ->
+                    ( { model | isMetaDown = isDown }, Cmd.none )
 
                 _ ->
                     ( model, Cmd.none )
@@ -762,6 +592,12 @@ update msg model =
 
             else
                 ( model, Cmd.none )
+
+        Undo _ ->
+            ( { model | document = UndoList.undo model.document }, Cmd.none )
+
+        Redo _ ->
+            ( { model | document = UndoList.redo model.document }, Cmd.none )
 
         -- MouseMoved mouse ->
         --     if model.isMouseButtonDown && model.mode == PanMode then
@@ -788,39 +624,252 @@ update msg model =
         --         )
         --     else
         --         ( model, Cmd.none )
-        -- MouseWheelChanged wheel ->
-        --     -- Zoom away
-        --     let
-        --         ( mouseX, mouseY ) =
-        --             wheel.mouseEvent.pagePos
-        --         newModel =
-        --             if model.isAltDown then
-        --                 { model
-        --                     | workspaceScale = clamp minWorkspaceScale maxWorkspaceScale (model.workspaceScale + wheel.deltaY * wheelSensibility)
-        --                     , mouseX = round mouseX
-        --                     , mouseY = round mouseY
-        --                 }
-        --             else
-        --                 model
-        --     in
-        --     ( newModel
-        --     , Cmd.none
-        --     )
+        -- ###########
+        -- Zoom away
+        -- ###########
+        MouseWheelChanged wheel ->
+            let
+                ( mouseX, mouseY ) =
+                    wheel.mouseEvent.pagePos
+
+                newModel =
+                    if model.isMetaDown then
+                        { model
+                            | workspaceScale = clamp minWorkspaceScale maxWorkspaceScale (model.workspaceScale + wheel.deltaY * wheelSensibility)
+                            , mouseX = round mouseX
+                            , mouseY = round mouseY
+                        }
+
+                    else
+                        model
+            in
+            ( newModel
+            , Cmd.none
+            )
+
         _ ->
             ( model, Cmd.none )
 
 
-{-| Figure out _what_ user just dropped: template or node?
+minWorkspaceScale =
+    0.2
+
+
+maxWorkspaceScale =
+    4.0
+
+
+wheelSensibility =
+    0.005
+
+
+updateField model =
+    case model.inspector of
+        -- ###########
+        -- Label
+        -- ###########
+        EditingField LabelField newValue ->
+            applyChange model Document.applyLabel newValue
+
+        -- ###########
+        -- Width
+        -- ###########
+        EditingField WidthPxField newValue ->
+            applyChange model
+                (Document.applyWidthWith
+                    (\value _ ->
+                        case value of
+                            Just value_ ->
+                                Layout.px value_
+
+                            Nothing ->
+                                Unspecified
+                    )
+                )
+                newValue
+
+        EditingField WidthPortionField newValue ->
+            applyChange model
+                (Document.applyWidthWith
+                    (\value _ ->
+                        case value of
+                            Just value_ ->
+                                Layout.portion value_
+
+                            Nothing ->
+                                Layout.portion 1
+                    )
+                )
+                newValue
+
+        EditingField WidthMinField newValue ->
+            applyChange model Document.applyWidthMin newValue
+
+        EditingField WidthMaxField newValue ->
+            applyChange model Document.applyWidthMax newValue
+
+        -- ###########
+        -- Height
+        -- ###########
+        EditingField HeightPxField newValue ->
+            applyChange model
+                (Document.applyHeightWith
+                    (\value _ ->
+                        case value of
+                            Just value_ ->
+                                Layout.px value_
+
+                            Nothing ->
+                                Unspecified
+                    )
+                )
+                newValue
+
+        EditingField HeightPortionField newValue ->
+            applyChange model
+                (Document.applyHeightWith
+                    (\value _ ->
+                        case value of
+                            Just value_ ->
+                                Layout.portion value_
+
+                            Nothing ->
+                                Layout.portion 1
+                    )
+                )
+                newValue
+
+        EditingField HeightMinField newValue ->
+            applyChange model Document.applyHeightMin newValue
+
+        EditingField HeightMaxField newValue ->
+            applyChange model Document.applyHeightMax newValue
+
+        -- ###########
+        -- Transformation
+        -- ###########
+        EditingField OffsetXField newValue ->
+            applyChange model (Document.applyOffset Layout.setOffsetX) newValue
+
+        EditingField OffsetYField newValue ->
+            applyChange model (Document.applyOffset Layout.setOffsetY) newValue
+
+        -- ###########
+        -- Font size
+        -- ###########
+        EditingField FontSizeField newValue ->
+            applyChange model Document.applyFontSize newValue
+
+        -- ###########
+        -- Font color
+        -- ###########
+        EditingField FontColorField newValue ->
+            applyChange model Document.applyFontColor newValue
+
+        -- ###########
+        -- Letter Spacing
+        -- ###########
+        EditingField LetterSpacingField newValue ->
+            applyChange model Document.applyLetterSpacing newValue
+
+        -- ###########
+        -- Word Spacing
+        -- ###########
+        EditingField WordSpacingField newValue ->
+            applyChange model Document.applyWordSpacing newValue
+
+        -- ###########
+        -- Background
+        -- ###########
+        EditingField BackgroundColorField newValue ->
+            applyChange model Document.applyBackgroundColor newValue
+
+        EditingField BackgroundImageField newValue ->
+            applyChange model Document.applyBackgroundImage newValue
+
+        -- ###########
+        -- Borders
+        -- ###########
+        EditingField BorderColorField newValue ->
+            applyChange model Document.applyBorderColor newValue
+
+        EditingField BorderTopLeftCornerField newValue ->
+            applyChange model (Document.applyBorderCorner Border.setTopLeftCorner) newValue
+
+        EditingField BorderTopRightCornerField newValue ->
+            applyChange model (Document.applyBorderCorner Border.setTopRightCorner) newValue
+
+        EditingField BorderBottomRightCornerField newValue ->
+            applyChange model (Document.applyBorderCorner Border.setBottomRightCorner) newValue
+
+        EditingField BorderBottomLeftCornerField newValue ->
+            applyChange model (Document.applyBorderCorner Border.setBottomLeftCorner) newValue
+
+        EditingField BorderTopWidthField newValue ->
+            applyChange model (Document.applyBorderWidth Border.setTopWidth) newValue
+
+        EditingField BorderRightWidthField newValue ->
+            applyChange model (Document.applyBorderWidth Border.setRightWidth) newValue
+
+        EditingField BorderBottomWidthField newValue ->
+            applyChange model (Document.applyBorderWidth Border.setBottomWidth) newValue
+
+        EditingField BorderLeftWidthField newValue ->
+            applyChange model (Document.applyBorderWidth Border.setLeftWidth) newValue
+
+        -- ###########
+        -- Shadow
+        -- ###########
+        EditingField ShadowOffsetXField newValue ->
+            applyChange model (Document.applyShadow Shadow.setOffsetX) newValue
+
+        EditingField ShadowOffsetYField newValue ->
+            applyChange model (Document.applyShadow Shadow.setOffsetY) newValue
+
+        EditingField ShadowSizeField newValue ->
+            applyChange model (Document.applyShadow Shadow.setSize) newValue
+
+        EditingField ShadowBlurField newValue ->
+            applyChange model (Document.applyShadow Shadow.setBlur) newValue
+
+        EditingField ShadowColorField newValue ->
+            applyChange model Document.applyShadowColor newValue
+
+        -- ###########
+        -- Padding
+        -- ###########
+        EditingField PaddingTopField newValue ->
+            applyChange model (Document.applyPadding Layout.setPaddingTop) newValue
+
+        EditingField PaddingRightField newValue ->
+            applyChange model (Document.applyPadding Layout.setPaddingRight) newValue
+
+        EditingField PaddingBottomField newValue ->
+            applyChange model (Document.applyPadding Layout.setPaddingBottom) newValue
+
+        EditingField PaddingLeftField newValue ->
+            applyChange model (Document.applyPadding Layout.setPaddingLeft) newValue
+
+        -- ###########
+        -- Spacing
+        -- ###########
+        EditingField SpacingXField newValue ->
+            applyChange model (Document.applySpacing Layout.setSpacingX) newValue
+
+        EditingField SpacingYField newValue ->
+            applyChange model (Document.applySpacing Layout.setSpacingY) newValue
+
+        _ ->
+            ( model, Cmd.none )
+
+
+{-| Figure out _what_ user just dropped.
 -}
-getDroppedNode : Model -> DragId -> ( Seeds, Maybe (Tree Node), Zipper Node )
-getDroppedNode model dragId =
-    let
-        currentZipper =
-            selectedPage model.pages
-    in
+getDroppedNode : Model -> DragId -> { a | x : Int, y : Int } -> ( Seeds, Maybe (Tree Node), Zipper Node )
+getDroppedNode model dragId position =
     case dragId of
         Move node ->
-            case Document.selectNodeWith node.id currentZipper of
+            case Document.selectNodeWith node.id model.document.present of
                 Just zipper ->
                     if model.isAltDown then
                         -- Duplicate node
@@ -839,14 +888,14 @@ getDroppedNode model dragId =
                         ( model.seeds, Just (Zipper.tree zipper), newZipper )
 
                 Nothing ->
-                    ( model.seeds, Nothing, currentZipper )
+                    ( model.seeds, Nothing, model.document.present )
 
-        Insert template ->
+        Insert node ->
             let
                 ( newSeeds, newNode ) =
-                    Document.fromTemplate template model.seeds
+                    Document.fromTemplateAt position node model.seeds
             in
-            ( newSeeds, Just newNode, currentZipper )
+            ( newSeeds, Just newNode, model.document.present )
 
 
 {-| Figure out _where_ user just dropped the node.
@@ -872,35 +921,10 @@ addDroppedNode model dropId node zipper =
                     zipper
 
 
-selectedPage : SelectList (Zipper Node) -> Zipper Node
-selectedPage pages =
-    SelectList.selected pages
-
-
 applyChange : Model -> (a -> Zipper Node -> Zipper Node) -> a -> ( Model, Cmd Msg )
 applyChange model updater newValue =
-    let
-        pages =
-            SelectList.updateSelected (updater newValue) model.pages
-    in
     ( { model
-        | pages = pages
-        , saveState = Changed model.currentTime
-      }
-    , Cmd.none
-    )
-
-
-applyChangeAndFinish : Model -> (a -> Zipper Node -> Zipper Node) -> a -> ( Model, Cmd Msg )
-applyChangeAndFinish model updater newValue =
-    let
-        pages =
-            SelectList.updateSelected (updater newValue) model.pages
-    in
-    ( { model
-        | pages = pages
-        , dropDownState = Hidden
-        , inspector = NotEdited
+        | document = UndoList.new (updater newValue model.document.present) model.document
         , saveState = Changed model.currentTime
       }
     , Cmd.none
@@ -947,12 +971,11 @@ subscriptions model =
         , BE.onKeyUp (Decode.map (KeyChanged False) keysDecoder)
         , BE.onMouseDown (Decode.map (MouseButtonChanged True) mouseDecoder)
         , BE.onMouseUp (Decode.map (MouseButtonChanged False) mouseDecoder)
+        , BE.onResize WindowSizeChanged
         , Ports.onDocumentLoad DocumentLoaded
-        , Ports.onPageAdd PageAddClicked
-        , Ports.onPageDelete PageDeleteClicked
-        , Ports.onInsertNode InsertNodeClicked
         , Time.every 1000 Ticked
         , uploadSub
+        , Sub.map ContextMenuMsg (ContextMenu.subscriptions model.contextMenu)
         ]
 
 
@@ -991,15 +1014,19 @@ serializeDocument document =
         |> Ports.saveDocument
 
 
-acceptedTypes : Set String
+acceptedTypes : List String
 acceptedTypes =
-    Set.fromList [ "image/jpeg", "image/png", "image/gif", "image/svg+xml" ]
+    [ "image/jpeg", "image/png", "image/gif", "image/svg+xml" ]
 
 
 acceptFiles files =
+    let
+        acceptedTypes_ =
+            Set.fromList acceptedTypes
+    in
     List.filter
         (\f ->
-            Set.member (File.mime f) acceptedTypes
+            Set.member (File.mime f) acceptedTypes_
         )
         files
 

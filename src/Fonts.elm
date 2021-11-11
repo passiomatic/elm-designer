@@ -18,12 +18,7 @@ References:
 
 -}
 
---import Element.Font as Font exposing (Font)
-
 import Dict exposing (Dict)
-import Element.Font exposing (extraBold)
-import List.Extra
-import SelectList exposing (SelectList)
 import Style.Font
     exposing
         ( FontFamily
@@ -48,6 +43,7 @@ families =
     , ( "Sans Serif/Google Fonts"
       , [ FontFamily "Alegreya Sans" (External alegreyaSansUrl) alegreyaSansWeights
         , FontFamily "IBM Plex Sans" (External plexSansUrl) plexSansWeights
+        , FontFamily "Inter" (External interUrl) interWeights
         , FontFamily "Roboto" (External robotoUrl) robotoWeights
         , FontFamily "Rubik" (External rubikUrl) rubikWeights
         , FontFamily "Source Sans Pro" (External sourceSansProUrl) sourceSansProWeights
@@ -72,6 +68,7 @@ families =
     ]
 
 
+families_ : Dict String FontFamily
 families_ =
     families
         |> List.map (\( _, f ) -> f)
@@ -133,6 +130,24 @@ cormorantWeights =
     , SemiBoldItalic
     , Bold
     , BoldItalic
+    ]
+
+
+interUrl =
+    baseUrl ++ "Inter:wght@100;200;300;400;500;600;700;800;900&display=swap"
+
+
+interWeights : List FontWeight
+interWeights =
+    [ Hairline
+    , ExtraLight
+    , Light
+    , Regular
+    , Medium
+    , Bold
+    , SemiBold
+    , ExtraBold
+    , Heavy
     ]
 
 

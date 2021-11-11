@@ -1,19 +1,18 @@
 module Style.Layout exposing
     ( Alignment(..)
-    , Length
+    , Length(..)
     , Padding
+    , Position(..)
     , Spacing(..)
-    , Strategy(..)
     , Transformation
     , fill
     , fit
     , padding
     , paddingXY
     , portion
+    , positionName
     , px
     , setLock
-    , setMaxLength
-    , setMinLength
     , setOffsetX
     , setOffsetY
     , setPadding
@@ -21,13 +20,16 @@ module Style.Layout exposing
     , setPaddingLeft
     , setPaddingRight
     , setPaddingTop
+    , setPosition
     , setSpacing
     , setSpacingX
     , setSpacingY
-    , setStrategy
     , setTransformation
+    , setWidthMax
+    , setWidthMin
     , spacing
     , spacingXY
+    , unspecified
     , untransformed
     )
 
@@ -44,55 +46,88 @@ module Style.Layout exposing
 
 {-| Element length, used as width or height.
 -}
-type alias Length =
-    { strategy : Strategy
-    , min : Maybe Int
-    , max : Maybe Int
-    }
-
-
-fit : Length
-fit =
-    Length Content Nothing Nothing
-
-
-fill : Length
-fill =
-    Length (Fill 1) Nothing Nothing
-
-
-setStrategy : Strategy -> Length -> Length
-setStrategy value record =
-    { record | strategy = value }
-
-
-setMinLength : Maybe Int -> Length -> Length
-setMinLength value record =
-    { record | min = value }
-
-
-setMaxLength : Maybe Int -> Length -> Length
-setMaxLength value record =
-    { record | max = value }
-
-
-{-| Element length strategy.
--}
-type Strategy
+type Length
     = Px Int
     | Content
     | Fill Int
     | Unspecified
 
 
-px : Int -> Strategy
+px : Int -> Length
 px value =
     Px value
 
 
-portion : Int -> Strategy
+fit : Length
+fit =
+    Content
+
+
+fill : Length
+fill =
+    Fill 1
+
+
+portion : Int -> Length
 portion value =
     Fill value
+
+
+unspecified =
+    Unspecified
+
+
+setWidthMin : Maybe Int -> { a | widthMin : Maybe Int } -> { a | widthMin : Maybe Int }
+setWidthMin value node =
+    { node | widthMin = value }
+
+
+setWidthMax : Maybe Int -> { a | widthMax : Maybe Int } -> { a | widthMax : Maybe Int }
+setWidthMax value node =
+    { node | widthMax = value }
+
+
+
+-- POSITION
+
+
+type Position
+    = Above
+    | Below
+    | OnStart
+    | OnEnd
+    | InFront
+    | BehindContent
+    | Normal
+
+
+positionName position =
+    case position of
+        Above ->
+            "Above"
+
+        Below ->
+            "Below"
+
+        OnStart ->
+            "Left"
+
+        OnEnd ->
+            "Right"
+
+        InFront ->
+            "In Front"
+
+        BehindContent ->
+            "Behind Content"
+
+        Normal ->
+            "Normal"
+
+
+setPosition : Position -> { a | position : Position } -> { a | position : Position }
+setPosition value node =
+    { node | position = value }
 
 
 

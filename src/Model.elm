@@ -1,7 +1,7 @@
 module Model exposing
     ( Context
+    , ContextPopup(..)
     , DocumentState(..)
-    , Field(..)
     , FileDrop(..)
     , Flags
     , Inspector(..)
@@ -11,15 +11,16 @@ module Model exposing
     , Mouse
     , Msg(..)
     , UploadState(..)
+    , Widget(..)
     , WidgetState(..)
     , context
     , initialModel
-    , page
     , workspaceHeight
     , workspaceWidth
     )
 
 import Bootstrap.Tab as Tab
+import ContextMenu exposing (ContextMenu)
 import Demo
 import Dict exposing (Dict)
 import Document exposing (..)
@@ -32,24 +33,26 @@ import Http exposing (Error, Progress)
 import Loader
 import Random
 import Result exposing (Result(..))
-import SelectList exposing (SelectList)
 import Set exposing (Set)
 import Style.Background as Background exposing (Background)
+import Style.Border exposing (BorderStyle)
 import Style.Font as Font exposing (..)
+import Style.Input as Input exposing (LabelPosition(..))
 import Style.Layout as Layout exposing (..)
 import Style.Theme as Theme exposing (Theme)
 import Time exposing (Posix)
 import Tree exposing (Tree)
 import Tree.Zipper as Zipper exposing (Zipper)
 import UUID exposing (Seeds)
+import UndoList exposing (UndoList)
 
 
 workspaceWidth =
-    4000
+    8000
 
 
 workspaceHeight =
-    4000
+    8000
 
 
 type Msg
@@ -58,9 +61,8 @@ type Msg
     | MouseWheelChanged Wheel.Event
     | MouseMoved Mouse
     | NodeSelected NodeId
-    | TextEditingStarted NodeId
+    | TextEditingStarted String
     | CollapseNodeClicked Bool NodeId
-    | PageSelected Int
     | PaddingLockChanged Bool
     | BorderLockChanged Bool
     | WidthChanged Length
@@ -68,32 +70,36 @@ type Msg
     | AlignmentXChanged Alignment
     | AlignmentYChanged Alignment
     | AlignmentChanged Alignment
+    | PositionChanged Position
     | TextAlignChanged TextAlignment
     | FontFamilyChanged (Local FontFamily)
     | FontWeightChanged FontWeight
     | FontSizeChanged String
     | FontColorChanged String
     | BackgroundColorChanged String
-    | BackgroundSizingChanged Background
+    | BackgroundChanged Background
     | BorderColorChanged String
-    | FieldEditingStarted Field String
+    | BorderStyleChanged BorderStyle
+    | ShadowColorChanged String
+    | LabelPositionChanged LabelPosition
+    | FieldEditingStarted Widget String
+    | FieldEditingConfirmed
     | FieldEditingFinished
     | FieldChanged String
     | TextChanged String
     | ViewportChanged Viewport
     | WrapRowItemsChanged Bool
     | ClipboardCopyClicked
-    | PageAddClicked ()
-    | PageContextMenuClicked NodeId
-    | PageDeleteClicked String
-    | InsertNodeClicked String
+    | InsertPageClicked
+    | PageDeleteClicked NodeId
+    | InsertNodeClicked (Tree Template)
+    | InsertImageClicked
     | DropDownChanged WidgetState
-      --| LoadDocument
     | DocumentLoaded String
     | Ticked Posix
     | ModeChanged Mode
     | FileDropped NodeId File (List File)
-    | FileSelected (List File)
+    | FileSelected File (List File)
     | FileDragging NodeId
     | FileDragCanceled
     | FileUploading File (List File) Progress
@@ -102,16 +108,23 @@ type Msg
     | BindingDragDropMsg (DragDrop.Msg BindId NodeId)
     | DragDropMsg (DragDrop.Msg DragId DropId)
     | TabMsg Tab.State
+    | Undo ()
+    | Redo ()
+    | ContextMenuMsg (ContextMenu.Msg ContextPopup)
+    | WindowSizeChanged Int Int
+
+
+type ContextPopup
+    = PageListContextPopup NodeId
 
 
 {-| All editable text fields in the app.
 -}
-type Field
+type Widget
     = FontSizeField
     | FontColorField
     | LetterSpacingField
     | WordSpacingField
-    | BackgroundColorField
     | PaddingTopField
     | PaddingRightField
     | PaddingBottomField
@@ -119,6 +132,7 @@ type Field
     | SpacingXField
     | SpacingYField
     | ImageSrcField
+    | BackgroundColorField
     | BackgroundImageField
     | BorderColorField
     | BorderTopWidthField
@@ -140,10 +154,16 @@ type Field
     | HeightMaxField
     | HeightPxField
     | HeightPortionField
+    | ShadowOffsetXField
+    | ShadowOffsetYField
+    | ShadowBlurField
+    | ShadowColorField
+    | ShadowSizeField
+    | InsertDropdown
 
 
 type WidgetState
-    = Visible Field
+    = Visible Widget
     | Hidden
 
 
@@ -154,7 +174,7 @@ type Mode
 
 type Inspector
     = NotEdited
-    | EditingField Field String String
+    | EditingField Widget String
     | EditingText
 
 
@@ -162,17 +182,17 @@ type alias Model =
     { mode : Mode
     , uploadEndpoint : String
     , types : Dict String (Node.Node Declaration)
-
-    -- , workspaceScale : Float
-    -- , workspaceX : Int
-    -- , workspaceY : Int
+    , workspaceScale : Float
+    , workspaceX : Int
+    , workspaceY : Int
     , windowWidth : Int
     , windowHeight : Int
     , mouseX : Int
     , mouseY : Int
     , isMouseButtonDown : Bool
     , isAltDown : Bool
-    , pages : SelectList (Zipper Node)
+    , isMetaDown : Bool
+    , document : UndoList (Zipper Node)
     , viewport : Viewport
     , inspector : Inspector
     , dragDrop : DragDrop.Model DragId DropId
@@ -185,6 +205,7 @@ type alias Model =
     , dropDownState : WidgetState
     , uploadState : UploadState
     , collapsedTreeItems : Set String
+    , contextMenu : ContextMenu ContextPopup
     }
 
 
@@ -220,7 +241,7 @@ type alias Context =
 
 context : Model -> Context
 context model =
-    { currentNode = SelectList.selected model.pages
+    { currentNode = model.document.present
     , nodeDragDrop = model.dragDrop
     , bindingDragDrop = model.bindingDragDrop
     , fileDrop = model.fileDrop
@@ -264,7 +285,7 @@ type alias Flags =
     }
 
 
-initialModel : Flags -> Model
+initialModel : Flags -> ( Model, Cmd Msg )
 initialModel { width, height, uploadEndpoint, seed1, seed2, seed3, seed4 } =
     let
         seeds =
@@ -275,46 +296,44 @@ initialModel { width, height, uploadEndpoint, seed1, seed2, seed3, seed4 } =
                 (Random.initialSeed seed4)
 
         ( newSeeds, emptyDocument ) =
-            Document.emptyPageNode seeds 1
+            Document.defaultDocument seeds 1
 
         declarations =
             loadDemo
                 |> Dict.fromList
+
+        ( contextMenu, cmd ) =
+            ContextMenu.init
     in
-    { mode = DesignMode
-    , uploadEndpoint = uploadEndpoint
-    , types = declarations
-
-    -- , workspaceScale = 1.0
-    -- , workspaceX = -workspaceWidth // 2 + width // 2
-    -- , workspaceY = 0
-    , windowWidth = width
-    , windowHeight = height
-    , mouseX = 0
-    , mouseY = 0
-    , isMouseButtonDown = False
-    , isAltDown = False
-    , pages = SelectList.singleton (Zipper.fromTree emptyDocument)
-    , viewport = Fluid
-    , inspector = NotEdited
-    , dragDrop = DragDrop.init
-    , bindingDragDrop = DragDrop.init
-    , fileDrop = Empty
-    , rightPaneTabState = Tab.customInitialState "tab-design"
-    , seeds = newSeeds
-    , currentTime = Time.millisToPosix 0
-    , saveState = Original
-    , dropDownState = Hidden
-    , uploadState = Ready
-    , collapsedTreeItems = Set.empty
-    }
-
-
-{-| Get current selected page.
--}
-page : SelectList (Zipper Node) -> Zipper Node
-page pages =
-    SelectList.selected pages
+    ( { mode = DesignMode
+      , uploadEndpoint = uploadEndpoint
+      , types = declarations
+      , workspaceScale = 1.0
+      , workspaceX = -workspaceWidth // 2 + width // 2
+      , workspaceY = -workspaceHeight // 2 + height // 2
+      , windowWidth = width
+      , windowHeight = height
+      , mouseX = 0
+      , mouseY = 0
+      , isMouseButtonDown = False
+      , isAltDown = False
+      , isMetaDown = False
+      , document = UndoList.fresh (Zipper.fromTree emptyDocument)
+      , viewport = Fluid
+      , inspector = NotEdited
+      , dragDrop = DragDrop.init
+      , fileDrop = Empty
+      , rightPaneTabState = Tab.customInitialState "tab-design"
+      , seeds = newSeeds
+      , currentTime = Time.millisToPosix 0
+      , saveState = Original
+      , dropDownState = Hidden
+      , uploadState = Ready
+      , collapsedTreeItems = Set.empty
+      , contextMenu = contextMenu
+      }
+    , Cmd.map ContextMenuMsg cmd
+    )
 
 
 loadDemo : List ( String, Node.Node Declaration )
