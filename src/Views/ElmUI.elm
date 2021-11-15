@@ -265,7 +265,7 @@ renderImage ctx node selected image =
             in
             E.image newAttrs image
     in
-    wrapElement ctx node selected renderer
+    wrapImageElement ctx node selected renderer
         |> RenderedElement node.position
 
 
@@ -901,6 +901,32 @@ wrapElement ctx node selected renderer =
          --  , E.onRight (E.el [E.alignBottom, E.moveLeft 14 ] (E.html <| H.div [ A.class "element__nudge" ] []))
          --  , E.onRight (E.el [E.alignTop, E.moveLeft 14 ] (E.html <| H.div [ A.class "element__nudge" ] []))
          --  , E.onLeft (E.el [E.alignTop, E.moveRight 14 ] (E.html <| H.div [ A.class "element__nudge" ] []))
+         ]
+            |> makeDroppableIf (Common.canDropInto node ctx.dragDrop) (AppendTo node.id)
+            |> applyWidth node.width node.widthMin node.widthMax
+            |> applyHeight node.height node.heightMin node.heightMax
+            |> applyAlignX node.alignmentX
+            |> applyAlignY node.alignmentY
+            -- TODO scale
+            |> applyOffsetX node.offsetX
+            |> applyOffsetY node.offsetY
+            |> applyRotation node.rotation
+        )
+        (renderer attrs)
+
+wrapImageElement : Context -> Node -> Bool -> (List (E.Attribute Msg) -> Element Msg) -> Element Msg
+wrapImageElement ctx node selected renderer =
+    let
+        attrs =
+            []
+            |> applyWidth node.width node.widthMin node.widthMax
+            |> applyHeight node.height node.heightMin node.heightMax
+            |> applyStyles node
+    in
+    E.el
+        ([ elementClasses ctx node selected
+         , elementId node
+         , onClick (NodeSelected node.id)
          ]
             |> makeDroppableIf (Common.canDropInto node ctx.dragDrop) (AppendTo node.id)
             |> applyWidth node.width node.widthMin node.widthMax
