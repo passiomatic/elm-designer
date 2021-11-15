@@ -67,6 +67,7 @@ view model =
                     , workspaceView model
                     , rightPaneView model
                     ]
+                , uploadProgressView model.uploadState                    
                 , ContextMenus.pageListView model
                 ]
         )
@@ -106,8 +107,7 @@ workspaceView model =
             --, transformOriginAttr
             ]
             [ documentView model
-            ]
-        , uploadProgressView model.uploadState
+            ]        
         ]
 
 
@@ -124,7 +124,7 @@ uploadProgressView uploadState =
                 , A.style "left" "0"
                 , A.style "z-index" "3"
                 ]
-                [ H.div [ A.class "w-50 mx-auto bg-light border rounded bpx-2 bpy-2" ]
+                [ H.div [ A.class "mx-auto bg-light border rounded bpx-2 bpy-2", A.style "max-width" "400px" ]
                     [ H.div [ A.class "label-sm" ] [ H.text ("Uploading image " ++ File.name file ++ "...") ]
                     , H.div [ A.class "mt-1 progress", A.style "height" "8px" ]
                         [ H.div
@@ -138,6 +138,7 @@ uploadProgressView uploadState =
 
         _ ->
             none
+
 
 
 headerView : Model -> Html Msg
