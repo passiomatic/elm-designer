@@ -47,6 +47,10 @@ appVersion =
     ( 0, 4, 0 )
 
 
+uploadEndpoint =
+    "https://0x0.st"
+
+
 init : Flags -> ( Model, Cmd Msg )
 init flags =
     let
@@ -108,7 +112,7 @@ update msg model =
                     file
                         :: files
                         |> acceptFiles
-                        |> Uploader.uploadNextFile model.uploadEndpoint
+                        |> Uploader.uploadNextFile uploadEndpoint
             in
             ( { model
                 | uploadState = newUploadState
@@ -122,7 +126,7 @@ update msg model =
                 ( newUploadState, cmd ) =
                     (file :: files)
                         |> acceptFiles
-                        |> Uploader.uploadNextFile model.uploadEndpoint
+                        |> Uploader.uploadNextFile uploadEndpoint
             in
             ( { model
                 | uploadState = newUploadState
@@ -166,7 +170,7 @@ update msg model =
                         ( newUploadState, cmd ) =
                             case model.uploadState of
                                 Uploading _ others _ ->
-                                    Uploader.uploadNextFile model.uploadEndpoint others
+                                    Uploader.uploadNextFile uploadEndpoint others
 
                                 _ ->
                                     ( Ready, Cmd.none )
@@ -998,6 +1002,7 @@ acceptFiles files =
             Set.member (File.mime f) acceptedTypes_
         )
         files
+
 
 
 -- NOTIFICATION

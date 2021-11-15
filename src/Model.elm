@@ -166,7 +166,6 @@ type Inspector
 
 type alias Model =
     { mode : Mode
-    , uploadEndpoint : String
     , workspaceScale : Float
     , workspaceX : Float
     , workspaceY : Float
@@ -259,7 +258,6 @@ type alias Mouse =
 type alias Flags =
     { width : Int
     , height : Int
-    , uploadEndpoint : String
     , seed1 : Int
     , seed2 : Int
     , seed3 : Int
@@ -268,7 +266,7 @@ type alias Flags =
 
 
 initialModel : Flags -> ( Model, Cmd Msg )
-initialModel { width, height, uploadEndpoint, seed1, seed2, seed3, seed4 } =
+initialModel { width, height, seed1, seed2, seed3, seed4 } =
     let
         seeds =
             Seeds
@@ -293,7 +291,6 @@ initialModel { width, height, uploadEndpoint, seed1, seed2, seed3, seed4 } =
             workspaceHeight / 2 - toFloat height / 2 + pageHeight / 2
     in
     ( { mode = DesignMode
-      , uploadEndpoint = uploadEndpoint
       , workspaceScale = 1.0
       , workspaceX = workspaceX
       , workspaceY = workspaceY
