@@ -78,15 +78,17 @@ app.ports.selectText.subscribe(function (id) {
 // * https://kryogenix.org/code/browser/custom-drag-image.html
 // * https://transitory.technology/set-drag-image/
 //
-app.ports.setDragImage.subscribe(function (event) {
-  
+app.ports.setDragImage.subscribe(function (event) {  
+  // FF compat.
+  event.dataTransfer.setData('text', '');
+
   var node = event.target.cloneNode(true);
 
   // Add a "template" class for nodes already in the page
   node.classList.add("template")
   node.title=""
   node.style.position = "absolute"
-  node.style.top = "-999px"  
+  node.style.top = "-9999px"  
   document.body.appendChild(node)
 
   var clientRect = event.target.getBoundingClientRect()

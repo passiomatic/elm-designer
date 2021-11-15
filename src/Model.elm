@@ -15,12 +15,10 @@ module Model exposing
     , WidgetState(..)
     , context
     , initialModel
-    , page
-    , workspaceHeight
-    , workspaceWidth
     )
 
 import Bootstrap.Tab as Tab
+import Browser.Dom as Dom
 import ContextMenu exposing (ContextMenu)
 import Document exposing (..)
 import File exposing (File)
@@ -29,7 +27,6 @@ import Html5.DragDrop as DragDrop
 import Http exposing (Error, Progress)
 import Random
 import Result exposing (Result(..))
-import SelectList exposing (SelectList)
 import Set exposing (Set)
 import Style.Background as Background exposing (Background)
 import Style.Border exposing (BorderStyle)
@@ -37,19 +34,12 @@ import Style.Font as Font exposing (..)
 import Style.Input as Input exposing (LabelPosition(..))
 import Style.Layout as Layout exposing (..)
 import Style.Theme as Theme exposing (Theme)
+import Task
 import Time exposing (Posix)
 import Tree exposing (Tree)
 import Tree.Zipper as Zipper exposing (Zipper)
 import UUID exposing (Seeds)
 import UndoList exposing (UndoList)
-
-
-workspaceWidth =
-    4000
-
-
-workspaceHeight =
-    4000
 
 
 type Msg
@@ -60,7 +50,6 @@ type Msg
     | NodeSelected NodeId
     | TextEditingStarted String
     | CollapseNodeClicked Bool NodeId
-    | PageSelected Int
     | PaddingLockChanged Bool
     | BorderLockChanged Bool
     | WidthChanged Length
@@ -90,7 +79,7 @@ type Msg
     | ClipboardCopyClicked
     | InsertPageClicked
     | PageDeleteClicked NodeId
-    | InsertNodeClicked (Tree Template)
+    | InsertNodeClicked (Tree Node)
     | InsertImageClicked
     | DropDownChanged WidgetState
     | DocumentLoaded String
@@ -108,6 +97,7 @@ type Msg
     | Undo ()
     | Redo ()
     | ContextMenuMsg (ContextMenu.Msg ContextPopup)
+    | WindowSizeChanged Int Int
 
 
 type ContextPopup
@@ -177,17 +167,17 @@ type Inspector
 type alias Model =
     { mode : Mode
     , uploadEndpoint : String
-
-    -- , workspaceScale : Float
-    -- , workspaceX : Int
-    -- , workspaceY : Int
+    , workspaceScale : Float
+    , workspaceX : Float
+    , workspaceY : Float
     , windowWidth : Int
     , windowHeight : Int
     , mouseX : Int
     , mouseY : Int
     , isMouseButtonDown : Bool
     , isAltDown : Bool
-    , pages : UndoList (SelectList (Zipper Node))
+    , isMetaDown : Bool
+    , document : UndoList (Zipper Node)
     , viewport : Viewport
     , inspector : Inspector
     , dragDrop : DragDrop.Model DragId DropId
@@ -234,7 +224,7 @@ type alias Context =
 
 context : Model -> Context
 context model =
-    { currentNode = SelectList.selected model.pages.present
+    { currentNode = model.document.present
     , dragDrop = model.dragDrop
     , fileDrop = model.fileDrop
     , inspector = model.inspector
@@ -287,25 +277,34 @@ initialModel { width, height, uploadEndpoint, seed1, seed2, seed3, seed4 } =
                 (Random.initialSeed seed3)
                 (Random.initialSeed seed4)
 
-        ( newSeeds, emptyDocument ) =
-            Document.emptyPageNode seeds 1
+        ( newSeeds, newDocument ) =
+            Document.defaultDocument seeds 1
 
         ( contextMenu, cmd ) =
             ContextMenu.init
+
+        ( pageWidth, pageHeight, _ ) =
+            Document.defaultDeviceInfo
+
+        workspaceX =
+            workspaceWidth / 2 - toFloat width / 2 + pageWidth / 2
+
+        workspaceY =
+            workspaceHeight / 2 - toFloat height / 2 + pageHeight / 2
     in
     ( { mode = DesignMode
       , uploadEndpoint = uploadEndpoint
-
-      -- , workspaceScale = 1.0
-      -- , workspaceX = -workspaceWidth // 2 + width // 2
-      -- , workspaceY = 0
+      , workspaceScale = 1.0
+      , workspaceX = workspaceX
+      , workspaceY = workspaceY
       , windowWidth = width
       , windowHeight = height
       , mouseX = 0
       , mouseY = 0
       , isMouseButtonDown = False
       , isAltDown = False
-      , pages = UndoList.fresh <| SelectList.singleton <| Zipper.fromTree emptyDocument
+      , isMetaDown = False
+      , document = UndoList.fresh (Zipper.fromTree newDocument)
       , viewport = Fluid
       , inspector = NotEdited
       , dragDrop = DragDrop.init
@@ -319,12 +318,9 @@ initialModel { width, height, uploadEndpoint, seed1, seed2, seed3, seed4 } =
       , collapsedTreeItems = Set.empty
       , contextMenu = contextMenu
       }
-    , Cmd.map ContextMenuMsg cmd
+    , Cmd.batch
+        [ Cmd.map ContextMenuMsg cmd
+        , Dom.setViewportOf "workspace-wrapper" workspaceX workspaceY
+            |> Task.attempt (\_ -> NoOp)
+        ]
     )
-
-
-{-| Get current selected page.
--}
-page : SelectList (Zipper Node) -> Zipper Node
-page pages =
-    SelectList.selected pages

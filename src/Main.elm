@@ -11,15 +11,12 @@ import Document exposing (DragId(..), DropId(..), Node, Viewport(..))
 import File exposing (File)
 import File.Select as Select
 import Fonts
-import Html.Events as E
 import Html5.DragDrop as DragDrop
 import Http exposing (Progress(..))
 import Json.Decode as Decode exposing (Decoder, Value)
-import Library
 import Maybe
 import Model exposing (..)
 import Ports
-import SelectList exposing (SelectList)
 import Set exposing (Set)
 import Style.Border as Border exposing (BorderStyle(..))
 import Style.Font as Font exposing (..)
@@ -46,6 +43,10 @@ appName =
     "Elm Designer"
 
 
+appVersion =
+    ( 0, 4, 0 )
+
+
 init : Flags -> ( Model, Cmd Msg )
 init flags =
     let
@@ -67,6 +68,9 @@ init flags =
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
+        WindowSizeChanged w h ->
+            ( { model | windowWidth = w, windowHeight = h }, Cmd.none )
+
         ContextMenuMsg msg_ ->
             let
                 ( contextMenu, cmd ) =
@@ -96,7 +100,7 @@ update msg model =
         FileSelected file files ->
             let
                 node =
-                    selectedPage model.pages.present
+                    model.document.present
                         |> Zipper.tree
                         |> T.label
 
@@ -147,9 +151,9 @@ update msg model =
                             Document.imageNode (String.trim url) model.seeds
 
                         zipper =
-                            selectedPage model.pages.present
+                            model.document.present
 
-                        newPage =
+                        newDocument =
                             case model.fileDrop of
                                 DroppedInto parentId ->
                                     Document.selectNodeWith parentId zipper
@@ -175,7 +179,7 @@ update msg model =
 
                             else
                                 model.fileDrop
-                        , pages = UndoList.mapPresent (SelectList.replaceSelected newPage) model.pages
+                        , document = UndoList.new newDocument model.document
                         , seeds = newSeeds
                         , saveState = Changed model.currentTime
                       }
@@ -198,18 +202,15 @@ update msg model =
                             -- Save only if document hasn't been modified in saveInterval seconds
                             if Time.diff Second Time.utc since now > saveInterval then
                                 let
-                                    doc =
+                                    document =
                                         { schemaVersion = Document.schemaVersion
                                         , lastUpdatedOn = now
-                                        , pages =
-                                            model.pages.present
-                                                |> SelectList.toList
-                                                |> List.map Zipper.toTree
+                                        , root = Zipper.toTree model.document.present
                                         , viewport = model.viewport
                                         , collapsedTreeItems = model.collapsedTreeItems
                                         }
                                 in
-                                ( Saved now, serializeDocument doc )
+                                ( Saved now, serializeDocument document )
 
                             else
                                 ( model.saveState, Cmd.none )
@@ -227,44 +228,24 @@ update msg model =
             , cmd
             )
 
-        InsertPageClicked ->
-            let
-                ( newSeeds, page ) =
-                    Document.emptyPageNode model.seeds (SelectList.length model.pages.present + 1)
-
-                newPages =
-                    model.pages.present
-                        |> SelectList.selectLast
-                        |> SelectList.insertBefore (Zipper.fromTree page)
-            in
-            ( { model
-                | seeds = newSeeds
-                , pages = UndoList.new newPages model.pages
-                , saveState = Changed model.currentTime
-                , dropDownState = Hidden
-              }
-            , Cmd.none
-            )
-
-        PageDeleteClicked id ->
-            let
-                isPage : Zipper Node -> Bool
-                isPage zipper =
-                    (Zipper.toTree zipper |> T.label).id == id
-
-                newPages =
-                    model.pages.present
-                        |> SelectList.attempt (SelectList.selectBeforeIf isPage)
-                        |> SelectList.attempt (SelectList.selectAfterIf isPage)
-                        |> SelectList.attempt SelectList.delete
-            in
-            ( { model
-                | pages = UndoList.new newPages model.pages
-                , saveState = Changed model.currentTime
-              }
-            , Cmd.none
-            )
-
+        -- TODO
+        -- InsertPageClicked ->
+        --     let
+        --         ( newSeeds, page ) =
+        --             Document.emptyPageNode model.seeds (SelectList.length model.pages.present + 1)
+        --         newPages =
+        --             model.pages.present
+        --                 |> SelectList.selectLast
+        --                 |> SelectList.insertBefore (Zipper.fromTree page)
+        --     in
+        --     ( { model
+        --         | seeds = newSeeds
+        --         , pages = UndoList.new newPages model.pages
+        --         , saveState = Changed model.currentTime
+        --         , dropDownState = Hidden
+        --       }
+        --     , Cmd.none
+        --     )
         -- InsertNodeClicked label ->
         --     case Library.findTemplate label of
         --         Just template ->
@@ -291,15 +272,11 @@ update msg model =
                 ( newSeeds, newNode ) =
                     Document.fromTemplate template model.seeds
 
-                newPage =
-                    selectedPage model.pages.present
-                        |> Document.insertNode newNode
-
-                newPages =
-                    SelectList.replaceSelected newPage model.pages.present
+                newDocument =
+                    Document.insertNode newNode model.document.present
             in
             ( { model
-                | pages = UndoList.new newPages model.pages
+                | document = UndoList.new newDocument model.document
                 , saveState = Changed model.currentTime
                 , seeds = newSeeds
                 , dropDownState = Hidden
@@ -313,7 +290,7 @@ update msg model =
         ClipboardCopyClicked ->
             let
                 code =
-                    selectedPage model.pages.present
+                    model.document.present
                         |> Zipper.tree
                         |> CodeGen.emit Theme.defaultTheme model.viewport
             in
@@ -324,19 +301,13 @@ update msg model =
         DocumentLoaded value ->
             case Codecs.fromString value of
                 Ok document ->
-                    case List.map Zipper.fromTree document.pages of
-                        head :: rest ->
-                            -- Select the first page of the list
-                            ( { model
-                                | pages = UndoList.mapPresent (\_ -> SelectList.fromLists [] head rest) model.pages
-                                , viewport = document.viewport
-                                , saveState = Original
-                              }
-                            , Cmd.none
-                            )
-
-                        [] ->
-                            ( model, Cmd.none )
+                    ( { model
+                        | document = UndoList.mapPresent (\_ -> Zipper.fromTree document.root) model.document
+                        , viewport = document.viewport
+                        , saveState = Original
+                      }
+                    , Cmd.none
+                    )
 
                 Err reason ->
                     -- let
@@ -371,41 +342,16 @@ update msg model =
             , Cmd.none
             )
 
-        PageSelected index ->
-            ( { model
-                | pages =
-                    UndoList.mapPresent
-                        (\pages ->
-                            case SelectList.selectBy index pages of
-                                Just pages_ ->
-                                    SelectList.updateSelected Zipper.root pages_
-
-                                Nothing ->
-                                    -- Fall back to first page
-                                    SelectList.selectHead pages
-                        )
-                        model.pages
-
-                -- Quit editing when user selects a new page
-                , inspector = NotEdited
-              }
-            , Cmd.none
-            )
-
         NodeSelected id ->
             ( { model
-                | pages =
+                | document =
                     UndoList.mapPresent
-                        (\pages ->
-                            SelectList.updateSelected
-                                (\page ->
-                                    Document.selectNodeWith id page
-                                        -- Fallback to root node if given node cannot be found
-                                        |> Maybe.withDefault (Zipper.root page)
-                                )
-                                pages
+                        (\document ->
+                            Document.selectNodeWith id document
+                                -- Fallback to root node if given node cannot be found
+                                |> Maybe.withDefault (Zipper.root document)
                         )
-                        model.pages
+                        model.document
 
                 -- Quit editing when user selects a new node
                 , inspector = NotEdited
@@ -522,35 +468,34 @@ update msg model =
                 ( newDragDrop, dragDropResult ) =
                     DragDrop.update msg_ model.dragDrop
 
-                ( newSeeds, newPages, hasNewUndo ) =
+                ( newSeeds, newDocument, hasNewUndo ) =
                     case dragDropResult of
-                        Just ( dragId, dropId, _ ) ->
+                        Just ( dragId, dropId, position ) ->
                             let
                                 ( newSeeds_, maybeNode, newZipper ) =
-                                    getDroppedNode model dragId
+                                    getDroppedNode model dragId { x = toFloat position.x, y = toFloat position.y }
+
+                                --_ = Debug.log "Position->" position
                             in
                             case maybeNode of
                                 Just node ->
                                     ( newSeeds_, addDroppedNode model dropId node newZipper, True )
 
                                 Nothing ->
-                                    ( model.seeds, selectedPage model.pages.present, False )
+                                    ( model.seeds, model.document.present, False )
 
                         Nothing ->
                             -- Still going/failed drag and drop operation
-                            ( model.seeds, selectedPage model.pages.present, False )
-
-                newPages_ =
-                    SelectList.replaceSelected newPages model.pages.present
+                            ( model.seeds, model.document.present, False )
             in
             ( { model
                 | dragDrop = newDragDrop
-                , pages =
+                , document =
                     if hasNewUndo then
-                        UndoList.new newPages_ model.pages
+                        UndoList.new newDocument model.document
 
                     else
-                        UndoList.mapPresent (\_ -> newPages_) model.pages
+                        UndoList.mapPresent (\_ -> newDocument) model.document
                 , seeds = newSeeds
                 , saveState = Changed model.currentTime
               }
@@ -578,7 +523,7 @@ update msg model =
                 ( False, "Backspace", NotEdited ) ->
                     -- TODO remove node from model.collapsedTreeItems
                     ( { model
-                        | pages = UndoList.new (SelectList.updateSelected Document.removeNode model.pages.present) model.pages
+                        | document = UndoList.new (Document.removeNode model.document.present) model.document
                         , saveState = Changed model.currentTime
                       }
                     , Cmd.none
@@ -601,9 +546,11 @@ update msg model =
                 ( False, "Escape", EditingText ) ->
                     ( { model | inspector = NotEdited }, Cmd.none )
 
-                -- Track Alt status
                 ( _, "Alt", NotEdited ) ->
                     ( { model | isAltDown = isDown }, Cmd.none )
+
+                ( _, "Meta", NotEdited ) ->
+                    ( { model | isMetaDown = isDown }, Cmd.none )
 
                 _ ->
                     ( model, Cmd.none )
@@ -617,10 +564,10 @@ update msg model =
                 ( model, Cmd.none )
 
         Undo _ ->
-            ( { model | pages = UndoList.undo model.pages }, Cmd.none )
+            ( { model | document = UndoList.undo model.document }, Cmd.none )
 
         Redo _ ->
-            ( { model | pages = UndoList.redo model.pages }, Cmd.none )
+            ( { model | document = UndoList.redo model.document }, Cmd.none )
 
         -- MouseMoved mouse ->
         --     if model.isMouseButtonDown && model.mode == PanMode then
@@ -647,26 +594,43 @@ update msg model =
         --         )
         --     else
         --         ( model, Cmd.none )
-        -- MouseWheelChanged wheel ->
-        --     -- Zoom away
-        --     let
-        --         ( mouseX, mouseY ) =
-        --             wheel.mouseEvent.pagePos
-        --         newModel =
-        --             if model.isAltDown then
-        --                 { model
-        --                     | workspaceScale = clamp minWorkspaceScale maxWorkspaceScale (model.workspaceScale + wheel.deltaY * wheelSensibility)
-        --                     , mouseX = round mouseX
-        --                     , mouseY = round mouseY
-        --                 }
-        --             else
-        --                 model
-        --     in
-        --     ( newModel
-        --     , Cmd.none
-        --     )
+        -- ###########
+        -- Zoom away
+        -- ###########
+        MouseWheelChanged wheel ->
+            let
+                ( mouseX, mouseY ) =
+                    wheel.mouseEvent.pagePos
+
+                newModel =
+                    if model.isMetaDown then
+                        { model
+                            | workspaceScale = clamp minWorkspaceScale maxWorkspaceScale (model.workspaceScale + wheel.deltaY * wheelSensibility)
+                            , mouseX = round mouseX
+                            , mouseY = round mouseY
+                        }
+
+                    else
+                        model
+            in
+            ( newModel
+            , Cmd.none
+            )
+
         _ ->
             ( model, Cmd.none )
+
+
+minWorkspaceScale =
+    0.2
+
+
+maxWorkspaceScale =
+    4.0
+
+
+wheelSensibility =
+    0.005
 
 
 updateField model =
@@ -869,17 +833,13 @@ updateField model =
             ( model, Cmd.none )
 
 
-{-| Figure out _what_ user just dropped: template or node?
+{-| Figure out _what_ user just dropped.
 -}
-getDroppedNode : Model -> DragId -> ( Seeds, Maybe (Tree Node), Zipper Node )
-getDroppedNode model dragId =
-    let
-        currentZipper =
-            selectedPage model.pages.present
-    in
+getDroppedNode : Model -> DragId -> { x : Float, y : Float } -> ( Seeds, Maybe (Tree Node), Zipper Node )
+getDroppedNode model dragId position =
     case dragId of
         Move node ->
-            case Document.selectNodeWith node.id currentZipper of
+            case Document.selectNodeWith node.id model.document.present of
                 Just zipper ->
                     if model.isAltDown then
                         -- Duplicate node
@@ -898,14 +858,14 @@ getDroppedNode model dragId =
                         ( model.seeds, Just (Zipper.tree zipper), newZipper )
 
                 Nothing ->
-                    ( model.seeds, Nothing, currentZipper )
+                    ( model.seeds, Nothing, model.document.present )
 
-        Insert template ->
+        Insert node ->
             let
                 ( newSeeds, newNode ) =
-                    Document.fromTemplate template model.seeds
+                    Document.fromTemplateAt position node model.seeds
             in
-            ( newSeeds, Just newNode, currentZipper )
+            ( newSeeds, Just newNode, model.document.present )
 
 
 {-| Figure out _where_ user just dropped the node.
@@ -930,19 +890,10 @@ addDroppedNode model dropId node zipper =
                     zipper
 
 
-selectedPage : SelectList (Zipper Node) -> Zipper Node
-selectedPage pages =
-    SelectList.selected pages
-
-
 applyChange : Model -> (a -> Zipper Node -> Zipper Node) -> a -> ( Model, Cmd Msg )
-applyChange ({ pages, currentTime } as model) updater newValue =
-    let
-        newPages =
-            SelectList.updateSelected (updater newValue) model.pages.present
-    in
+applyChange model updater newValue =
     ( { model
-        | pages = UndoList.new newPages model.pages
+        | document = UndoList.new (updater newValue model.document.present) model.document
         , saveState = Changed model.currentTime
       }
     , Cmd.none
@@ -989,6 +940,7 @@ subscriptions model =
         , BE.onKeyUp (Decode.map (KeyChanged False) keysDecoder)
         , BE.onMouseDown (Decode.map (MouseButtonChanged True) mouseDecoder)
         , BE.onMouseUp (Decode.map (MouseButtonChanged False) mouseDecoder)
+        , BE.onResize WindowSizeChanged
         , Ports.onDocumentLoad DocumentLoaded
         , Time.every 1000 Ticked
         , uploadSub
@@ -1046,7 +998,6 @@ acceptFiles files =
             Set.member (File.mime f) acceptedTypes_
         )
         files
-
 
 
 -- NOTIFICATION

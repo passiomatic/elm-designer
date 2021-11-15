@@ -18,13 +18,13 @@ import Html as H exposing (Attribute, Html)
 import Html.Attributes as A
 import Html.Entity as Entity
 import Html.Events as E
+import Html.Events.Extra.Wheel as Wheel
 import Html5.DragDrop as DragDrop
 import Icons
 import Json.Decode as Decode exposing (Decoder)
 import Library exposing (LibraryItem)
 import Model exposing (..)
 import Palette
-import SelectList exposing (SelectList)
 import Set exposing (Set)
 import Style.Theme as Theme
 import Tree as T exposing (Tree)
@@ -47,7 +47,7 @@ maxTreeLabelLength =
 view model =
     H.node "main"
         [ A.classList
-            [ ( "h-100", True )
+            [ ( "d-flex flex-column", True )
             , ( "dragging--element", Common.isDragging model.dragDrop )
             ]
         ]
@@ -73,35 +73,42 @@ view model =
 
 
 workspaceView model =
+    -- let
+    --     transformAttr =
+    --         A.style "transform" (Css.scaleBy model.workspaceScale)
+    --     topAttr =
+    --         A.style "top" (px model.workspaceX)
+    --     leftAttr =
+    --         A.style "left" (px model.workspaceY)
+    --     originX =
+    --         Model.workspaceWidth // 2 - model.windowWidth // 2 + model.mouseX
+    --     originY =
+    --         Model.workspaceHeight // 2 - model.windowHeight // 2 + model.mouseY
+    --     transformOriginAttr =
+    --         A.style "transform-origin" (Css.px originX ++ " " ++ Css.px originY)
+    -- in
     H.div
-        [ A.classList
-            [ ( "workspace flex-grow-1 unselectable", True )
-            , ( "workspace--design", model.mode == DesignMode )
-            , ( "workspace--preview", model.mode == PreviewMode )
+        [ A.class "workspace-wrapper flex-grow-1 unselectable"
+        , A.id "workspace-wrapper"
+
+        -- FIXME: Find a more descriptive way to pass isMetaDown information
+        --, Wheel.onWithOptions { stopPropagation = True, preventDefault = model.isMetaDown } MouseWheelChanged
+        ]
+        [ H.div
+            [ A.classList
+                [ ( "workspace", True )
+                , ( "workspace--design", model.mode == DesignMode )
+                ]
+            , A.style "width" (px Document.workspaceWidth)
+            , A.style "height" (px Document.workspaceHeight)
+
+            --, transformAttr
+            --, transformOriginAttr
             ]
-        ]
-        [ pageView model
+            [ documentView model
+            ]
         , uploadProgressView model.uploadState
-
-        --, uploadFileView
         ]
-
-
-{-| This is hidden in the UI but needed to trigget the "Pick a file..." native dialog
--}
-
-
-
--- uploadFileView =
---     H.input
---         [ A.type_ "file"
---         , A.multiple True
---         , E.on "change" (Decode.map FileSelected filesDecoder)
---         ]
---         []
--- filesDecoder : Decoder (List File)
--- filesDecoder =
---     Decode.at [ "target", "files" ] (Decode.list File.decoder)
 
 
 uploadProgressView uploadState =
@@ -159,9 +166,9 @@ headerView model =
     H.header [ A.class "header d-flex justify-content-between align-items-center bp-2 border-bottom" ]
         [ insertView model
         , viewportsView model
+        , zoomView model
 
         --, modeButton
-        , none
         ]
 
 
@@ -320,18 +327,17 @@ onViewportSelect msg =
     E.on "input" (Codecs.viewportDecoder msg)
 
 
-
--- zoomView : Model -> Html Msg
--- zoomView model =
---     let
---         zoom =
---             round (model.workspaceScale * 100)
---     in
---     H.div [ A.class "d-flex align-items-center me-5" ]
---         [ Button.button [ Button.light, Button.small ] [ Icons.minusCircle ]
---         , H.div [ A.class "bp-3 bg-white rounded text-center", A.style "width" "3rem" ] [ H.text (String.fromInt zoom ++ "%") ]
---         , Button.button [ Button.light, Button.small ] [ Icons.plusCircle ]
---         ]
+zoomView : Model -> Html Msg
+zoomView model =
+    let
+        zoom =
+            round (model.workspaceScale * 100)
+    in
+    H.div [ A.class "d-flex bg-white border rounded align-items-center" ]
+        [ H.button [ A.class "btn btn-transparent btn-sm" ] [ Icons.minusCircle ]
+        , H.div [ A.class "text-center small", A.style "width" "3rem" ] [ H.text (String.fromInt zoom ++ "%") ]
+        , H.button [ A.class "btn btn-transparent btn-sm" ] [ Icons.plusCircle ]
+        ]
 
 
 rightPaneView : Model -> Html Msg
@@ -375,8 +381,7 @@ codeView : Model -> List (Html Msg)
 codeView model =
     let
         node =
-            page model.pages.present
-                |> Zipper.tree
+            Zipper.tree model.document.present
     in
     [ H.section [ A.class "section bp-3 d-flex flex-column h-100" ]
         [ H.div [ A.class "mb-2 fw-500" ]
@@ -398,8 +403,8 @@ codeView model =
 leftPaneView : Model -> Html Msg
 leftPaneView model =
     H.aside [ A.class "pane pane--left border-end d-flex flex-column" ]
-        [ pageListView model
-        , outlineView model
+        [ --pageListView model
+          outlineView model
         , libraryView model
         ]
 
@@ -408,8 +413,7 @@ outlineView : Model -> Html Msg
 outlineView model =
     let
         tree =
-            SelectList.selected model.pages.present
-                |> Zipper.toTree
+            Zipper.toTree model.document.present
     in
     H.div [ A.class "bp-3 scroll-y border-bottom flex-grow-1" ]
         [ T.restructure identity (outlineItemView model) tree
@@ -419,9 +423,6 @@ outlineView model =
 outlineItemView : Model -> Node -> List (Html Msg) -> Html Msg
 outlineItemView model node children =
     let
-        currentNode =
-            SelectList.selected model.pages.present
-
         collapsed =
             isCollapsed model node
 
@@ -453,32 +454,37 @@ outlineItemView model node children =
             [ A.classList
                 [ ( "tree__label", True )
                 , ( "tree__label--leaf", True )
-                , ( "bg-primary text-white", Document.isSelected node.id currentNode )
+                , ( "bg-primary text-white", Document.isSelected node.id model.document.present )
                 ]
             ]
 
-        nodeClasses =
+        nodeClasses dropInto =
             [ A.classList
                 [ ( "tree__label", True )
                 , ( "tree__item--dropping", isDroppingInto node.id model.dragDrop )
-                , ( "bg-primary text-white", Document.isSelected node.id currentNode )
+                , ( "tree__item--can-drop", dropInto )
+                , ( "bg-primary text-white", Document.isSelected node.id model.document.present )
                 ]
             ]
     in
     case children of
         [] ->
-            if Document.isPageNode node then
-                emptyPageNotice model node
+            if Document.isDocumentNode node then
+                -- Top node
+                emptyDocumentNotice model node
 
             else
-                -- Tree leaf
                 H.li
                     [ A.class "position-relative" ]
                     [ topHint
                     , if Document.isContainer node then
+                        let
+                            dropInto =
+                                Common.canDropInto node model.dragDrop
+                        in
                         H.div
-                            (nodeClasses
-                                |> makeDroppableIf (Common.canDropInto node model.dragDrop) (AppendTo node.id)
+                            (nodeClasses dropInto
+                                |> makeDroppableIf dropInto (AppendTo node.id)
                                 |> makeDraggable (Move node)
                             )
                             (collapseIcon collapsed node [ treeLabel node ])
@@ -493,8 +499,8 @@ outlineItemView model node children =
                     ]
 
         _ ->
-            -- Tree node
-            if Document.isPageNode node then
+            if Document.isDocumentNode node then
+                -- Top node
                 H.div [ A.class "d-flex flex-column h-100" ]
                     [ H.div [ A.class "mb-2 fw-500" ]
                         [ H.text "Outline" ]
@@ -521,8 +527,12 @@ outlineItemView model node children =
                     [ topHint
                     , H.div
                         (if Document.isContainer node then
-                            nodeClasses
-                                |> makeDroppableIf (Common.canDropInto node model.dragDrop) (AppendTo node.id)
+                            let
+                                dropInto =
+                                    Common.canDropInto node model.dragDrop
+                            in
+                            nodeClasses dropInto
+                                |> makeDroppableIf dropInto (AppendTo node.id)
                                 |> makeDraggable (Move node)
 
                          else
@@ -539,7 +549,7 @@ outlineItemView model node children =
                     ]
 
 
-emptyPageNotice model node =
+emptyDocumentNotice model node =
     H.div
         (A.classList
             [ ( "d-flex flex-column border border-dashed justify-content-center rounded text-center text-muted h-100", True )
@@ -612,46 +622,9 @@ isCollapsed model node =
     Set.member (Document.nodeId node.id) model.collapsedTreeItems
 
 
-pageListView : Model -> Html Msg
-pageListView model =
-    H.div [ A.class "bp-3 scroll-y border-bottom", A.style "min-height" "112px", A.style "max-height" "112px" ]
-        (H.div [ A.class "d-flex align-items-center justify-content-between mb-2" ]
-            [ H.div [ A.class "fw-500" ]
-                [ H.text "Pages" ]
-            , H.button [ A.title "Add page", A.class "btn btn-link p-0 lh-1 text-dark", E.onClick InsertPageClicked ] [ Icons.plusCircleSmall ]
-            ]
-            :: SelectList.indexedMap
-                (\index zipper ->
-                    let
-                        pageNode =
-                            Zipper.root zipper
-                                |> Zipper.label
-
-                        currentNode =
-                            Zipper.label zipper
-
-                        classes =
-                            A.classList
-                                [ ( "page-item", True )
-                                , ( "bg-primary text-white", index == 0 && currentNode == pageNode )
-                                , ( "bg-gray-200", index == 0 && currentNode /= pageNode )
-                                ]
-                    in
-                    H.div
-                        [ classes
-                        , E.onClick (PageSelected index)
-                        , ContextMenu.open ContextMenuMsg (PageListContextPopup pageNode.id)
-                        ]
-                        [ H.text pageNode.name
-                        ]
-                )
-                model.pages.present
-        )
-
-
 libraryView : Model -> Html Msg
 libraryView _ =
-    H.div [ A.class "bps-3 bpt-3 scroll-y", A.style "height" "350px", A.style "min-height" "350px" ]
+    H.div [ A.class "bp-3 scroll-y", A.style "height" "350px", A.style "min-height" "350px" ]
         (H.div [ A.class "fw-500" ]
             [ H.text "Library" ]
             :: (Library.groups
@@ -660,7 +633,7 @@ libraryView _ =
                             H.section [ A.class "section mt-3" ]
                                 [ H.h2 [ A.class "section__title mb-2" ]
                                     [ H.text head.group ]
-                                , H.div [ A.class "d-flex flex-wrap" ]
+                                , H.div [ A.class "d-flex flex-wrap", A.style "gap" ".25rem" ]
                                     (List.map templateView (head :: rest))
                                 ]
                         )
@@ -686,12 +659,11 @@ templateView item =
         ]
 
 
-pageView : Model -> Html Msg
-pageView model =
+documentView : Model -> Html Msg
+documentView model =
     let
         tree =
-            SelectList.selected model.pages.present
-                |> Zipper.toTree
+            Zipper.toTree model.document.present
 
         ctx =
             Model.context model
@@ -716,24 +688,25 @@ pageView model =
     in
     case model.mode of
         DesignMode ->
-            H.div
-                [ A.classList
-                    [ ( "page", True )
-                    , ( "page--design", True )
-                    , ( viewportClass, True )
-                    ]
-                , A.attribute "data-fold" height
-                , A.style "width" width
-                , A.style "min-height" height
-                ]
-                [ content
-                , H.div
-                    [ A.class "page__fold"
-                    , A.style "top" height
-                    ]
-                    [ H.text "Fold" ]
-                ]
+            content
 
+        -- H.div
+        --     [ A.classList
+        --         [--( "page", True )
+        --          --, ( "page--design", True )
+        --          --, ( viewportClass, True )
+        --         ]
+        --     --, A.attribute "data-fold" height
+        --     -- , A.style "width" width
+        --     -- , A.style "min-height" height
+        --     ]
+        --     [ content
+        --     -- , H.div
+        --     --     [ A.class "page__fold"
+        --     --     , A.style "top" height
+        --     --     ]
+        --     --     [ H.text "Fold" ]
+        --     ]
         PreviewMode ->
             H.div
                 [ A.classList

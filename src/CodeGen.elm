@@ -14,7 +14,7 @@ import Style.Background as Background exposing (Background)
 import Style.Border as Border exposing (BorderCorner, BorderStyle(..), BorderWidth)
 import Style.Font as Font exposing (..)
 import Style.Input as Input exposing (LabelPosition(..))
-import Style.Layout as Layout exposing (Alignment(..), Length(..), Padding, Position(..), Spacing(..), Transformation)
+import Style.Layout as Layout exposing (Alignment(..), Length(..), Padding, Position(..), Spacing(..))
 import Style.Shadow as Shadow exposing (Shadow, ShadowType(..))
 import Style.Theme as Theme exposing (Theme)
 import Tree as T exposing (Tree)
@@ -243,6 +243,10 @@ emitFontLinks tree =
 emitNode : Theme -> Node -> List EmittedNode -> EmittedNode
 emitNode theme node children =
     (case node.type_ of
+        DocumentNode ->
+            emitPage node children
+
+        -- TODO
         PageNode ->
             emitPage node children
 
@@ -596,7 +600,10 @@ emitStyles node attrs =
         |> emitTextAlign node.textAlignment
         |> emitAlignX node.alignmentX
         |> emitAlignY node.alignmentY
-        |> emitTransformation node.transformation
+        |> emitOffsetX node.offsetX
+        |> emitOffsetY node.offsetY
+        |> emitRotation node.rotation
+        |> emitScale node.scale
         |> emitBackground node.background
         |> emitShadow node.shadow
 
@@ -617,15 +624,6 @@ emitShadow value attrs =
                 ]
             ]
             :: attrs
-
-
-emitTransformation : Transformation -> List Expression -> List Expression
-emitTransformation value attrs =
-    attrs
-        |> emitOffsetX value.offsetX
-        |> emitOffsetY value.offsetY
-        |> emitRotation value.rotation
-        |> emitScale value.scale
 
 
 emitOffsetX : Float -> List Expression -> List Expression

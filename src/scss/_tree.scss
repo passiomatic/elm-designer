@@ -41,6 +41,7 @@
 }
 
 // Can't drop item here 
+.dragging--element .tree__label:not(.tree__item--can-drop),
 .dragging--element .tree__label--leaf {
   color: rgba($body-color, 0.5) !important;
 }

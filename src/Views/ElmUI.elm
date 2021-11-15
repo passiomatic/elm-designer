@@ -18,7 +18,6 @@ import Html5.DragDrop as DragDrop
 import Json.Decode as Decode exposing (Decoder)
 import Model exposing (..)
 import Palette
-import SelectList exposing (SelectList)
 import Style.Background as Background exposing (Background)
 import Style.Border exposing (BorderCorner, BorderStyle(..), BorderWidth)
 import Style.Font as Font exposing (..)
@@ -32,7 +31,6 @@ import Views.Common as Common
 
 type RenderedNode
     = RenderedElement Position (Element Msg)
-      --| RenderedPage (Html Msg)
     | RenderedOption (Option NodeId Msg)
 
 
@@ -77,6 +75,9 @@ renderNode ctx node children =
             Document.isSelected node.id ctx.currentNode
     in
     case node.type_ of
+        DocumentNode ->
+            renderDocument ctx node selected children
+
         PageNode ->
             renderPage ctx node selected children
 
@@ -189,6 +190,26 @@ renderRow ctx node selected { wrapped } children =
         |> RenderedElement node.position
 
 
+{-| Render a document as workspace.
+-}
+renderDocument : Context -> Node -> Bool -> List RenderedNode -> RenderedNode
+renderDocument ctx node selected children =
+    let
+        attrs =
+            [ elementClasses ctx node selected
+            , elementId node
+            , onClick (NodeSelected node.id)
+            ]
+                |> applyWidth node.width node.widthMin node.widthMax
+                |> applyHeight node.height node.heightMin node.heightMax
+                |> makeDroppableIf (Common.canDropInto node ctx.dragDrop) (AppendTo node.id)
+    in
+    -- Document doesn't need to be wrapped. Also, pass E.column as a placeholder,
+    --    we'll position all children pages "InFront" anyway
+    addChildrenFor E.column attrs children
+        |> RenderedElement Normal
+
+
 {-| Render page as Elm UI column to layout elements vertically one after another, just like a regular HTML page.
 -}
 renderPage : Context -> Node -> Bool -> List RenderedNode -> RenderedNode
@@ -198,6 +219,7 @@ renderPage ctx node selected children =
             let
                 newAttrs =
                     attrs
+                        |> makeDraggable (Move node)
                         |> makeFileDroppableIf (not <| Common.isDragging ctx.dragDrop) node.id
             in
             if List.isEmpty children then
@@ -206,8 +228,9 @@ renderPage ctx node selected children =
             else
                 addChildrenFor E.column newAttrs children
     in
+    -- Put all pages "in front" to lay out them in an absolutely positioned fashion
     wrapElement ctx node selected renderer
-        |> RenderedElement node.position
+        |> RenderedElement InFront
 
 
 renderEmptyPage attrs =
@@ -449,9 +472,9 @@ applyStyles node attrs =
 applyShadow : Shadow -> List (E.Attribute Msg) -> List (E.Attribute Msg)
 applyShadow value attrs =
     let
-        renderer = 
-            case value.type_ of 
-                Inner -> 
+        renderer =
+            case value.type_ of
+                Inner ->
                     Border.innerShadow
 
                 Outer ->
@@ -466,40 +489,31 @@ applyShadow value attrs =
         :: attrs
 
 
-applyTransformation : Transformation -> List (E.Attribute Msg) -> List (E.Attribute Msg)
-applyTransformation value attrs =
-    -- TODO scale
-    attrs
-        |> applyOffsetX value
-        |> applyOffsetY value
-        |> applyRotation value
+applyOffsetX value attrs =
+    if value > 0 then
+        E.moveRight value :: attrs
 
-
-applyOffsetX { offsetX } attrs =
-    if offsetX > 0 then
-        E.moveRight offsetX :: attrs
-
-    else if offsetX < 0 then
-        E.moveLeft (abs offsetX) :: attrs
+    else if value < 0 then
+        E.moveLeft (abs value) :: attrs
 
     else
         attrs
 
 
-applyOffsetY { offsetY } attrs =
-    if offsetY > 0 then
-        E.moveDown offsetY :: attrs
+applyOffsetY value attrs =
+    if value > 0 then
+        E.moveDown value :: attrs
 
-    else if offsetY < 0 then
-        E.moveUp (abs offsetY) :: attrs
+    else if value < 0 then
+        E.moveUp (abs value) :: attrs
 
     else
         attrs
 
 
-applyRotation { rotation } attrs =
-    if rotation /= 0 then
-        E.rotate rotation :: attrs
+applyRotation value attrs =
+    if value /= 0 then
+        E.rotate value :: attrs
 
     else
         attrs
@@ -893,7 +907,10 @@ wrapElement ctx node selected renderer =
             |> applyHeight node.height node.heightMin node.heightMax
             |> applyAlignX node.alignmentX
             |> applyAlignY node.alignmentY
-            |> applyTransformation node.transformation
+            -- TODO scale
+            |> applyOffsetX node.offsetX
+            |> applyOffsetY node.offsetY
+            |> applyRotation node.rotation
         )
         (renderer attrs)
 
@@ -970,6 +987,7 @@ elementClasses ctx node selected =
             [ ( "element", True )
             , ( "element--dropped", isDroppingInto dropId ctx.dragDrop )
             , ( "element--selected", selected )
+            , ( "element--" ++ nodeType node.type_, True )
             , ( "dragging--file", isDroppingFileInto node.id ctx.fileDrop )
             ]
         )
@@ -1063,6 +1081,10 @@ makeFileDroppableIf pred nodeId attrs =
 
     else
         attrs
+
+
+makeDraggable dragId attrs =
+    attrs ++ List.map E.htmlAttribute (DragDrop.draggable DragDropMsg dragId)
 
 
 {-| Stop given event and prevent default behavior.

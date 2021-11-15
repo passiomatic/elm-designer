@@ -16,7 +16,6 @@ import Bitwise
 import Element exposing (Color)
 import Hex
 import Html exposing (Attribute)
-import Html.Attributes as A
 
 
 
@@ -25,7 +24,7 @@ import Html.Attributes as A
 
 translateBy x y =
     -- TODO use translate3d
-    "translate(" ++ String.fromInt x ++ "px, " ++ String.fromInt y ++ "px)"
+    "translate(" ++ px x ++ ", " ++ px y ++ ")"
 
 
 scaleBy value =

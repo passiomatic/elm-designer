@@ -18,7 +18,6 @@ import Html.Keyed as Keyed
 import Icons
 import Model exposing (..)
 import Palette
-import SelectList exposing (SelectList)
 import Style.Background as Background exposing (Background)
 import Style.Border as Border exposing (BorderStyle(..))
 import Style.Font as Font exposing (..)
@@ -27,14 +26,14 @@ import Style.Layout as Layout exposing (..)
 import Style.Theme as Theme
 import Tree as T exposing (Tree)
 import Tree.Zipper as Zipper exposing (Zipper)
-import Views.Common exposing (widgetId, none)
+import Views.Common exposing (none, widgetId)
 
 
 view : Model -> List (Html Msg)
 view model =
     let
         zipper =
-            SelectList.selected model.pages.present
+            model.document.present
     in
     [ H.form [ E.onSubmit FieldEditingConfirmed ]
         -- This makes onSubmit to work when hitting enter
@@ -56,15 +55,17 @@ resolveStyleViews model zipper =
     in
     title
         :: (case node.type_ of
+                DocumentNode ->
+                    []
+
                 PageNode ->
                     [ sectionView "Layout"
-                        [ spacingYView model node
+                        [ pageLenghtView model node
                         , paddingView model node
                         ]
                     , sectionView "Text"
                         [ fontView model zipper
                         ]
-                    , bordersView model node
                     , backgroundView model node
                     ]
 
@@ -1333,6 +1334,14 @@ lengthView model node =
         ]
 
 
+pageLenghtView : Model -> Node -> Html Msg
+pageLenghtView model node =
+    H.div [ A.class "mb-3" ]
+        [ pageWidthView model node
+        , pageHeightView model node
+        ]
+
+
 wrapRowOptionView : Bool -> Html Msg
 wrapRowOptionView wrapped =
     H.div [ A.class "form-check form-switch" ]
@@ -1487,6 +1496,35 @@ widthView model { width, widthMin, widthMax } =
         ]
 
 
+pageWidthView : Model -> Node -> Html Msg
+pageWidthView model { width } =
+    H.div [ A.class "row align-items-center mb-3" ]
+        [ H.label [ A.class "col-3 col-form-label-sm m-0" ]
+            [ H.text "Width" ]
+        , H.div [ A.class "col-9" ]
+            [ H.div [ A.class "d-flex justify-content-end" ]
+                (case width of
+                    Px value ->
+                        let
+                            value_ =
+                                case model.inspector of
+                                    EditingField WidthPxField new ->
+                                        new
+
+                                    _ ->
+                                        String.fromInt value
+                        in
+                        [ numericFieldView WidthPxField "Exact" value_
+                        ]
+
+                    -- @@TODO Handle unspecified
+                    _ ->
+                        []
+                )
+            ]
+        ]
+
+
 heightView : Model -> Node -> Html Msg
 heightView model { height, heightMin, heightMax } =
     let
@@ -1624,6 +1662,37 @@ heightView model { height, heightMin, heightMax } =
         ]
 
 
+pageHeightView : Model -> Node -> Html Msg
+pageHeightView model { height } =
+    H.div []
+        [ H.div [ A.class "row align-items-center  mb-3" ]
+            [ H.label [ A.class "col-3 col-form-label-sm m-0" ]
+                [ H.text "Height" ]
+            , H.div [ A.class "col-9" ]
+                [ H.div [ A.class "d-flex justify-content-end" ]
+                    (case height of
+                        Px value ->
+                            let
+                                value_ =
+                                    case model.inspector of
+                                        EditingField HeightPxField new ->
+                                            new
+
+                                        _ ->
+                                            String.fromInt value
+                            in
+                            [ numericFieldView HeightPxField "Exact" value_
+                            ]
+
+                        -- @@TODO Handle unspecified
+                        _ ->
+                            []
+                    )
+                ]
+            ]
+        ]
+
+
 isContent value =
     case value of
         Content ->
@@ -1646,23 +1715,23 @@ isPxOrUnspecified value =
 
 
 alignmentView : Model -> Node -> Html Msg
-alignmentView model ({ transformation } as node) =
+alignmentView model ({ offsetX, offsetY } as node) =
     let
-        offsetX =
+        offsetX_ =
             case model.inspector of
                 EditingField OffsetXField new ->
                     new
 
                 _ ->
-                    String.fromFloat transformation.offsetX
+                    String.fromFloat offsetX
 
-        offsetY =
+        offsetY_ =
             case model.inspector of
                 EditingField OffsetYField new ->
                     new
 
                 _ ->
-                    String.fromFloat transformation.offsetY
+                    String.fromFloat offsetY
     in
     H.div [ A.class "row align-items-center mb-3" ]
         [ H.label [ A.class "col-3 col-form-label-sm" ]
@@ -1675,9 +1744,9 @@ alignmentView model ({ transformation } as node) =
                         [ A.id (widgetId OffsetXField)
                         , A.class "form-control form-control-sm text-center mx-auto"
                         , A.type_ "number"
-                        , A.value offsetX
+                        , A.value offsetX_
                         , A.title "Move right/left"
-                        , E.onFocus (FieldEditingStarted OffsetXField offsetX)
+                        , E.onFocus (FieldEditingStarted OffsetXField offsetX_)
                         , E.onBlur FieldEditingFinished
                         , E.onInput FieldChanged
                         ]
@@ -1689,9 +1758,9 @@ alignmentView model ({ transformation } as node) =
                     [ A.id (widgetId OffsetYField)
                     , A.class "form-control form-control-sm text-center mx-auto w-33"
                     , A.type_ "number"
-                    , A.value offsetY
+                    , A.value offsetY_
                     , A.title "Move down/up"
-                    , E.onFocus (FieldEditingStarted OffsetYField offsetY)
+                    , E.onFocus (FieldEditingStarted OffsetYField offsetY_)
                     , E.onBlur FieldEditingFinished
                     , E.onInput FieldChanged
                     ]

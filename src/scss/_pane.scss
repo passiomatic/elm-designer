@@ -8,25 +8,12 @@
 .pane--left {
   width: 21em;
   min-width: 21em;
-  height: calc(100vh - #{$header-height});
+  //height: calc(100vh - #{$header-height});
 }
 
 .pane--right {
   width: 21em;
   min-width: 21em;
-}
-
-// Page list
-
-.page-item {
-  padding: 0.25rem 0.25rem;
-  border-radius: 3px;
-  @extend .unselectable;
-  @include font-size($input-font-size-sm);
-}
-
-.page-item:hover {
-  background: $gray-200;
 }
 
 // Library
@@ -37,13 +24,12 @@
   cursor: move;
   cursor: grab; // Safari  
   border: 1px solid $border-color;
-  width: 49%;  
-  margin-right: 1%;
   max-width: 8rem;
+  flex-grow: 1;
   @include font-size($input-font-size-sm);
   // Force styles to apply to dragged nodes as well
   background: #fff !important;
-  color: $body-color !important; 
+  color: $body-color !important;
 }
 
 .template:hover {

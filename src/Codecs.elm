@@ -24,7 +24,6 @@ import Element.Font as Font exposing (Font)
 import Fonts
 import Html.Events as E
 import Json.Decode as D exposing (Decoder)
-import SelectList exposing (SelectList)
 import Set exposing (Set)
 import Style.Background as Background exposing (Background)
 import Style.Border as Border exposing (..)
@@ -53,7 +52,7 @@ documentCodec =
     Codec.object Document
         |> Codec.field "schemaVersion" .schemaVersion Codec.int
         |> Codec.field "lastUpdatedOn" .lastUpdatedOn timeCodec
-        |> Codec.field "pages" .pages (Codec.list (treeCodec nodeCodec))
+        |> Codec.field "root" .root (treeCodec nodeCodec)
         |> Codec.field "viewport" .viewport viewportCodec
         |> Codec.field "collapsedTreeItems" .collapsedTreeItems setCodec
         |> Codec.buildObject
@@ -111,7 +110,10 @@ nodeCodec =
         |> Codec.field "height" .height lengthCodec
         |> Codec.field "heightMin" .heightMin (Codec.maybe Codec.int)
         |> Codec.field "heightMax" .heightMax (Codec.maybe Codec.int)
-        |> Codec.field "transformation" .transformation transformationCodec
+        |> Codec.field "offsetX" .offsetX Codec.float
+        |> Codec.field "offsetY" .offsetY Codec.float
+        |> Codec.field "rotation" .rotation Codec.float
+        |> Codec.field "scale" .scale Codec.float
         |> Codec.field "padding" .padding paddingCodec
         |> Codec.field "spacing" .spacing spacingCodec
         |> Codec.field "fontFamily" .fontFamily (localCodec fontFamilyCodec)
@@ -247,16 +249,6 @@ paddingCodec =
         |> Codec.field "right" .right Codec.int
         |> Codec.field "bottom" .bottom Codec.int
         |> Codec.field "left" .left Codec.int
-        |> Codec.buildObject
-
-
-transformationCodec : Codec Transformation
-transformationCodec =
-    Codec.object Transformation
-        |> Codec.field "offsetX" .offsetX Codec.float
-        |> Codec.field "offsetY" .offsetY Codec.float
-        |> Codec.field "rotation" .rotation Codec.float
-        |> Codec.field "scale" .scale Codec.float
         |> Codec.buildObject
 
 
@@ -548,8 +540,11 @@ shadowTypeCodec =
 nodeTypeCodec : Codec NodeType
 nodeTypeCodec =
     Codec.custom
-        (\headingNode paragraphNode textNode rowNode columnNode textColumnNode imageNode buttonNode checkboxNode textFieldNode textFieldMultilineNode radioNode optionNode pageNode value ->
+        (\headingNode paragraphNode textNode rowNode columnNode textColumnNode imageNode buttonNode checkboxNode textFieldNode textFieldMultilineNode radioNode optionNode pageNode documentNode value ->
             case value of
+                DocumentNode ->
+                    documentNode
+
                 HeadingNode data ->
                     headingNode data
 
@@ -606,6 +601,7 @@ nodeTypeCodec =
         |> Codec.variant1 "RadioNode" RadioNode labelCodec
         |> Codec.variant1 "OptionNode" OptionNode textCodec
         |> Codec.variant0 "PageNode" PageNode
+        |> Codec.variant0 "DocumentNode" DocumentNode
         |> Codec.buildCustom
 
 

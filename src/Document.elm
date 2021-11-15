@@ -9,7 +9,6 @@ module Document exposing
     , NodeId
     , NodeType(..)
     , RowData
-    , Template
     , TextData
     , Viewport(..)
     , appendNode
@@ -53,16 +52,20 @@ module Document exposing
     , baseTemplate
     , canDropInto
     , canDropSibling
+    , defaultDeviceInfo
+    , defaultDocument
     , duplicateNode
-    , emptyPageNode
+    , emptyPage
     , findDeviceInfo
     , fromTemplate
+    , fromTemplateAt
     , generateId
     , imageNode
     , insertNode
     , insertNodeAfter
     , insertNodeBefore
     , isContainer
+    , isDocumentNode
     , isPageNode
     , isSelected
     , nodeId
@@ -75,6 +78,8 @@ module Document exposing
     , selectNodeWith
     , selectParentOf
     , viewports
+    , workspaceHeight
+    , workspaceWidth
     )
 
 import Css
@@ -83,7 +88,6 @@ import Element exposing (Color, Orientation(..))
 import Fonts
 import Maybe
 import Palette
-import SelectList exposing (SelectList)
 import Set exposing (Set)
 import Style.Background as Background exposing (Background)
 import Style.Border as Border exposing (BorderCorner, BorderStyle(..), BorderWidth)
@@ -99,7 +103,7 @@ import UUID exposing (Seeds, UUID)
 
 
 schemaVersion =
-    3
+    4
 
 
 {-| A serialized document.
@@ -107,10 +111,24 @@ schemaVersion =
 type alias Document =
     { schemaVersion : Int
     , lastUpdatedOn : Posix
-    , pages : List (Tree Node)
+    , root : Tree Node
     , viewport : Viewport
     , collapsedTreeItems : Set String
     }
+
+
+workspaceWidth =
+    8000
+
+
+workspaceHeight =
+    8000
+
+
+{-| UUID namespace for built-in library elements.
+-}
+defaultNamespace =
+    UUID.forName "elm-designer.passiomatic.com" UUID.dnsNamespace
 
 
 type alias NodeId =
@@ -131,7 +149,10 @@ type alias Node =
     , height : Length
     , heightMin : Maybe Int
     , heightMax : Maybe Int
-    , transformation : Transformation
+    , offsetX : Float
+    , offsetY : Float
+    , rotation : Float
+    , scale : Float
     , padding : Padding
     , spacing : Spacing
     , fontFamily : Local FontFamily
@@ -154,38 +175,9 @@ type alias Node =
     }
 
 
-type alias Template =
-    { name : String
-    , width : Length
-    , height : Length
-    , transformation : Transformation
-    , padding : Padding
-    , spacing : Spacing
-    , fontFamily : Local FontFamily
-    , fontColor : Local Color
-    , fontSize : Local Int
-    , fontWeight : FontWeight
-    , textAlignment : TextAlignment
-
-    -- TODO Needed?
-    -- , letterSpacing : Float
-    -- , wordSpacing : Float
-    , borderColor : Color
-    , borderStyle : BorderStyle
-    , borderWidth : BorderWidth
-    , borderCorner : BorderCorner
-
-    -- , shadow: Shadow
-    , background : Background
-    , alignmentX : Alignment
-    , alignmentY : Alignment
-    , type_ : NodeType
-    }
-
-
 type DragId
     = Move Node
-    | Insert (Tree Template)
+    | Insert (Tree Node)
 
 
 type DropId
@@ -196,26 +188,36 @@ type DropId
 
 {-| Just-plain-boring template to build upon.
 -}
-baseTemplate : Template
+baseTemplate : Node
 baseTemplate =
     { name = ""
+    , id = UUID.forName "node-element" defaultNamespace
     , width = Layout.fit
+    , widthMin = Nothing
+    , widthMax = Nothing
     , height = Layout.fit
-    , transformation = Layout.untransformed
+    , heightMin = Nothing
+    , heightMax = Nothing
+    , offsetX = 0
+    , offsetY = 0
+    , rotation = 0
+    , scale = 1.0
     , padding = Layout.padding 0
     , spacing = Layout.spacing 0
     , fontFamily = Inherit
     , fontColor = Inherit
     , fontSize = Inherit
     , fontWeight = Regular
+    , letterSpacing = 0
+    , wordSpacing = 0
     , textAlignment = TextStart
     , borderColor = Palette.darkCharcoal
     , borderStyle = Solid
     , borderWidth = Border.width 0
     , borderCorner = Border.corner 0
-
-    --, shadow = Border.flat
+    , shadow = Shadow.none
     , background = Background.None
+    , position = Normal
     , alignmentX = None
     , alignmentY = None
     , type_ = PageNode
@@ -237,11 +239,15 @@ type NodeType
     | RadioNode LabelData
     | OptionNode TextData
     | PageNode
+    | DocumentNode
 
 
 nodeType : NodeType -> String
 nodeType value =
     case value of
+        DocumentNode ->
+            "Document"
+
         HeadingNode heading ->
             "Heading " ++ String.fromInt heading.level
 
@@ -295,6 +301,16 @@ isPageNode node =
             False
 
 
+isDocumentNode : Node -> Bool
+isDocumentNode node =
+    case node.type_ of
+        DocumentNode ->
+            True
+
+        _ ->
+            False
+
+
 type alias TextData =
     { text : String
     }
@@ -332,99 +348,72 @@ generateId seeds =
     UUID.step seeds
 
 
-fromTemplate : Tree Template -> Seeds -> ( Seeds, Tree Node )
-fromTemplate template seeds =
+fromTemplateAt : { x : Float, y : Float } -> Tree Node -> Seeds -> ( Seeds, Tree Node )
+fromTemplateAt position template seeds =
     T.mapAccumulate
         (\seeds_ template_ ->
             let
                 ( uuid, newSeeds ) =
                     generateId seeds_
 
-                node =
-                    { id = uuid
-                    , name = template_.name
-                    , width = template_.width
-                    , widthMin = Nothing
-                    , widthMax = Nothing
-                    , height = template_.height
-                    , heightMin = Nothing
-                    , heightMax = Nothing
-                    , transformation = template_.transformation
-                    , padding = template_.padding
-                    , spacing = template_.spacing
-                    , fontFamily = template_.fontFamily
-                    , fontColor = template_.fontColor
-                    , fontSize = template_.fontSize
-                    , fontWeight = template_.fontWeight
-                    , letterSpacing = 0
-                    , wordSpacing = 0
-                    , textAlignment = template_.textAlignment
-                    , borderColor = template_.borderColor
-                    , borderStyle = template_.borderStyle
-                    , borderWidth = template_.borderWidth
-                    , borderCorner = template_.borderCorner
-                    , shadow = Shadow.none
-                    , background = template_.background
-                    , position = Normal
-                    , alignmentX = template_.alignmentX
-                    , alignmentY = template_.alignmentY
-                    , type_ = template_.type_
-                    }
+                newNode =
+                    case template_.type_ of
+                        -- @@FIXME: is case/of needed?
+                        PageNode ->
+                            { template_
+                                | id = uuid
+                                , offsetX = position.x
+                                , offsetY = position.y
+                            }
+
+                        _ ->
+                            { template_ | id = uuid }
             in
-            ( newSeeds, node )
+            ( newSeeds, newNode )
         )
         seeds
         template
 
 
-pageNode : Theme -> Seeds -> List (Tree Node) -> Int -> ( Seeds, Tree Node )
-pageNode theme seeds children index =
-    let
-        ( uuid, newSeeds ) =
-            generateId seeds
+fromTemplate : Tree Node -> Seeds -> ( Seeds, Tree Node )
+fromTemplate template seeds =
+    fromTemplateAt { x = 0, y = 0 } template seeds
 
-        page =
-            { id = uuid
-            , name = "Page " ++ String.fromInt index
-            , width = Layout.fill
-            , widthMin = Nothing
-            , widthMax = Nothing
-            , height = Layout.fill
-            , heightMin = Nothing
-            , heightMax = Nothing
-            , transformation = baseTemplate.transformation
-            , padding = baseTemplate.padding
-            , spacing = baseTemplate.spacing
+
+{-| A startup document with a blank page on it.
+-}
+defaultDocument : Seeds -> Int -> ( Seeds, Tree Node )
+defaultDocument seeds index =
+    let
+        template =
+            T.tree
+                { baseTemplate
+                    | type_ = DocumentNode
+                    , name = "Document " ++ String.fromInt index
+                    , width = Layout.fill
+                    , height = Layout.fill
+                }
+                [ -- TODO Pass actual theme value
+                  emptyPage Theme.defaultTheme
+                ]
+    in
+    fromTemplateAt { x = workspaceWidth / 2, y = workspaceHeight / 2 } template seeds
+
+
+emptyPage : Theme -> Tree Node
+emptyPage theme =
+    T.singleton
+        { baseTemplate
+            | type_ = PageNode
+            , name = "Page"
+            , width = Layout.px 375
+            , height = Layout.px 667
             , fontFamily = Local theme.textFontFamily
             , fontColor = Local theme.textColor
             , fontSize = Local theme.textSize
-            , fontWeight = baseTemplate.fontWeight
-            , letterSpacing = 0
-            , wordSpacing = 0
-            , textAlignment = baseTemplate.textAlignment
-            , borderColor = baseTemplate.borderColor
-            , borderStyle = baseTemplate.borderStyle
-            , borderWidth = baseTemplate.borderWidth
-            , borderCorner = baseTemplate.borderCorner
-            , shadow = Shadow.none
+            , position = InFront
             , background = Background.Solid theme.backgroundColor
-            , position = Normal
-            , alignmentX = baseTemplate.alignmentX
-            , alignmentY = baseTemplate.alignmentY
-            , type_ = baseTemplate.type_
-            }
-    in
-    ( newSeeds
-    , T.tree page
-        children
-    )
-
-
-{-| An empty page.
--}
-emptyPageNode : Seeds -> Int -> ( Seeds, Tree Node )
-emptyPageNode seeds index =
-    pageNode Theme.defaultTheme seeds [] index
+        }
 
 
 {-| Images require the user to drop them _into_ the app workspace so we bypass the pick-from-library process here.
@@ -436,8 +425,6 @@ imageNode url seeds =
             T.singleton
                 { baseTemplate
                     | type_ = ImageNode { src = url, description = "" }
-
-                    --, width = Fill
                     , name = "Image"
                 }
     in
@@ -561,6 +548,9 @@ isSelected id zipper =
 isContainer : Node -> Bool
 isContainer node =
     case node.type_ of
+        DocumentNode ->
+            True
+
         PageNode ->
             True
 
@@ -589,8 +579,20 @@ canDropInto container { type_ } =
         ( _, OptionNode _ ) ->
             False
 
+        ( PageNode, PageNode ) ->
+            False
+
         ( PageNode, _ ) ->
             True
+
+        ( DocumentNode, PageNode ) ->
+            True
+
+        ( _, PageNode ) ->
+            False
+
+        ( DocumentNode, _ ) ->
+            False
 
         ( RowNode _, _ ) ->
             True
@@ -608,7 +610,7 @@ canDropInto container { type_ } =
 canDropSibling : Node -> { a | type_ : NodeType } -> Bool
 canDropSibling sibling { type_ } =
     case ( sibling.type_, type_ ) of
-        -- For OptionNode allow only one case: drop it next to another option
+        -- Only drop radio options next to another option
         ( OptionNode _, OptionNode _ ) ->
             True
 
@@ -618,6 +620,14 @@ canDropSibling sibling { type_ } =
         ( _, OptionNode _ ) ->
             False
 
+        -- Only drop pages next to another page
+        ( PageNode, PageNode ) ->
+            True
+
+        ( _, PageNode ) ->
+            False
+
+        -- Other scenarios
         ( _, RowNode _ ) ->
             True
 
@@ -885,7 +895,7 @@ applyAlign value zipper =
         zipper
 
 
-applyOffset : (Float -> Transformation -> Transformation) -> String -> Zipper Node -> Zipper Node
+applyOffset : (Float -> Node -> Node) -> String -> Zipper Node -> Zipper Node
 applyOffset setter value zipper =
     let
         value_ =
@@ -893,7 +903,7 @@ applyOffset setter value zipper =
                 |> Maybe.map (clamp -999 999)
                 |> Maybe.withDefault 0
     in
-    Zipper.mapLabel (\node -> setTransformation (setter value_ node.transformation) node) zipper
+    Zipper.mapLabel (setter value_) zipper
 
 
 applyPosition : Position -> Zipper Node -> Zipper Node

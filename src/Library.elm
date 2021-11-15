@@ -17,7 +17,6 @@ module Library exposing
 import Dict
 import Document exposing (..)
 import Element as E exposing (Color)
-import Fonts
 import Html as H exposing (Html)
 import Icons
 import List.Extra
@@ -31,12 +30,13 @@ import Tree as T exposing (Tree)
 
 
 type alias LibraryItem msg =
-    { root : Tree Template
+    { root : Tree Node
     , icon : Html msg
     , group : String
     , description : String
     , accelerator : String
     }
+
 
 basicsLabel =
     "Basics"
@@ -57,6 +57,7 @@ items =
     , heading3
     , textSnippet
     , paragraph
+    , page
     , row
     , column
     , textColumn
@@ -77,7 +78,7 @@ groups =
     List.Extra.gatherEqualsBy .group items
 
 
-findTemplate : String -> Maybe (Tree Template)
+findTemplate : String -> Maybe (Tree Node)
 findTemplate name =
     Dict.get name items_
         |> Maybe.map .root
@@ -198,6 +199,17 @@ textSnippet theme =
 
 
 -- LAYOUT
+
+
+page : Theme -> LibraryItem msg
+page theme =
+    { icon = Icons.file
+    , group = layoutLabel
+    , description = ""
+    , accelerator = ""
+    , root =
+        Document.emptyPage theme
+    }
 
 
 row : Theme -> LibraryItem msg
