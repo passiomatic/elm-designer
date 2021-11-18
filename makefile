@@ -1,9 +1,12 @@
 all: dev
 
-build: clean
+constants: 
+	npm run constants
+	
+build: clean constants 
 	npm run build
 
-build-no-maps: clean
+build-no-maps: clean constants
 	npm run build-no-maps
 
 dev-no-debug:

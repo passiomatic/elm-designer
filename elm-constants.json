@@ -1,0 +1,7 @@
+{
+    "path": "src",
+    "moduleName": "Env",
+    "values": [
+      "IMGBB_API_KEY"
+    ]
+}

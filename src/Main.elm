@@ -8,11 +8,13 @@ import Codecs
 import ContextMenu exposing (ContextMenu)
 import Dict exposing (Dict)
 import Document exposing (DragId(..), DropId(..), Node, Viewport(..))
+import Env
 import File exposing (File)
 import File.Select as Select
 import Fonts
 import Html5.DragDrop as DragDrop
 import Http exposing (Progress(..))
+import Imgbb
 import Json.Decode as Decode exposing (Decoder, Value)
 import Maybe
 import Model exposing (..)
@@ -30,7 +32,6 @@ import Tree as T exposing (Tree)
 import Tree.Zipper as Zipper exposing (Zipper)
 import UUID exposing (Seeds)
 import UndoList
-import Uploader
 import Views.Common as Common
 import Views.Editor as Editor
 
@@ -45,10 +46,6 @@ appName =
 
 appVersion =
     ( 0, 4, 0 )
-
-
-uploadEndpoint =
-    "https://0x0.st"
 
 
 init : Flags -> ( Model, Cmd Msg )
@@ -112,7 +109,7 @@ update msg model =
                     file
                         :: files
                         |> acceptFiles
-                        |> Uploader.uploadNextFile uploadEndpoint
+                        |> Imgbb.uploadNextFile Env.imgbbApiKey
             in
             ( { model
                 | uploadState = newUploadState
@@ -126,7 +123,7 @@ update msg model =
                 ( newUploadState, cmd ) =
                     (file :: files)
                         |> acceptFiles
-                        |> Uploader.uploadNextFile uploadEndpoint
+                        |> Imgbb.uploadNextFile Env.imgbbApiKey
             in
             ( { model
                 | uploadState = newUploadState
@@ -170,7 +167,7 @@ update msg model =
                         ( newUploadState, cmd ) =
                             case model.uploadState of
                                 Uploading _ others _ ->
-                                    Uploader.uploadNextFile uploadEndpoint others
+                                    Imgbb.uploadNextFile Env.imgbbApiKey others
 
                                 _ ->
                                     ( Ready, Cmd.none )
@@ -934,7 +931,7 @@ subscriptions model =
         uploadSub =
             case model.uploadState of
                 Uploading current others _ ->
-                    Uploader.track current others
+                    Imgbb.track current others
 
                 _ ->
                     Sub.none

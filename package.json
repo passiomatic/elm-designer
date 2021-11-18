@@ -5,6 +5,7 @@
   "description": "A code generator for Elm UI",
   "repository": "https://github.com/passiomatic/elm-designer",
   "devDependencies": {
+    "elm-constants": "^1.0.0",
     "elm-hot": "^1.1.6",
     "node-elm-compiler": "^5.0.6",
     "sass": "^1.43.4"
@@ -14,6 +15,7 @@
   },
   "scripts": {
     "dev": "parcel src/index.html",
+    "constants": "elm-constants",
     "build": "parcel build src/index.html --public-url ./ --out-file index.html",
     "build-no-maps": "parcel build src/index.html --no-source-maps --public-url ./ --out-file index.html",
     "dev-no-debug": "NODE_ENV=production parcel src/index.html",
