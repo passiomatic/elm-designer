@@ -15,5 +15,8 @@ dev-no-debug:
 dev:
 	npm run dev
 
+run: 
+	python3 server/manage.py runserver
+
 clean: 
 	npm run clean
