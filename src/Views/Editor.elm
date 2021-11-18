@@ -67,7 +67,7 @@ view model =
                     , workspaceView model
                     , rightPaneView model
                     ]
-                , uploadProgressView model.uploadState                    
+                , uploadProgressView model.uploadState
                 , ContextMenus.pageListView model
                 ]
         )
@@ -107,7 +107,7 @@ workspaceView model =
             --, transformOriginAttr
             ]
             [ documentView model
-            ]        
+            ]
         ]
 
 
@@ -138,7 +138,6 @@ uploadProgressView uploadState =
 
         _ ->
             none
-
 
 
 headerView : Model -> Html Msg
@@ -182,6 +181,9 @@ insertView model =
 
                 Hidden ->
                     False
+
+        selectedNode =
+            Zipper.label model.document.present
     in
     H.div
         [ A.class "dropdown"
@@ -206,12 +208,12 @@ insertView model =
                 , ( "show", visible )
                 ]
             ]
-            (insertPageView
+            ((insertPageView selectedNode)
                 :: dividerView
-                :: insertImageView
+                :: (insertImageView selectedNode)
                 :: dividerView
                 :: List.map
-                    insertItemView
+                    (insertItemView selectedNode)
                     Library.items
             )
         ]
@@ -220,22 +222,28 @@ insertView model =
 dividerView =
     H.li [] [ H.hr [ A.class "dropdown-divider" ] [] ]
 
-
-insertImageView =
+insertImageView : Node -> Html Msg
+insertImageView container =
     H.li []
         [ H.button
-            [ A.class "dropdown-item"
+            [ A.classList
+                [ ( "dropdown-item", True )
+                --, ( "disabled", not (Document.canDropInto container) )
+                ]
             , A.type_ "button"
             , E.onClick InsertImageClicked
             ]
             [ H.text "Image..." ]
         ]
 
-
-insertPageView =
+insertPageView : Node  -> Html Msg
+insertPageView container =
     H.li []
         [ H.button
-            [ A.class "dropdown-item"
+            [ A.classList
+                [ ( "dropdown-item", True )
+                --, ( "disabled", not (Document.canDropInto container { type_ = PageNode }) )
+                ]
             , A.type_ "button"
             , E.onClick InsertPageClicked
             ]
@@ -243,14 +251,18 @@ insertPageView =
         ]
 
 
-insertItemView item =
+insertItemView : Node -> LibraryItem Msg -> Html Msg
+insertItemView container item =
     let
         template =
             T.label item.root
     in
     H.li []
         [ H.button
-            [ A.class "dropdown-item"
+            [ A.classList
+                [ ( "dropdown-item", True )
+                , ( "disabled", not (Document.canDropInto container template) )
+                ]
             , A.type_ "button"
             , E.onClick (InsertNodeClicked item.root)
             ]
