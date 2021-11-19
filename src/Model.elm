@@ -94,8 +94,8 @@ type Msg
     | NoOp
     | DragDropMsg (DragDrop.Msg DragId DropId)
     | TabMsg Tab.State
-    | Undo ()
-    | Redo ()
+    | Undo
+    | Redo
     | ContextMenuMsg (ContextMenu.Msg ContextPopup)
     | WindowSizeChanged Int Int
 

@@ -34,6 +34,7 @@ import Views.Common as Common exposing (none)
 import Views.ContextMenus as ContextMenus
 import Views.ElmUI as ElmUI
 import Views.Inspector as Inspector
+import UndoList
 
 
 maxTreeLabelLength =
@@ -163,12 +164,33 @@ headerView model =
                         ]
                         [ Icons.stop ]
     in
-    H.header [ A.class "header d-flex justify-content-between align-items-center bp-2 border-bottom" ]
+    H.header [ A.class "header d-flex justify-content-between align-items-center bp-2 border-bottom", A.style "gap" "1rem" ]
         [ insertView model
-        , viewportsView model
+        , undoRedoView model
         , zoomView model
 
         --, modeButton
+        ]
+
+
+undoRedoView model =
+    H.div [ A.class "me-auto" ]
+        [ H.button
+            [ A.type_ "button"
+            , A.class "btn btn-light btn-sm"
+            , A.title "Undo last change"
+            , A.disabled (not (UndoList.hasPast model.document))
+            , E.onClick Undo
+            ]
+            [ Icons.cornerUpLeft ]
+        , H.button
+            [ A.type_ "button"
+            , A.class "btn btn-light btn-sm"
+            , A.title "Redo last change"
+            , A.disabled (not (UndoList.hasFuture model.document))
+            , E.onClick Redo
+            ]
+            [ Icons.cornerUpRight ]
         ]
 
 
@@ -208,9 +230,9 @@ insertView model =
                 , ( "show", visible )
                 ]
             ]
-            ((insertPageView selectedNode)
+            (insertPageView selectedNode
                 :: dividerView
-                :: (insertImageView selectedNode)
+                :: insertImageView selectedNode
                 :: dividerView
                 :: List.map
                     (insertItemView selectedNode)
@@ -222,12 +244,14 @@ insertView model =
 dividerView =
     H.li [] [ H.hr [ A.class "dropdown-divider" ] [] ]
 
+
 insertImageView : Node -> Html Msg
 insertImageView container =
     H.li []
         [ H.button
             [ A.classList
                 [ ( "dropdown-item", True )
+
                 --, ( "disabled", not (Document.canDropInto container) )
                 ]
             , A.type_ "button"
@@ -236,12 +260,14 @@ insertImageView container =
             [ H.text "Image..." ]
         ]
 
-insertPageView : Node  -> Html Msg
+
+insertPageView : Node -> Html Msg
 insertPageView container =
     H.li []
         [ H.button
             [ A.classList
                 [ ( "dropdown-item", True )
+
                 --, ( "disabled", not (Document.canDropInto container { type_ = PageNode }) )
                 ]
             , A.type_ "button"

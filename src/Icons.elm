@@ -32,6 +32,8 @@ module Icons exposing
     , type_
     , unlock
     , xCircle
+    , cornerUpLeft
+    , cornerUpRight
     )
 
 import Css
@@ -53,6 +55,15 @@ mediumSize =
 largeSize =
     18
 
+cornerUpLeft = 
+    I.cornerUpLeft
+        |> I.withSize smallSize
+        |> I.toHtml []    
+
+cornerUpRight = 
+    I.cornerUpRight
+        |> I.withSize smallSize
+        |> I.toHtml []   
 
 file : Html msg
 file =

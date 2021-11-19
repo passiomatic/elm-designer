@@ -564,10 +564,10 @@ update msg model =
             else
                 ( model, Cmd.none )
 
-        Undo _ ->
+        Undo ->
             ( { model | document = UndoList.undo model.document }, Cmd.none )
 
-        Redo _ ->
+        Redo ->
             ( { model | document = UndoList.redo model.document }, Cmd.none )
 
         -- MouseMoved mouse ->
