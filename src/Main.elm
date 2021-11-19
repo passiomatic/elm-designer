@@ -229,45 +229,6 @@ update msg model =
             , cmd
             )
 
-        -- TODO
-        -- InsertPageClicked ->
-        --     let
-        --         ( newSeeds, page ) =
-        --             Document.emptyPageNode model.seeds (SelectList.length model.pages.present + 1)
-        --         newPages =
-        --             model.pages.present
-        --                 |> SelectList.selectLast
-        --                 |> SelectList.insertBefore (Zipper.fromTree page)
-        --     in
-        --     ( { model
-        --         | seeds = newSeeds
-        --         , pages = UndoList.new newPages model.pages
-        --         , saveState = Changed model.currentTime
-        --         , dropDownState = Hidden
-        --       }
-        --     , Cmd.none
-        --     )
-        -- InsertNodeClicked label ->
-        --     case Library.findTemplate label of
-        --         Just template ->
-        --             let
-        --                 ( newSeeds, newNode ) =
-        --                     Document.fromTemplate template model.seeds
-        --                 newPage =
-        --                     selectedPage model.pages.present
-        --                         |> Document.insertNode newNode
-        --                 newPages =
-        --                     SelectList.replaceSelected newPage model.pages.present
-        --             in
-        --             ( { model
-        --                 | pages = UndoList.new newPages model.pages
-        --                 , saveState = Changed model.currentTime
-        --                 , seeds = newSeeds
-        --               }
-        --             , Cmd.none
-        --             )
-        --         Nothing ->
-        --             ( model, Cmd.none )
         InsertNodeClicked template ->
             let
                 ( newSeeds, newNode ) =
