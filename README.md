@@ -10,7 +10,7 @@ Previously Elm Designer was an Electron app, you can still download older versio
 
 ## About images
 
-Images added to the page are automatically uploaded to [Null Pointer](https://0x0.st) service. According to Null Pointer terms of service uploaded images remain available up to one year (exact expiration depends on file size). 
+Images added to the page are automatically uploaded to [Imgbb][imgbb] servers and will remain available for 180 days.  
 
 By uploading images and referencing them by URL sidesteps a number of issues like: huge serialized JSON files, hit `localStorage` quota limits, and dealing with clumsy generated code.
 
@@ -29,7 +29,7 @@ If you need to edit the source files the `package.json` contains a bunch on scri
 
     npm run dev
 
-**Note**: you will need a valid [Imgbb][api] API key to be able to upload images. API access is free and requires only to sign up to the service. Once you get the API key set the `IMGBB_API_KEY` environment variable or create a `.env` file in the repo root containing such key:
+**Note**: you will need a valid [Imgbb API][api] key to be able to upload images. API access is free and requires only to sign up to the service. Once you get the API key set the `IMGBB_API_KEY` environment variable or create a `.env` file in the repo root containing such key:
 
     IMGBB_API_KEY=your-API-key
 
@@ -43,3 +43,4 @@ Then the build process will create a `Env.imgbbApiKey` value.
 [elmui]: https://github.com/mdgriffith/elm-ui
 [r]: https://github.com/passiomatic/elm-designer/releases
 [api]: https://api.imgbb.com
+[imgbb]: https://imgbb.com
