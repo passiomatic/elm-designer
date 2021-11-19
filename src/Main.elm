@@ -189,7 +189,7 @@ update msg model =
 
                 Err _ ->
                     ( model
-                    , showErrorBox "Could not upload image"
+                    , showNotification "Could not upload image"
                     )
 
         -- ###########
@@ -315,7 +315,7 @@ update msg model =
                     --     _ = Debug.log "Error loading document:" (Decode.errorToString reason)
                     -- in
                     ( model
-                    , showErrorBox "Error loading document (perhaps schema has changed?)"
+                    , showNotification "Error loading document (perhaps schema has changed?)"
                     )
 
         CollapseNodeClicked collapse id ->
@@ -1005,19 +1005,8 @@ acceptFiles files =
 -- NOTIFICATION
 
 
-showErrorBox message =
-    Ports.showMessageBox
-        { type_ = "error"
-        , title = appName
+showNotification message =
+    Ports.showNotification
+        { title = appName
         , message = message
-        , buttons = [ "OK" ]
-        }
-
-
-showMessageBox message =
-    Ports.showMessageBox
-        { type_ = "info"
-        , title = appName
-        , message = message
-        , buttons = [ "OK" ]
         }

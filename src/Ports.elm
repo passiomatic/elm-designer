@@ -7,7 +7,6 @@ port module Ports exposing
     , setDragImage
     , setFontLinks
     , showNotification
-    , showMessageBox
     )
 
 import Json.Decode exposing (Value)
@@ -41,17 +40,6 @@ port showNotification :
     , message : String
     }
     -> Cmd msg
-
-
-port showMessageBox :
-    { type_ : String
-    , title : String
-    , message : String
-    , buttons : List String
-    }
-    -> Cmd msg
-
-
 
 -- PORTS IN
 

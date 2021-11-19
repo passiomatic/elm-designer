@@ -119,11 +119,22 @@ app.ports.setFontLinks.subscribe(function (links) {
 // -------------------------------
 
 app.ports.showNotification.subscribe(function (options) {
-  const notification = new Notification(options.title, {
-    body: options.message
-  })  
-});
-
-app.ports.showMessageBox.subscribe(function (options) {
-  console.error(options.message)
+  if (!("Notification" in window)) {
+    console.warn("This browser does not support desktop notification");
+  }
+  else if (Notification.permission === "granted") {
+    var notification = new Notification(options.title, {
+      body: options.message
+    });
+  }
+  // Never asked
+  else if (Notification.permission !== "denied") {
+    Notification.requestPermission().then(function (permission) {
+      if (permission === "granted") {
+        var notification = new Notification(options.title, {
+          body: options.message
+        });
+      }
+    });
+  }
 });
