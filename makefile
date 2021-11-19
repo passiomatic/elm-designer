@@ -9,10 +9,10 @@ build: clean constants
 build-no-maps: clean constants
 	npm run build-no-maps
 
-dev-no-debug:
+dev-no-debug: constants
 	npm run dev-no-debug
 
-dev:
+dev: constants
 	npm run dev
 
 run: 
