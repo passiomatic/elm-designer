@@ -29,12 +29,12 @@ import Set exposing (Set)
 import Style.Theme as Theme
 import Tree as T exposing (Tree)
 import Tree.Zipper as Zipper exposing (Zipper)
+import UndoList
 import Uploader
 import Views.Common as Common exposing (none)
 import Views.ContextMenus as ContextMenus
 import Views.ElmUI as ElmUI
 import Views.Inspector as Inspector
-import UndoList
 
 
 maxTreeLabelLength =
@@ -442,8 +442,7 @@ codeView model =
 leftPaneView : Model -> Html Msg
 leftPaneView model =
     H.aside [ A.class "pane pane--left border-end d-flex flex-column" ]
-        [ --pageListView model
-          outlineView model
+        [ outlineView model
         , libraryView model
         ]
 
@@ -635,8 +634,11 @@ treeLabel node =
             )
                 |> String.trim
                 |> String.left maxTreeLabelLength
+
+        reveal =
+            node.type_ == PageNode
     in
-    H.span [ A.class "w-100 text-truncate", clickToSelectHandler node.id ]
+    H.span [ A.class "w-100 text-truncate", clickToSelectHandler reveal node.id ]
         [ H.text
             (if String.isEmpty label then
                 node.name
@@ -790,8 +792,8 @@ preventDefaultOn event decoder =
         )
 
 
-clickToSelectHandler id =
-    E.stopPropagationOn "click" (Decode.succeed ( NodeSelected id, True ))
+clickToSelectHandler reveal id =
+    E.stopPropagationOn "click" (Decode.succeed ( NodeSelected reveal id, True ))
 
 
 clickToExpandHandler =

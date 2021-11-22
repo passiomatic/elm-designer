@@ -14,7 +14,7 @@ module Model exposing
     , Widget(..)
     , WidgetState(..)
     , context
-    , initialModel
+    , initialModel, workspaceWrapperId
     )
 
 import Bootstrap.Tab as Tab
@@ -47,7 +47,7 @@ type Msg
     | MouseButtonChanged Bool Mouse
     | MouseWheelChanged Wheel.Event
     | MouseMoved Mouse
-    | NodeSelected NodeId
+    | NodeSelected Bool NodeId
     | TextEditingStarted String
     | CollapseNodeClicked Bool NodeId
     | PaddingLockChanged Bool
@@ -75,7 +75,7 @@ type Msg
     | FieldChanged String
     | TextChanged String
     | ViewportChanged Viewport
-    | PresetSizeChanged String 
+    | PresetSizeChanged String
     | WrapRowItemsChanged Bool
     | ClipboardCopyClicked
     | InsertPageClicked
@@ -92,13 +92,14 @@ type Msg
     | FileDragCanceled
     | FileUploading File (List File) Progress
     | FileUploaded (Result Error String)
-    | NoOp
     | DragDropMsg (DragDrop.Msg DragId DropId)
     | TabMsg Tab.State
     | Undo
     | Redo
     | ContextMenuMsg (ContextMenu.Msg ContextPopup)
-    | WindowSizeChanged Int Int
+      --| WindowSizeChanged Int Int
+    | WorkspaceSizeChanged (Result Dom.Error Dom.Viewport)
+    | NoOp
 
 
 type ContextPopup
@@ -170,8 +171,11 @@ type alias Model =
     , workspaceScale : Float
     , workspaceX : Float
     , workspaceY : Float
-    , windowWidth : Int
-    , windowHeight : Int
+    , workspaceViewportWidth : Float
+    , workspaceViewportHeight : Float
+
+    -- , windowWidth : Int
+    -- , windowHeight : Int
     , mouseX : Int
     , mouseY : Int
     , isMouseButtonDown : Bool
@@ -295,8 +299,11 @@ initialModel { width, height, seed1, seed2, seed3, seed4 } =
       , workspaceScale = 1.0
       , workspaceX = workspaceX
       , workspaceY = workspaceY
-      , windowWidth = width
-      , windowHeight = height
+      , workspaceViewportWidth = 0
+      , workspaceViewportHeight = 0
+
+      --   , windowWidth = width
+      --   , windowHeight = height
       , mouseX = 0
       , mouseY = 0
       , isMouseButtonDown = False
@@ -318,7 +325,17 @@ initialModel { width, height, seed1, seed2, seed3, seed4 } =
       }
     , Cmd.batch
         [ Cmd.map ContextMenuMsg cmd
-        , Dom.setViewportOf "workspace-wrapper" workspaceX workspaceY
+        , Dom.getViewportOf workspaceWrapperId
+            |> Task.attempt WorkspaceSizeChanged
+        , Dom.setViewportOf workspaceWrapperId workspaceX workspaceY
             |> Task.attempt (\_ -> NoOp)
         ]
     )
+
+
+
+-- IDs
+
+
+workspaceWrapperId =
+    "workspace-wrapper"

@@ -198,7 +198,7 @@ renderDocument ctx node selected children =
         attrs =
             [ elementClasses ctx node selected
             , elementId node
-            , onClick (NodeSelected node.id)
+            , onClick (NodeSelected False node.id)
             ]
                 |> applyWidth node.width node.widthMin node.widthMax
                 |> applyHeight node.height node.heightMin node.heightMax
@@ -300,7 +300,7 @@ renderEditableText ctx node selected text nodeRenderer =
 renderParagraph node attrs text =
     E.paragraph
         (onDoubleClick (TextEditingStarted textEditorId)
-            :: onClick (NodeSelected node.id)
+            :: onClick (NodeSelected False node.id)
             :: attrs
         )
         (if String.trim text == "" then
@@ -314,7 +314,7 @@ renderParagraph node attrs text =
 renderText node attrs text =
     E.el
         (onDoubleClick (TextEditingStarted textEditorId)
-            :: onClick (NodeSelected node.id)
+            :: onClick (NodeSelected False node.id)
             :: attrs
         )
         (if String.trim text == "" then
@@ -895,7 +895,7 @@ wrapElement ctx node selected renderer =
     E.el
         ([ elementClasses ctx node selected
          , elementId node
-         , onClick (NodeSelected node.id)
+         , onClick (NodeSelected False node.id)
 
          --, E.onRight (E.el [ E.centerY, E.moveLeft 14 ] (E.html <| H.div [ A.class "element__connect" ] []))
          --  , E.onRight (E.el [E.alignBottom, E.moveLeft 14 ] (E.html <| H.div [ A.class "element__nudge" ] []))
@@ -926,7 +926,7 @@ wrapImageElement ctx node selected renderer =
     E.el
         ([ elementClasses ctx node selected
          , elementId node
-         , onClick (NodeSelected node.id)
+         , onClick (NodeSelected False node.id)
          ]
             |> makeDroppableIf (Common.canDropInto node ctx.dragDrop) (AppendTo node.id)
             |> applyWidth node.width node.widthMin node.widthMax

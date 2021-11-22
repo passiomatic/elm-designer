@@ -69,9 +69,21 @@ init flags =
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        WindowSizeChanged w h ->
-            ( { model | windowWidth = w, windowHeight = h }, Cmd.none )
+        WorkspaceSizeChanged result ->
+            case result of
+                Ok value ->
+                    ( { model
+                        | workspaceViewportWidth = value.viewport.width
+                        , workspaceViewportHeight = value.viewport.height
+                      }
+                    , Cmd.none
+                    )
 
+                Err _ ->
+                    ( model, Cmd.none )
+
+        -- WindowSizeChanged w h ->
+        --     ( { model | windowWidth = w, windowHeight = h }, Cmd.none )
         ContextMenuMsg msg_ ->
             let
                 ( contextMenu, cmd ) =
@@ -311,22 +323,53 @@ update msg model =
             , Cmd.none
             )
 
-        NodeSelected id ->
-            ( { model
-                | document =
-                    UndoList.mapPresent
-                        (\document ->
-                            Document.selectNodeWith id document
-                                -- Fallback to root node if given node cannot be found
-                                |> Maybe.withDefault (Zipper.root document)
-                        )
-                        model.document
+        NodeSelected reveal id ->
+            let
+                maybeZipper =
+                    Document.selectNodeWith id model.document.present
+            in
+            case maybeZipper of
+                Just zipper ->
+                    let
+                        node =
+                            Zipper.label zipper
 
-                -- Quit editing when user selects a new node
-                , inspector = NotEdited
-              }
-            , Cmd.none
-            )
+                        length value =
+                            case value of
+                                Px value_ ->
+                                    toFloat value_
+
+                                _ ->
+                                    0
+
+                        offsetX =
+                            node.offsetX - model.workspaceViewportWidth / 2 + length node.width / 2
+
+                        offsetY =
+                            -- A tad above the middle line
+                            node.offsetY - model.workspaceViewportHeight / 2 + 100
+                    in
+                    ( { model
+                        | document =
+                            UndoList.mapPresent
+                                (\_ ->
+                                    zipper
+                                )
+                                model.document
+
+                        -- Quit editing when user selects a new node
+                        , inspector = NotEdited
+                      }
+                    , if reveal then
+                        Dom.setViewportOf Model.workspaceWrapperId offsetX offsetY
+                            |> Task.attempt (\_ -> NoOp)
+
+                      else
+                        Cmd.none
+                    )
+
+                Nothing ->
+                    ( model, Cmd.none )
 
         TextEditingStarted editorId ->
             ( { model
@@ -909,7 +952,8 @@ subscriptions model =
         , BE.onKeyUp (Decode.map (KeyChanged False) keysDecoder)
         , BE.onMouseDown (Decode.map (MouseButtonChanged True) mouseDecoder)
         , BE.onMouseUp (Decode.map (MouseButtonChanged False) mouseDecoder)
-        , BE.onResize WindowSizeChanged
+
+        --, BE.onResize WindowSizeChanged
         , Ports.onDocumentLoad DocumentLoaded
         , Time.every 1000 Ticked
         , uploadSub
