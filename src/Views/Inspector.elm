@@ -1337,8 +1337,47 @@ lengthView model node =
 pageLenghtView : Model -> Node -> Html Msg
 pageLenghtView model node =
     H.div [ A.class "mb-3" ]
-        [ pageWidthView model node
-        , pageHeightView model node
+        [ presetSizeView model
+        , pageSizeView model node
+        ]
+
+
+presetSizeView : Model -> Html Msg
+presetSizeView model =
+    H.div [ A.class "row align-items-center mb-2" ]
+        [ H.label [ A.class "col-3 col-form-label-sm m-0" ]
+            [ H.text "Preset" ]
+        , H.div [ A.class "col-9" ]
+            [ H.select [ E.onInput PresetSizeChanged, A.class "form-select form-select-sm" ]
+                (Dict.values
+                    (Dict.map
+                        (\name ( width, height, _ ) ->
+                            let
+                                label =
+                                    name
+                                        ++ Entity.ensp
+                                        ++ String.fromInt width
+                                        ++ Entity.times
+                                        ++ String.fromInt height
+                                        ++ "px"
+
+                                -- Custom w h _ ->
+                                --     "Custom"
+                                --         ++ " "
+                                --         ++ Entity.mdash
+                                --         ++ " "
+                                --         ++ String.fromInt w
+                                --         ++ Entity.times
+                                --         ++ String.fromInt h
+                                --         ++ " px"
+                            in
+                            H.option [ A.value name ]
+                                [ H.text label ]
+                        )
+                        Document.deviceInfo
+                    )
+                )
+            ]
         ]
 
 
@@ -1358,6 +1397,50 @@ wrapRowOptionView wrapped =
             , A.for "wrap-row-items"
             ]
             [ H.text "Wrap row items" ]
+        ]
+
+
+pageSizeView : Model -> Node -> Html Msg
+pageSizeView model { width, height } =
+    H.div [ A.class "row align-items-center mb-3" ]
+        [ H.label [ A.class "col-3 col-form-label-sm m-0" ]
+            [ H.text "Viewport" ]
+        , H.div [ A.class "col-9" ]
+            [ H.div [ A.class "d-flex justify-content-end", A.style "gap" ".25rem" ]
+                [ case width of
+                    Px value ->
+                        let
+                            value_ =
+                                case model.inspector of
+                                    EditingField WidthPxField new ->
+                                        new
+
+                                    _ ->
+                                        String.fromInt value
+                        in
+                        numericFieldView WidthPxField "Width" value_
+
+                    -- @@TODO Handle unspecified
+                    _ ->
+                        none
+                , case height of
+                    Px value ->
+                        let
+                            value_ =
+                                case model.inspector of
+                                    EditingField HeightPxField new ->
+                                        new
+
+                                    _ ->
+                                        String.fromInt value
+                        in
+                        numericFieldView HeightPxField "Height" value_
+
+                    -- @@TODO Handle unspecified
+                    _ ->
+                        none
+                ]
+            ]
         ]
 
 
@@ -1491,35 +1574,6 @@ widthView model { width, widthMin, widthMax } =
                         , numericFieldView WidthMinField "Min." min
                         , numericFieldView WidthMaxField "Max." max
                         ]
-                )
-            ]
-        ]
-
-
-pageWidthView : Model -> Node -> Html Msg
-pageWidthView model { width } =
-    H.div [ A.class "row align-items-center mb-3" ]
-        [ H.label [ A.class "col-3 col-form-label-sm m-0" ]
-            [ H.text "Width" ]
-        , H.div [ A.class "col-9" ]
-            [ H.div [ A.class "d-flex justify-content-end" ]
-                (case width of
-                    Px value ->
-                        let
-                            value_ =
-                                case model.inspector of
-                                    EditingField WidthPxField new ->
-                                        new
-
-                                    _ ->
-                                        String.fromInt value
-                        in
-                        [ numericFieldView WidthPxField "Exact" value_
-                        ]
-
-                    -- @@TODO Handle unspecified
-                    _ ->
-                        []
                 )
             ]
         ]

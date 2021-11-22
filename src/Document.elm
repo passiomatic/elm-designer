@@ -12,6 +12,7 @@ module Document exposing
     , TextData
     , Viewport(..)
     , appendNode
+    , apply
     , applyAlign
     , applyAlignX
     , applyAlignY
@@ -54,6 +55,7 @@ module Document exposing
     , canDropSibling
     , defaultDeviceInfo
     , defaultDocument
+    , deviceInfo
     , duplicateNode
     , emptyPage
     , findDeviceInfo
@@ -758,6 +760,13 @@ insertNodeBefore siblingId newTree zipper =
 setText : String -> { a | text : String } -> { a | text : String }
 setText value record =
     { record | text = value }
+
+
+{-| Apply a function to the focussed node.
+-}
+apply : (Node -> Node) -> Zipper Node -> Zipper Node
+apply setter zipper =
+    Zipper.mapLabel setter zipper
 
 
 applyLabel : String -> Zipper Node -> Zipper Node

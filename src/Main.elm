@@ -229,6 +229,13 @@ update msg model =
             , cmd
             )
 
+        PresetSizeChanged name ->
+            let
+                ( w, h, _ ) =
+                    Document.findDeviceInfo name
+            in
+            applyChange model Document.apply (\node -> { node | width = Layout.px w, height = Layout.px h })
+
         InsertNodeClicked template ->
             let
                 ( newSeeds, newNode ) =

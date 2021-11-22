@@ -75,6 +75,7 @@ type Msg
     | FieldChanged String
     | TextChanged String
     | ViewportChanged Viewport
+    | PresetSizeChanged String 
     | WrapRowItemsChanged Bool
     | ClipboardCopyClicked
     | InsertPageClicked
