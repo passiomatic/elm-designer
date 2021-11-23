@@ -268,6 +268,9 @@ update msg model =
         InsertImageClicked ->
             ( { model | dropDownState = Hidden }, Select.files acceptedTypes FileSelected )
 
+        -- RemoveNodeClicked nodeId ->
+        --     removeNode nodeId
+
         ClipboardCopyClicked ->
             let
                 code =
@@ -533,13 +536,7 @@ update msg model =
                 -- Delete node
                 -- ############
                 ( False, "Backspace", NotEdited ) ->
-                    -- TODO remove node from model.collapsedTreeItems
-                    ( { model
-                        | document = UndoList.new (Document.removeNode model.document.present) model.document
-                        , saveState = Changed model.currentTime
-                      }
-                    , Cmd.none
-                    )
+                    removeNode model
 
                 -- ############
                 -- Toggle preview/design mode
@@ -900,6 +897,16 @@ addDroppedNode model dropId node zipper =
 
                 Nothing ->
                     zipper
+
+
+removeNode model =
+    -- TODO remove node from model.collapsedTreeItems
+    ( { model
+        | document = UndoList.new (Document.removeNode model.document.present) model.document
+        , saveState = Changed model.currentTime
+      }
+    , Cmd.none
+    )
 
 
 applyChange : Model -> (a -> Zipper Node -> Zipper Node) -> a -> ( Model, Cmd Msg )

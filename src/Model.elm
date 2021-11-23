@@ -1,6 +1,6 @@
 module Model exposing
     ( Context
-    , ContextPopup(..)
+    , ContextMenuPopup(..)
     , DocumentState(..)
     , FileDrop(..)
     , Flags
@@ -79,7 +79,7 @@ type Msg
     | WrapRowItemsChanged Bool
     | ClipboardCopyClicked
     | InsertPageClicked
-    | PageDeleteClicked NodeId
+    | RemoveNodeClicked NodeId
     | InsertNodeClicked (Tree Node)
     | InsertImageClicked
     | DropDownChanged WidgetState
@@ -96,14 +96,14 @@ type Msg
     | TabMsg Tab.State
     | Undo
     | Redo
-    | ContextMenuMsg (ContextMenu.Msg ContextPopup)
+    | ContextMenuMsg (ContextMenu.Msg ContextMenuPopup)
       --| WindowSizeChanged Int Int
     | WorkspaceSizeChanged (Result Dom.Error Dom.Viewport)
     | NoOp
 
 
-type ContextPopup
-    = PageListContextPopup NodeId
+type ContextMenuPopup
+    = OutlinePopup NodeId
 
 
 {-| All editable text fields in the app.
@@ -193,7 +193,7 @@ type alias Model =
     , dropDownState : WidgetState
     , uploadState : UploadState
     , collapsedTreeItems : Set String
-    , contextMenu : ContextMenu ContextPopup
+    , contextMenu : ContextMenu ContextMenuPopup
     }
 
 

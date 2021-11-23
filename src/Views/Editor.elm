@@ -3,7 +3,6 @@ module Views.Editor exposing (view)
 {-| Main view for the app.
 -}
 
-import Array
 import Bootstrap.Tab as Tab
 import CodeGen
 import Codecs
@@ -24,15 +23,13 @@ import Icons
 import Json.Decode as Decode exposing (Decoder)
 import Library exposing (LibraryItem)
 import Model exposing (..)
-import Palette
 import Set exposing (Set)
 import Style.Theme as Theme
 import Tree as T exposing (Tree)
 import Tree.Zipper as Zipper exposing (Zipper)
 import UndoList
-import Uploader
 import Views.Common as Common exposing (none)
-import Views.ContextMenus as ContextMenus
+import Views.ContextMenuPopup as ContextMenuPopup
 import Views.ElmUI as ElmUI
 import Views.Inspector as Inspector
 
@@ -58,7 +55,8 @@ view model =
                 , H.div [ A.class "d-flex" ]
                     [ workspaceView model
                     ]
-                , ContextMenus.pageListView model
+
+                --, ContextMenuPopup.view model
                 ]
 
             _ ->
@@ -69,7 +67,7 @@ view model =
                     , rightPaneView model
                     ]
                 , uploadProgressView model.uploadState
-                , ContextMenus.pageListView model
+                , ContextMenuPopup.view model.contextMenu
                 ]
         )
 
@@ -634,11 +632,12 @@ treeLabel node =
             )
                 |> String.trim
                 |> String.left maxTreeLabelLength
-
-        reveal =
-            node.type_ == PageNode
     in
-    H.span [ A.class "w-100 text-truncate", clickToSelectHandler reveal node.id ]
+    H.span
+        [ A.class "w-100 text-truncate"
+        , clickToSelectHandler node.id
+        , ContextMenu.open ContextMenuMsg (OutlinePopup node.id)
+        ]
         [ H.text
             (if String.isEmpty label then
                 node.name
@@ -792,8 +791,8 @@ preventDefaultOn event decoder =
         )
 
 
-clickToSelectHandler reveal id =
-    E.stopPropagationOn "click" (Decode.succeed ( NodeSelected reveal id, True ))
+clickToSelectHandler id =
+    E.stopPropagationOn "click" (Decode.succeed ( NodeSelected False id, True ))
 
 
 clickToExpandHandler =

@@ -690,6 +690,8 @@ duplicateNode zipper seeds =
             seeds
 
 
+{-| Remove focussed node.
+-}
 removeNode : Zipper Node -> Zipper Node
 removeNode zipper =
     Zipper.removeTree zipper
