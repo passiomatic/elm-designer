@@ -272,25 +272,8 @@ type alias Flags =
     }
 
 
--- type Platform
---     = Mac
---     | Windows
---     | Linux
-
-
--- platform value =
---     case value of
---         "MacIntel" ->
---             Mac
-
---         "Windows" ->
---             Windows
-
---         "Linux" ->
---             Linux
-
---         _ ->
---             Windows
+isMac platform =
+    platform == "MacIntel" || platform == "Macintosh"
 
 
 initialModel : Flags -> ( Model, Cmd Msg )
