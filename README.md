@@ -23,7 +23,7 @@ By uploading images and referencing them by URL sidesteps a number of issues lik
 
 Elm Designer uses [Parcel][2] to compile Elm and SASS source. To install all the needed dependencies type:
 
-    npm install 
+    npm ci 
 
 If you need to edit the source files the `package.json` contains a bunch on script entries which automate the most common operations. To run Elm Design locally in dev mode type:
 
