@@ -14,8 +14,8 @@ $header-height: 46px;
 
 // Colors from Tango palette
 
-$primary: #3b7cd1;
-$primary-light: scale-color($primary, $saturation: -12%, $lightness: 82%);
+// $primary: #3b7cd1;
+$primary-light: scale-color(#3b7cd1, $saturation: -12%, $lightness: 82%);
 $success: rgb(78, 154, 6);
 $info: rgb(114, 159, 207);
 $warning: rgb(237, 212, 0);
