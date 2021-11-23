@@ -429,8 +429,8 @@ codeView model =
                 [ H.text (CodeGen.emit Theme.defaultTheme model.viewport node)
                 ]
             ]
-        , H.div [ A.class "mt-2" ]
-            [ H.button [ E.onClick ClipboardCopyClicked, A.type_ "button", A.class "btn btn-primary btn-block" ]
+        , H.div [ A.class "mt-2 d-grid" ]
+            [ H.button [ E.onClick ClipboardCopyClicked, A.type_ "button", A.class "btn btn-primary" ]
                 [ H.text "Copy Elm code" ]
             ]
         ]
