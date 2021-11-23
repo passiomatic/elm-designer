@@ -246,7 +246,7 @@ update msg model =
                 ( w, h, _ ) =
                     Document.findDeviceInfo name
             in
-            applyChange model Document.apply (\node -> { node | width = Layout.px w, height = Layout.px h })
+            applyChange model Document.apply (\node -> { node | width = Layout.px w, heightMin = Just h })
 
         InsertNodeClicked template ->
             let
@@ -270,7 +270,6 @@ update msg model =
 
         -- RemoveNodeClicked nodeId ->
         --     removeNode nodeId
-
         ClipboardCopyClicked ->
             let
                 code =
