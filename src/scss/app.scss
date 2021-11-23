@@ -15,7 +15,7 @@ $header-height: 46px;
 // Colors from Tango palette
 
 $primary: #3b7cd1;
-$primary-light: scale-color($primary, $saturation: -12%, $lightness: 82% );
+$primary-light: scale-color($primary, $saturation: -12%, $lightness: 82%);
 $success: rgb(78, 154, 6);
 $info: rgb(114, 159, 207);
 $warning: rgb(237, 212, 0);
@@ -41,7 +41,7 @@ $btn-line-height: $input-line-height;
 //$btn-line-height-sm: $input-line-height;
 //$btn-line-height-lg: $input-line-height;
 
-//$input-font-size-sm: 0.75rem;                  
+//$input-font-size-sm: 0.75rem;
 $input-padding-x-sm: 0.1875rem;
 
 @import "bootstrap/variables";
@@ -57,6 +57,10 @@ $nav-tabs-link-hover-border-color: $gray-300;
 $nav-tabs-link-active-color: $primary;
 $nav-tabs-link-active-bg: $gray-100;
 $nav-tabs-link-active-border-color: $nav-tabs-link-active-bg;
+
+// Shadows
+
+$box-shadow-sm: 0 1px 6px rgba($gray-500, 0.8);
 
 // Other Bootstrap elements
 

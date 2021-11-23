@@ -673,7 +673,7 @@ libraryView _ =
                             H.section [ A.class "section mt-3" ]
                                 [ H.h2 [ A.class "section__title mb-2" ]
                                     [ H.text head.group ]
-                                , H.div [ A.class "d-flex flex-wrap", A.style "gap" ".25rem" ]
+                                , H.div [ A.class "library d-flex flex-wrap" ]
                                     (List.map templateView (head :: rest))
                                 ]
                         )
@@ -688,7 +688,7 @@ templateView item =
             T.label item.root
     in
     H.div
-        (A.class "template bp-2 d-flex mb-1"
+        (A.class "library__item bp-2 d-flex mb-1"
             :: A.title item.description
             :: DragDrop.draggable DragDropMsg (Insert item.root)
         )

@@ -8,7 +8,6 @@
 .pane--left {
   width: 21em;
   min-width: 21em;
-  //height: calc(100vh - #{$header-height});
 }
 
 .pane--right {
@@ -18,11 +17,15 @@
 
 // Library
 
-.template {
+.library {
+  gap: 0.25rem;
+}
+
+.library__item {
   @extend .rounded;
   transition: box-shadow 0.2s ease-out;
   cursor: move;
-  cursor: grab; // Safari  
+  cursor: grab; // Safari
   border: 1px solid $border-color;
   max-width: 8rem;
   flex-grow: 1;
@@ -30,10 +33,13 @@
   // Force styles to apply to dragged nodes as well
   background: #fff !important;
   color: $body-color !important;
+  transform: scale(1);
+  transition: transform 0.1s ease-out, box-shadow 0.1s ease-out;
 }
 
-.template:hover {
-  @extend .shadow-soft;  
+.library__item:hover {
+  transform: scale(1.1);
+  @extend .shadow-sm;
 }
 
 // Inspector

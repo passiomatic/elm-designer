@@ -18,6 +18,10 @@
   font-size: 21px !important;
 }
 
+.fw-500 {
+  font-weight: 500;
+}
+
 // Forms
 
 .label-sm {
@@ -37,15 +41,7 @@
 
 // Backgrounds
 
-.bg-gray-200 {
-  background: $gray-200;
-}
-
 // Misc
-
-.shadow-soft {
-  box-shadow: 0 1px 6px rgba($gray-500, 0.8);
-}
 
 .preformatted {
   white-space: pre-wrap;
@@ -55,43 +51,9 @@
   transform: rotate(90deg);
 }
 
-// .btn-muted {
-//   color: $gray-300;
-// }
 
-.fw-500 {
-  font-weight: 500;
-}
 
 // Animation
-
-.anim-left {
-  animation: slide-left 0.5s ease-in infinite alternate;
-}
-
-.anim-right {
-  animation: slide-right 0.5s ease-in infinite alternate;
-}
-
-@keyframes slide-left {
-  from {
-    transform: translateX(0);
-  }
-
-  to {
-    transform: translateX(-5px);
-  }
-}
-
-@keyframes slide-right {
-  from {
-    transform: translateX(0);
-  }
-
-  to {
-    transform: translateX(5px);
-  }
-}
 
 // Scrolling
 
