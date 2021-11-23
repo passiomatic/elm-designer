@@ -13,13 +13,14 @@ var seeds = new Uint32Array(4)
 window.crypto.getRandomValues(seeds)
 
 var app = Elm.Main.init({
-  flags: {
+  flags: {      
     width: w,
     height: h,
     seed1: seeds[0],
     seed2: seeds[1],
     seed3: seeds[2],
     seed4: seeds[3],
+    platform: navigator.platform
   },
   node: document.getElementById("app"),
 });

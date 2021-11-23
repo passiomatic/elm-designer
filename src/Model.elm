@@ -14,7 +14,8 @@ module Model exposing
     , Widget(..)
     , WidgetState(..)
     , context
-    , initialModel, workspaceWrapperId
+    , initialModel
+    , workspaceWrapperId
     )
 
 import Bootstrap.Tab as Tab
@@ -267,7 +268,29 @@ type alias Flags =
     , seed2 : Int
     , seed3 : Int
     , seed4 : Int
+    , platform : String
     }
+
+
+-- type Platform
+--     = Mac
+--     | Windows
+--     | Linux
+
+
+-- platform value =
+--     case value of
+--         "MacIntel" ->
+--             Mac
+
+--         "Windows" ->
+--             Windows
+
+--         "Linux" ->
+--             Linux
+
+--         _ ->
+--             Windows
 
 
 initialModel : Flags -> ( Model, Cmd Msg )
