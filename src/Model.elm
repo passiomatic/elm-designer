@@ -195,6 +195,7 @@ type alias Model =
     , uploadState : UploadState
     , collapsedTreeItems : Set String
     , contextMenu : ContextMenu ContextMenuPopup
+    , isMac: Bool 
     }
 
 
@@ -273,11 +274,11 @@ type alias Flags =
 
 
 isMac platform =
-    platform == "MacIntel" || platform == "Macintosh"
+    String.startsWith "Mac" platform
 
 
 initialModel : Flags -> ( Model, Cmd Msg )
-initialModel { width, height, seed1, seed2, seed3, seed4 } =
+initialModel { width, height, seed1, seed2, seed3, seed4, platform } =
     let
         seeds =
             Seeds
@@ -328,6 +329,7 @@ initialModel { width, height, seed1, seed2, seed3, seed4 } =
       , uploadState = Ready
       , collapsedTreeItems = Set.empty
       , contextMenu = contextMenu
+      , isMac = isMac platform
       }
     , Cmd.batch
         [ Cmd.map ContextMenuMsg cmd
