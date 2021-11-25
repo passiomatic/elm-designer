@@ -12,6 +12,8 @@ var h = Math.max(
 var seeds = new Uint32Array(4)
 window.crypto.getRandomValues(seeds)
 
+var mode = location.search.includes("preview") ? "preview" : "design";
+
 var app = Elm.Main.init({
   flags: {      
     width: w,
@@ -20,7 +22,8 @@ var app = Elm.Main.init({
     seed2: seeds[1],
     seed3: seeds[2],
     seed4: seeds[3],
-    platform: navigator.platform
+    platform: navigator.platform,
+    mode: mode
   },
   node: document.getElementById("app"),
 });
@@ -40,6 +43,16 @@ app.ports.loadDocument.subscribe(function () {
   // Sanity check for first run
   if (value) {
     app.ports.onDocumentLoad.send(value);
+  }
+});
+
+// This won't work on the same page that is making the changes — it is really a way for other 
+//    pages on the domain using the storage to sync any changes that are made.
+window.addEventListener('storage', function() {
+  let value = localStorage.getItem(storageKey)
+  if(value) {
+    console.log("storage changed");
+    //app.ports.onDocumentChange.send(value);
   }
 });
 
@@ -114,6 +127,22 @@ app.ports.setFontLinks.subscribe(function (links) {
     head.appendChild(el)
   })
 });
+
+
+// -------------------------------
+// Preview 
+// -------------------------------
+
+var popup = null;
+
+app.ports.openPreview.subscribe(function (value) {
+  if(popup == null || popup.closed) {
+    popup = window.open("index.html?preview", "preview", "popup,width=400,height=600,resizable");    
+  } else {
+    popup.focus()    
+  }
+});
+
 
 // -------------------------------
 // Notifications

@@ -85,6 +85,7 @@ type Msg
     | InsertImageClicked
     | DropDownChanged WidgetState
     | DocumentLoaded String
+    | DocumentChanged String
     | Ticked Posix
     | ModeChanged Mode
     | FileDropped NodeId File (List File)
@@ -195,7 +196,7 @@ type alias Model =
     , uploadState : UploadState
     , collapsedTreeItems : Set String
     , contextMenu : ContextMenu ContextMenuPopup
-    , isMac: Bool 
+    , isMac : Bool
     }
 
 
@@ -270,6 +271,7 @@ type alias Flags =
     , seed3 : Int
     , seed4 : Int
     , platform : String
+    , mode : String
     }
 
 
@@ -277,8 +279,17 @@ isMac platform =
     String.startsWith "Mac" platform
 
 
+getMode value =
+    case value of
+        "preview" ->
+            PreviewMode
+
+        _ ->
+            DesignMode
+
+
 initialModel : Flags -> ( Model, Cmd Msg )
-initialModel { width, height, seed1, seed2, seed3, seed4, platform } =
+initialModel { width, height, seed1, seed2, seed3, seed4, platform, mode  } =
     let
         seeds =
             Seeds
@@ -302,7 +313,7 @@ initialModel { width, height, seed1, seed2, seed3, seed4, platform } =
         workspaceY =
             workspaceHeight / 2 - toFloat height / 2 + pageHeight / 2
     in
-    ( { mode = DesignMode
+    ( { mode = getMode mode
       , workspaceScale = 1.0
       , workspaceX = workspaceX
       , workspaceY = workspaceY

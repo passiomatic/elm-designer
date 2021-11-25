@@ -1,7 +1,9 @@
 port module Ports exposing
     ( copyToClipboard
     , loadDocument
+    , onDocumentChange
     , onDocumentLoad
+    , openPreview
     , saveDocument
     , selectText
     , setDragImage
@@ -15,6 +17,9 @@ import Model exposing (..)
 
 
 -- PORTS OUT
+
+
+port openPreview : () -> Cmd msg
 
 
 port saveDocument : String -> Cmd msg
@@ -41,7 +46,12 @@ port showNotification :
     }
     -> Cmd msg
 
+
+
 -- PORTS IN
 
 
 port onDocumentLoad : (String -> msg) -> Sub msg
+
+
+port onDocumentChange : (String -> msg) -> Sub msg

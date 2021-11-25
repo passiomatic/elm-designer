@@ -300,6 +300,28 @@ update msg model =
                     , showNotification "Error loading document (perhaps schema has changed?)"
                     )
 
+        DocumentChanged value ->
+            case model.mode of
+                PreviewMode ->
+                    case Codecs.fromString value of
+                        Ok document ->
+                            ( { model
+                                | document = UndoList.mapPresent (\_ -> Zipper.fromTree document.root) model.document
+
+                                --, viewport = document.viewport
+                                , saveState = Original
+                              }
+                            , Cmd.none
+                            )
+
+                        Err reason ->
+                            ( model
+                            , showNotification "Error loading document (perhaps schema has changed?)"
+                            )
+
+                _ ->
+                    ( model, Cmd.none )
+
         CollapseNodeClicked collapse id ->
             let
                 updater =
@@ -526,9 +548,9 @@ update msg model =
             , Cmd.none
             )
 
-        -- Disable preview mode for now
-        -- ModeChanged mode ->
-        --     ( { model | mode = mode }, Cmd.none )
+        ModeChanged mode ->
+            ( model , Ports.openPreview () )
+
         KeyChanged isDown keys ->
             case ( isDown, keys.key, model.inspector ) of
                 -- ############
@@ -961,6 +983,7 @@ subscriptions model =
 
         --, BE.onResize WindowSizeChanged
         , Ports.onDocumentLoad DocumentLoaded
+        , Ports.onDocumentChange DocumentChanged
         , Time.every 1000 Ticked
         , uploadSub
         , Sub.map ContextMenuMsg (ContextMenu.subscriptions model.contextMenu)

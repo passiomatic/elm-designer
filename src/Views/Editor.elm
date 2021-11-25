@@ -140,35 +140,43 @@ uploadProgressView uploadState =
 
 
 headerView : Model -> Html Msg
-headerView model =
-    let
-        modeButton =
-            case model.mode of
-                DesignMode ->
-                    H.button
-                        [ A.type_ "button"
-                        , A.class "btn btn-light btn-sm"
-                        , A.title "Start preview mode (P key)"
-                        , E.onClick (ModeChanged PreviewMode)
-                        ]
-                        [ Icons.play ]
+headerView model =    
+        (case model.mode of
+            DesignMode ->
+                H.header [ A.class "header d-flex justify-content-between align-items-center bp-2 border-bottom" ]
+                    [ insertView model
+                    , undoRedoView model
+                    , previewButton model.mode
+                    , zoomView model
+                    ]
 
-                PreviewMode ->
-                    H.button
-                        [ A.type_ "button"
-                        , A.class "btn btn-light btn-sm"
-                        , A.title "Stop preview mode (Esc key)"
-                        , E.onClick (ModeChanged DesignMode)
-                        ]
-                        [ Icons.stop ]
-    in
-    H.header [ A.class "header d-flex justify-content-between align-items-center bp-2 border-bottom", A.style "gap" "1rem" ]
-        [ insertView model
-        , undoRedoView model
-        , zoomView model
+            PreviewMode ->
+                H.header [ A.class "header d-flex justify-content-center align-items-center bp-2 border-bottom" ]
+                    [ viewportsView model
+                    ]
+        )
 
-        --, modeButton
-        ]
+
+previewButton : Mode -> Html Msg
+previewButton mode =
+    case mode of
+        DesignMode ->
+            H.button
+                [ A.type_ "button"
+                , A.class "btn btn-light btn-sm"
+                , A.title "Open in preview window"
+                , E.onClick (ModeChanged PreviewMode)
+                ]
+                [ Icons.play ]
+
+        PreviewMode ->
+            H.button
+                [ A.type_ "button"
+                , A.class "btn btn-light btn-sm"
+                , A.title "Close preview window"
+                , E.onClick (ModeChanged DesignMode)
+                ]
+                [ Icons.stop ]
 
 
 undoRedoView model =
@@ -708,20 +716,20 @@ documentView model =
         ctx =
             Model.context model
 
-        ( viewportClass, width, height ) =
-            case model.viewport of
-                DeviceModel name ->
-                    let
-                        ( w, h, _ ) =
-                            Document.findDeviceInfo name
-                    in
-                    ( "viewport--device", px w, px h )
+        -- ( viewportClass, width, height ) =
+        --     case model.viewport of
+        --         DeviceModel name ->
+        --             let
+        --                 ( w, h, _ ) =
+        --                     Document.findDeviceInfo name
+        --             in
+        --             ( "viewport--device", px w, px h )
 
-                Custom w h _ ->
-                    ( "viewport--custom", px w, px h )
+        --         Custom w h _ ->
+        --             ( "viewport--custom", px w, px h )
 
-                Fluid ->
-                    ( "viewport--fluid", "calc(100% - 2px)", "calc(100% - 2px)" )
+        --         Fluid ->
+        --             ( "viewport--fluid", "calc(100% - 2px)", "calc(100% - 2px)" )
 
         content =
             ElmUI.render ctx tree
@@ -748,32 +756,33 @@ documentView model =
         --     --     [ H.text "Fold" ]
         --     ]
         PreviewMode ->
-            H.div
-                [ A.classList
-                    [ ( "chrome m-4", True )
-                    , ( viewportClass, True )
-                    ]
-                ]
-                [ H.div [ A.class "chrome__header d-flex justify-content-between" ]
-                    [ H.div []
-                        [ H.div [ A.class "chrome-button chrome-button--red me-2" ] [ H.text "" ]
-                        , H.div [ A.class "chrome-button chrome-button--yellow me-2" ] [ H.text "" ]
-                        , H.div [ A.class "chrome-button chrome-button--green" ] [ H.text "" ]
-                        ]
-                    , H.div [] [ H.text "Page Title" ]
-                    , H.div [] [ H.text " " ]
-                    ]
-                , H.div
-                    [ A.classList
-                        [ ( "page", True )
-                        , ( "page--interactive", True )
-                        ]
-                    , A.style "width" width
-                    , A.style "height" height
-                    ]
-                    [ content
-                    ]
-                ]
+            content
+            -- H.div
+            --     [ A.classList
+            --         [ ( "chrome m-4", True )
+            --         , ( viewportClass, True )
+            --         ]
+            --     ]
+            --     [ H.div [ A.class "chrome__header d-flex justify-content-between" ]
+            --         [ H.div []
+            --             [ H.div [ A.class "chrome-button chrome-button--red me-2" ] [ H.text "" ]
+            --             , H.div [ A.class "chrome-button chrome-button--yellow me-2" ] [ H.text "" ]
+            --             , H.div [ A.class "chrome-button chrome-button--green" ] [ H.text "" ]
+            --             ]
+            --         , H.div [] [ H.text "Page Title" ]
+            --         , H.div [] [ H.text " " ]
+            --         ]
+            --     , H.div
+            --         [ A.classList
+            --             [ ( "page", True )
+            --             , ( "page--interactive", True )
+            --             ]
+            --         , A.style "width" width
+            --         , A.style "height" height
+            --         ]
+            --         [ content
+            --         ]
+            --     ]
 
 
 
