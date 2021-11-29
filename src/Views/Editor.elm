@@ -708,9 +708,6 @@ templateView item =
 documentView : Model -> Html Msg
 documentView model =
     let
-        tree =
-            Zipper.toTree model.document.present
-
         ctx =
             Model.context model
 
@@ -726,12 +723,14 @@ documentView model =
         --             ( "viewport--custom", px w, px h )
         --         Fluid ->
         --             ( "viewport--fluid", "calc(100% - 2px)", "calc(100% - 2px)" )
-        content =
-            ElmUI.render ctx tree
     in
     case model.mode of
         DesignMode ->
-            content
+            let
+                tree =
+                    Zipper.toTree model.document.present
+            in
+            ElmUI.render ctx tree
 
         -- H.div
         --     [ A.classList
@@ -751,7 +750,17 @@ documentView model =
         --     --     [ H.text "Fold" ]
         --     ]
         PreviewMode ->
-            content
+            let
+                maybeZipper =
+                    Document.findSelectedPage model.document.present
+            in
+            case maybeZipper of
+                Just zipper ->
+                    ElmUI.render ctx (Zipper.tree zipper)
+
+                Nothing ->
+                    -- TODO Nothing selected, use a fallback value
+                    none
 
 
 

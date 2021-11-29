@@ -59,6 +59,7 @@ module Document exposing
     , duplicateNode
     , emptyPage
     , findDeviceInfo
+    , findSelectedPage
     , fromTemplate
     , fromTemplateAt
     , generateId
@@ -476,6 +477,12 @@ viewports =
 
 
 -- NODE QUERY
+
+
+findSelectedPage : Zipper Node -> Maybe (Zipper Node)
+findSelectedPage zipper =
+    -- TODO
+    Zipper.findFromRoot (\node -> node.type_ == PageNode) zipper
 
 
 {-| Find the node with the given id and if successuful move zipper focus to it.
