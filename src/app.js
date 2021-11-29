@@ -12,6 +12,7 @@ var h = Math.max(
 var seeds = new Uint32Array(4)
 window.crypto.getRandomValues(seeds)
 
+// Open app in preview mode? 
 var mode = location.search.includes("preview") ? "preview" : "design";
 
 var app = Elm.Main.init({
@@ -137,7 +138,11 @@ var popup = null;
 
 app.ports.openPreview.subscribe(function (value) {
   if(popup == null || popup.closed) {
+    // TODO: Check if browser has killed the popup
     popup = window.open("index.html?preview", "preview", "popup,width=400,height=600,resizable");    
+    popup.addEventListener("unload", function(){      
+      // TODO: window.postMessage  
+    });
   } else {
     popup.focus()    
   }

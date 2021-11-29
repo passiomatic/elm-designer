@@ -548,8 +548,8 @@ update msg model =
             , Cmd.none
             )
 
-        ModeChanged mode ->
-            ( model , Ports.openPreview () )
+        PreviewClicked value ->
+            ( { model | isPreviewOpen = value }, Ports.openPreview () )
 
         KeyChanged isDown keys ->
             case ( isDown, keys.key, model.inspector ) of

@@ -120,11 +120,11 @@ type alias Document =
 
 
 workspaceWidth =
-    8000
+    16000
 
 
 workspaceHeight =
-    8000
+    16000
 
 
 {-| UUID namespace for built-in library elements.

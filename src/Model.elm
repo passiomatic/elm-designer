@@ -87,7 +87,7 @@ type Msg
     | DocumentLoaded String
     | DocumentChanged String
     | Ticked Posix
-    | ModeChanged Mode
+    | PreviewClicked Bool
     | FileDropped NodeId File (List File)
     | FileSelected File (List File)
     | FileDragging NodeId
@@ -197,6 +197,7 @@ type alias Model =
     , collapsedTreeItems : Set String
     , contextMenu : ContextMenu ContextMenuPopup
     , isMac : Bool
+    , isPreviewOpen : Bool
     }
 
 
@@ -289,7 +290,7 @@ getMode value =
 
 
 initialModel : Flags -> ( Model, Cmd Msg )
-initialModel { width, height, seed1, seed2, seed3, seed4, platform, mode  } =
+initialModel { width, height, seed1, seed2, seed3, seed4, platform, mode } =
     let
         seeds =
             Seeds
@@ -341,6 +342,7 @@ initialModel { width, height, seed1, seed2, seed3, seed4, platform, mode  } =
       , collapsedTreeItems = Set.empty
       , contextMenu = contextMenu
       , isMac = isMac platform
+      , isPreviewOpen = False
       }
     , Cmd.batch
         [ Cmd.map ContextMenuMsg cmd
