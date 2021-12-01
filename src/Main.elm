@@ -884,18 +884,23 @@ getDroppedNode model dragId position =
         Drag node ->
             case Document.selectNodeWith node.id model.document.present of
                 Just zipper ->
-                    let 
-                        node2 = 
+                    let
+                        -- Update node at new position
+                        newNode =
                             Zipper.mapLabel
                                 (\node_ ->
-                                    { node_ | offsetX = position.x, offsetY = position.y }
-                                )  zipper
-                                |>  Zipper.tree
+                                    { node_
+                                        | offsetX = position.x
+                                        , offsetY = position.y
+                                    }
+                                )
+                                zipper
+                                |> Zipper.tree
 
                         newZipper =
                             Document.removeNode zipper
                     in
-                    ( model.seeds, Just node2, newZipper )
+                    ( model.seeds, Just newNode, newZipper )
 
                 Nothing ->
                     ( model.seeds, Nothing, model.document.present )

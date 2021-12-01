@@ -824,11 +824,18 @@ makeDraggable dragId attrs =
 
 
 isDroppingInto dropId dragDrop =
-    case DragDrop.getDropId dragDrop of
-        Just (AppendTo id) ->
-            id == dropId
+    case ( DragDrop.getDropId dragDrop, DragDrop.getDragId dragDrop ) of
+        ( Just (AppendTo dropId_), Just (Move _) ) ->
+            dropId_ == dropId
 
-        _ ->
+        ( Just (AppendTo dropId_), Just (Insert _) ) ->
+            dropId_ == dropId
+
+        ( Just _, _ ) ->
+            -- We are dragging stuff in the workspace, no need to hilight anything
+            False
+
+        ( Nothing, _ ) ->
             False
 
 

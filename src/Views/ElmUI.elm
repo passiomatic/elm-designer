@@ -202,7 +202,7 @@ renderDocument ctx node selected children =
             ]
                 |> applyWidth node.width node.widthMin node.widthMax
                 |> applyHeight node.height node.heightMin node.heightMax
-                |> makeDroppableIf (Common.canDropInto node ctx.dragDrop) (AppendTo node.id)
+                |> makeNodeDroppableIf (Common.canDropInto node ctx.dragDrop) (AppendTo node.id)
     in
     -- Document doesn't need to be wrapped. Also, pass E.column as a placeholder,
     --    we'll position all children pages "InFront" anyway
@@ -210,7 +210,7 @@ renderDocument ctx node selected children =
         |> RenderedElement Normal
 
 
-{-| Render page as Elm UI column to layout elements vertically one after another, just like a regular HTML page.
+{-| Render page as Elm UI column to stack elements vertically one after another, just like a regular HTML page.
 -}
 renderPage : Context -> Node -> Bool -> List RenderedNode -> RenderedNode
 renderPage ctx node selected children =
@@ -902,7 +902,7 @@ wrapElement ctx node selected renderer =
          --  , E.onRight (E.el [E.alignTop, E.moveLeft 14 ] (E.html <| H.div [ A.class "element__nudge" ] []))
          --  , E.onLeft (E.el [E.alignTop, E.moveRight 14 ] (E.html <| H.div [ A.class "element__nudge" ] []))
          ]
-            |> makeDroppableIf (Common.canDropInto node ctx.dragDrop) (AppendTo node.id)
+            |> makeNodeDroppableIf (Common.canDropInto node ctx.dragDrop) (AppendTo node.id)
             |> applyWidth node.width node.widthMin node.widthMax
             |> applyHeight node.height node.heightMin node.heightMax
             |> applyAlignX node.alignmentX
@@ -914,21 +914,22 @@ wrapElement ctx node selected renderer =
         )
         (renderer attrs)
 
+
 wrapImageElement : Context -> Node -> Bool -> (List (E.Attribute Msg) -> Element Msg) -> Element Msg
 wrapImageElement ctx node selected renderer =
     let
         attrs =
             []
-            |> applyWidth node.width node.widthMin node.widthMax
-            |> applyHeight node.height node.heightMin node.heightMax
-            |> applyStyles node
+                |> applyWidth node.width node.widthMin node.widthMax
+                |> applyHeight node.height node.heightMin node.heightMax
+                |> applyStyles node
     in
     E.el
         ([ elementClasses ctx node selected
          , elementId node
          , onClick (NodeSelected False node.id)
          ]
-            |> makeDroppableIf (Common.canDropInto node ctx.dragDrop) (AppendTo node.id)
+            |> makeNodeDroppableIf (Common.canDropInto node ctx.dragDrop) (AppendTo node.id)
             |> applyWidth node.width node.widthMin node.widthMax
             |> applyHeight node.height node.heightMin node.heightMax
             |> applyAlignX node.alignmentX
@@ -983,22 +984,6 @@ options children =
         children
 
 
-
--- elements : List RenderedNode -> List (Element Msg)
--- elements children =
---     List.foldr
---         (\node accum ->
---             case node of
---                 RenderedElement _ el ->
---                     el :: accum
---                 _ ->
---                     -- Ignore everything else
---                     accum
---         )
---         []
---         children
-
-
 elementId node =
     E.htmlAttribute (A.id (Document.nodeId node.id))
 
@@ -1038,12 +1023,20 @@ textEditor attrs text =
         }
 
 
+isDroppingInto : DropId -> DragDrop.Model DragId DropId -> Bool
 isDroppingInto dropId dragDrop =
-    case DragDrop.getDropId dragDrop of
-        Just dropId_ ->
+    case ( DragDrop.getDropId dragDrop, DragDrop.getDragId dragDrop ) of
+        ( Just dropId_, Just (Move _) ) ->
             dropId_ == dropId
 
-        Nothing ->
+        ( Just dropId_, Just (Insert _) ) ->
+            dropId_ == dropId
+
+        ( Just _, _ ) ->
+            -- We are dragging stuff in the workspace, no need to hilight anything
+            False
+
+        ( Nothing, _ ) ->
             False
 
 
@@ -1083,7 +1076,7 @@ onDoubleClick msg =
     E.htmlAttribute (Html.Events.stopPropagationOn "dblclick" (Decode.succeed ( msg, True )))
 
 
-makeDroppableIf pred dropId attrs =
+makeNodeDroppableIf pred dropId attrs =
     if pred then
         attrs
             ++ (DragDrop.droppable DragDropMsg dropId
