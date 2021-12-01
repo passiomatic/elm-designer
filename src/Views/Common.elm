@@ -1,4 +1,4 @@
-module Views.Common exposing (canDropInto, canDropSibling, widgetId, isDragging, none)
+module Views.Common exposing (canDropInto, canDropSibling, isDragging, none, widgetId)
 
 import Document exposing (DragId(..))
 import Html as H exposing (Html)
@@ -18,6 +18,9 @@ canDropInto container dragDrop =
                 Move node ->
                     Document.canDropInto container node
 
+                Drag node ->
+                    Document.canDropInto container node
+
                 Insert template ->
                     Document.canDropInto container (T.label template)
 
@@ -30,6 +33,9 @@ canDropSibling sibling dragDrop =
         Just dragId ->
             case dragId of
                 Move node ->
+                    Document.canDropSibling sibling node
+
+                Drag node ->
                     Document.canDropSibling sibling node
 
                 Insert template ->
@@ -155,7 +161,7 @@ widgetId field =
 
         ShadowBlurField ->
             "shadow-blur"
-        
+
         InsertDropdown ->
             "insert"
 

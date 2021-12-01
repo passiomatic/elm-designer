@@ -84,8 +84,8 @@ app.ports.setDragImage.subscribe(function (event) {
 
   var node = event.target.cloneNode(true);
 
-  // Add a "template" class for nodes already in the page
-  node.classList.add("template")
+  // Add a ghost class for nodes already in the page
+  node.classList.add("library__item-ghost")
   node.title=""
   node.style.position = "absolute"
   node.style.top = "-9999px"  

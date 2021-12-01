@@ -881,6 +881,25 @@ getDroppedNode model dragId position =
                 Nothing ->
                     ( model.seeds, Nothing, model.document.present )
 
+        Drag node ->
+            case Document.selectNodeWith node.id model.document.present of
+                Just zipper ->
+                    let 
+                        node2 = 
+                            Zipper.mapLabel
+                                (\node_ ->
+                                    { node_ | offsetX = position.x, offsetY = position.y }
+                                )  zipper
+                                |>  Zipper.tree
+
+                        newZipper =
+                            Document.removeNode zipper
+                    in
+                    ( model.seeds, Just node2, newZipper )
+
+                Nothing ->
+                    ( model.seeds, Nothing, model.document.present )
+
         Insert node ->
             let
                 ( newSeeds, newNode ) =

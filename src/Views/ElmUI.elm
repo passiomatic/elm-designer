@@ -219,7 +219,7 @@ renderPage ctx node selected children =
             let
                 newAttrs =
                     attrs
-                        |> makeDraggable (Move node)
+                        |> makeDraggable (Drag node)
                         |> makeFileDroppableIf (not <| Common.isDragging ctx.dragDrop) node.id
             in
             if List.isEmpty children then

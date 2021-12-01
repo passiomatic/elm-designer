@@ -179,6 +179,7 @@ type alias Node =
 
 type DragId
     = Move Node
+    | Drag Node
     | Insert (Tree Node)
 
 
