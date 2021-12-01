@@ -35,6 +35,8 @@
 
 .element--Page {
   border: 2px solid $border-color !important;
+  cursor: move;
+  cursor: grab; // Safari
 }
 
 // ----------------------
