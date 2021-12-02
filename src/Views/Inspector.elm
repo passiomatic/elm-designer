@@ -334,7 +334,7 @@ labelPositionView { position } model { type_ } =
             [ H.text "Position" ]
         , H.div [ A.class "col-9" ]
             [ Keyed.node "select"
-                [ onLabelPositionSelect LabelPositionChanged, A.class "custom-select custom-select-sm" ]
+                [ onLabelPositionSelect LabelPositionChanged, A.class "form-select form-select-sm" ]
                 (List.map
                     (\position_ ->
                         let
