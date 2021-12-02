@@ -282,6 +282,7 @@ textField theme =
                         , position = LabelAbove
                         }
                 , width = Layout.fill
+                , background = Background.solid theme.backgroundColor
                 , borderWidth = theme.borderWidth
                 , borderColor = theme.borderColor
                 , borderCorner = theme.borderCorner
@@ -307,6 +308,7 @@ textFieldMultiline theme =
                         , position = LabelAbove
                         }
                 , width = Layout.fill
+                , background = Background.solid theme.backgroundColor
                 , borderWidth = theme.borderWidth
                 , borderColor = theme.borderColor
                 , borderCorner = theme.borderCorner
