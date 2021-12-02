@@ -344,7 +344,7 @@ buttonHelper theme name border background =
                 , borderColor = border
                 , borderCorner = theme.borderCorner
                 , background = Solid background
-                , fontColor = Local (contrastColor background theme.textColor Palette.white)
+                , fontColor = Local (Theme.contrastColor background theme.textColor Palette.white)
                 , textAlignment = TextCenter
                 , type_ = ButtonNode { text = "Button Label" }
             }
@@ -412,16 +412,3 @@ option theme =
 baseTemplate =
     Document.baseTemplate
 
-
-{-| See <https://24ways.org/2010/calculating-color-contrast/>
--}
-contrastColor color dark light =
-    let
-        { red, green, blue, alpha } =
-            E.toRgb color
-    in
-    if ((red * 255 * 299) + (green * 255 * 587) + (blue * 255 * 114)) / 1000 > 150 then
-        dark
-
-    else
-        light
