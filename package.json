@@ -11,6 +11,7 @@
     "sass": "^1.43.4"
   },
   "dependencies": {
+    "balloon-css": "^1.2.0",
     "parcel-bundler": "1.12.3"
   },
   "scripts": {

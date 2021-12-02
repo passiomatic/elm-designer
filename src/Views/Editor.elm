@@ -146,20 +146,22 @@ headerView model =
             case model.mode of
                 DesignMode ->
                     H.button
-                        [ A.type_ "button"
-                        , A.class "btn btn-light btn-sm"
-                        , A.title "Start preview mode (P key)"
-                        , E.onClick (ModeChanged PreviewMode)
-                        ]
+                        ([ A.type_ "button"
+                         , A.class "btn btn-light btn-sm"
+                         , E.onClick (ModeChanged PreviewMode)
+                         ]
+                            |> Common.addTooltipDown "Start preview mode"
+                        )
                         [ Icons.play ]
 
                 PreviewMode ->
                     H.button
-                        [ A.type_ "button"
-                        , A.class "btn btn-light btn-sm"
-                        , A.title "Stop preview mode (Esc key)"
-                        , E.onClick (ModeChanged DesignMode)
-                        ]
+                        ([ A.type_ "button"
+                         , A.class "btn btn-light btn-sm"
+                         , E.onClick (ModeChanged DesignMode)
+                         ]
+                            |> Common.addTooltipDown "Stop preview mode"
+                        )
                         [ Icons.stop ]
     in
     H.header [ A.class "header d-flex justify-content-between align-items-center bp-2 border-bottom", A.style "gap" "1rem" ]
@@ -174,20 +176,22 @@ headerView model =
 undoRedoView model =
     H.div [ A.class "me-auto" ]
         [ H.button
-            [ A.type_ "button"
-            , A.class "btn btn-light btn-sm"
-            , A.title "Undo last change"
-            , A.disabled (not (UndoList.hasPast model.document))
-            , E.onClick Undo
-            ]
+            ([ A.type_ "button"
+             , A.class "btn btn-light btn-sm"
+             , A.disabled (not (UndoList.hasPast model.document))
+             , E.onClick Undo
+             ]
+                |> Common.addTooltipDown "Undo last change"
+            )
             [ Icons.cornerUpLeft ]
         , H.button
-            [ A.type_ "button"
-            , A.class "btn btn-light btn-sm"
-            , A.title "Redo last change"
-            , A.disabled (not (UndoList.hasFuture model.document))
-            , E.onClick Redo
-            ]
+            ([ A.type_ "button"
+             , A.class "btn btn-light btn-sm"
+             , A.disabled (not (UndoList.hasFuture model.document))
+             , E.onClick Redo
+             ]
+                |> Common.addTooltipDown "Redo last change"
+            )
             [ Icons.cornerUpRight ]
         ]
 
@@ -674,23 +678,23 @@ libraryView _ =
                                 [ H.h2 [ A.class "section__title mb-2" ]
                                     [ H.text head.group ]
                                 , H.div [ A.class "library d-flex flex-wrap" ]
-                                    (List.map templateView (head :: rest))
+                                    (List.map libraryItemView (head :: rest))
                                 ]
                         )
                )
         )
 
 
-templateView : LibraryItem Msg -> Html Msg
-templateView item =
+libraryItemView : LibraryItem Msg -> Html Msg
+libraryItemView item =
     let
         template =
             T.label item.root
     in
     H.div
         (A.class "library__item bp-2 d-flex mb-1"
-            :: A.title item.description
             :: DragDrop.draggable DragDropMsg (Insert item.root)
+            |> Common.addTooltipDown item.description
         )
         [ H.span [ A.class "me-1" ]
             [ item.icon ]

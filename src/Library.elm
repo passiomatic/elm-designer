@@ -293,7 +293,7 @@ textFieldMultiline : Theme -> LibraryItem msg
 textFieldMultiline theme =
     { icon = Icons.edit
     , group = formElementsLabel
-    , description = "Text field which resizes based on its contents"
+    , description = "Resizes based on its contents"
     , accelerator = ""
     , root =
         T.singleton

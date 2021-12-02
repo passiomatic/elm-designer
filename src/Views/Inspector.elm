@@ -26,7 +26,7 @@ import Style.Layout as Layout exposing (..)
 import Style.Theme as Theme
 import Tree as T exposing (Tree)
 import Tree.Zipper as Zipper exposing (Zipper)
-import Views.Common exposing (none, widgetId)
+import Views.Common as Common exposing (none, widgetId)
 
 
 view : Model -> List (Html Msg)
@@ -555,14 +555,15 @@ paddingView model { padding } =
                     [ A.class "w-50 text-center"
                     ]
                     [ H.button
-                        [ A.classList
+                        ([ A.classList
                             [ ( "btn btn-link", True )
                             , ( "text-dark", not padding.locked )
                             ]
-                        , E.onClick (PaddingLockChanged (not padding.locked))
-                        , A.title "Use a single padding for all directions"
-                        , A.type_ "button"
-                        ]
+                         , E.onClick (PaddingLockChanged (not padding.locked))
+                         , A.type_ "button"
+                         ]
+                            |> Common.addTooltipDown "Use a single padding for all directions"
+                        )
                         [ if padding.locked then
                             Icons.lock
 
@@ -966,14 +967,15 @@ bordersView model { borderColor, borderWidth, borderStyle, borderCorner } =
                         ]
                     , H.div [ A.class "w-50 text-center" ]
                         [ H.button
-                            [ A.classList
+                            ([ A.classList
                                 [ ( "btn btn-link", True )
                                 , ( "text-dark", not borderWidth.locked )
                                 ]
-                            , E.onClick (BorderLockChanged (not borderWidth.locked))
-                            , A.title "Use a single border for all directions"
-                            , A.type_ "button"
-                            ]
+                             , E.onClick (BorderLockChanged (not borderWidth.locked))
+                             , A.type_ "button"
+                             ]
+                                |> Common.addTooltipDown "Use a single border for all directions"
+                            )
                             [ if borderWidth.locked then
                                 Icons.lock
 
@@ -1793,13 +1795,16 @@ alignmentView model ({ offsetX, offsetY } as node) =
         , H.div [ A.class "col-9" ]
             [ H.div [ A.class "d-flex align-items-center mb-1" ]
                 [ alignmentView_ model node
-                , H.div [ A.class "w-33 ms-1" ]
+                , H.div
+                    ([ A.class "w-33 ms-1"
+                     ]
+                        |> Common.addTooltipLeft "Move right/left"
+                    )
                     [ H.input
                         [ A.id (widgetId OffsetXField)
                         , A.class "form-control form-control-sm text-center mx-auto"
                         , A.type_ "number"
                         , A.value offsetX_
-                        , A.title "Move right/left"
                         , E.onFocus (FieldEditingStarted OffsetXField offsetX_)
                         , E.onBlur FieldEditingFinished
                         , E.onInput FieldChanged
@@ -1807,13 +1812,16 @@ alignmentView model ({ offsetX, offsetY } as node) =
                         []
                     ]
                 ]
-            , H.div [ A.class "me-1" ]
+            , H.div
+                ([ A.class "me-1"
+                 ]
+                    |> Common.addTooltipDown "Move down/up"
+                )
                 [ H.input
                     [ A.id (widgetId OffsetYField)
                     , A.class "form-control form-control-sm text-center mx-auto w-33"
                     , A.type_ "number"
                     , A.value offsetY_
-                    , A.title "Move down/up"
                     , E.onFocus (FieldEditingStarted OffsetYField offsetY_)
                     , E.onBlur FieldEditingFinished
                     , E.onInput FieldChanged
@@ -1897,7 +1905,6 @@ alignmentView_ _ { alignmentX, alignmentY } =
                     , ( "align-on", alignmentY == Start || alignmentY == Center )
                     ]
                 , E.onClick (AlignmentYChanged nextAlignTop)
-                , A.title "Align top"
                 ]
                 [ Icons.pipe ]
             ]
@@ -1909,7 +1916,6 @@ alignmentView_ _ { alignmentX, alignmentY } =
                     , ( "align-on", alignmentX == Start || alignmentX == Center )
                     ]
                 , E.onClick (AlignmentXChanged nextAlignLeft)
-                , A.title "Align left"
                 ]
                 [ Icons.pipe ]
             , H.button
@@ -1927,7 +1933,6 @@ alignmentView_ _ { alignmentX, alignmentY } =
                     , ( "align-on", alignmentX == End || alignmentX == Center )
                     ]
                 , E.onClick (AlignmentXChanged nextAlignRight)
-                , A.title "Align right"
                 ]
                 [ Icons.pipe ]
             ]
@@ -1940,7 +1945,6 @@ alignmentView_ _ { alignmentX, alignmentY } =
                     , ( "align-on", alignmentY == End || alignmentY == Center )
                     ]
                 , E.onClick (AlignmentYChanged nextAlignBottom)
-                , A.title "Align bottom"
                 ]
                 [ Icons.pipe ]
             ]

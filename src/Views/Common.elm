@@ -1,10 +1,50 @@
-module Views.Common exposing (canDropInto, canDropSibling, isDragging, none, widgetId)
+module Views.Common exposing
+    ( addTooltipDown
+    , addTooltipLeft
+    , addTooltipRight
+    , addTooltipUp
+    , canDropInto
+    , canDropSibling
+    , isDragging
+    , none
+    , widgetId
+    )
 
 import Document exposing (DragId(..))
-import Html as H exposing (Html)
+import Html as H exposing (Attribute, Html)
+import Html.Attributes as A
 import Html5.DragDrop as DragDrop
-import Model exposing (Widget(..))
+import Model exposing (Msg, Widget(..))
 import Tree as T exposing (Tree)
+
+
+addTooltipUp =
+    addTooltip "up"
+
+
+addTooltipDown =
+    addTooltip "down"
+
+
+addTooltipLeft =
+    addTooltip "left"
+
+
+addTooltipRight =
+    addTooltip "right"
+
+
+addTooltip : String -> String -> List (Attribute Msg) -> List (Attribute Msg)
+addTooltip position text attrs =
+    if String.isEmpty text then
+        -- Do not create empty tooltip
+        attrs
+
+    else
+        A.attribute "aria-label" text
+            --:: A.attribute "data-balloon-length" "medium"
+            :: A.attribute "data-balloon-pos" position
+            :: attrs
 
 
 isDragging dragDrop =

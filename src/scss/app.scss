@@ -90,7 +90,7 @@ $box-shadow-sm: 0 1px 6px rgba($gray-500, 0.8);
 @import "bootstrap/close";
 //@import "bootstrap/toasts";
 @import "bootstrap/modal";
-@import "bootstrap/tooltip";
+//@import "bootstrap/tooltip";
 //@import "bootstrap/popover";
 //@import "bootstrap/carousel";
 @import "bootstrap/spinners";
@@ -103,6 +103,7 @@ $box-shadow-sm: 0 1px 6px rgba($gray-500, 0.8);
 @import "bootstrap/utilities/api";
 // scss-docs-end import-stack
 
+@import "~balloon-css/src/balloon";
 @import "utilities";
 @import "ui";
 @import "workspace";
