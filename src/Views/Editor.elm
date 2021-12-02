@@ -232,9 +232,7 @@ insertView model =
                 , ( "show", visible )
                 ]
             ]
-            (insertPageView selectedNode
-                :: dividerView
-                :: insertImageView selectedNode
+            (insertImageView selectedNode
                 :: dividerView
                 :: List.map
                     (insertItemView selectedNode)
@@ -260,22 +258,6 @@ insertImageView container =
             , E.onClick InsertImageClicked
             ]
             [ H.text "Image..." ]
-        ]
-
-
-insertPageView : Node -> Html Msg
-insertPageView container =
-    H.li []
-        [ H.button
-            [ A.classList
-                [ ( "dropdown-item", True )
-
-                --, ( "disabled", not (Document.canDropInto container { type_ = PageNode }) )
-                ]
-            , A.type_ "button"
-            , E.onClick InsertPageClicked
-            ]
-            [ H.text "Page" ]
         ]
 
 

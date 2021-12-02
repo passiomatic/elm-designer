@@ -79,7 +79,6 @@ type Msg
     | PresetSizeChanged String
     | WrapRowItemsChanged Bool
     | ClipboardCopyClicked
-    | InsertPageClicked
     | RemoveNodeClicked NodeId
     | InsertNodeClicked (Tree Node)
     | InsertImageClicked
