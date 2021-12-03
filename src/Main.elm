@@ -438,6 +438,9 @@ update msg model =
         LabelPositionChanged value ->
             applyChange model Document.applyLabelPosition value
 
+        LabelColorChanged value ->
+            applyChange model Document.applyLabelColor value
+
         FontWeightChanged value ->
             applyChange model Document.applyFontWeight value
 
@@ -661,6 +664,9 @@ updateField model =
         -- ###########
         EditingField LabelField newValue ->
             applyChange model Document.applyLabel newValue
+
+        EditingField LabelColorField newValue ->
+            applyChange model Document.applyLabelColor newValue
 
         -- ###########
         -- Width

@@ -81,7 +81,7 @@ module Document exposing
     , selectParentOf
     , viewports
     , workspaceHeight
-    , workspaceWidth
+    , workspaceWidth, applyLabelColor
     )
 
 import Css
@@ -328,6 +328,7 @@ type alias HeadingData =
 type alias LabelData =
     { text : String
     , position : LabelPosition
+    , color: Local Color 
     }
 
 
@@ -805,6 +806,55 @@ applyLabel value zipper =
         zipper
 
 
+applyLabelPosition : LabelPosition -> Zipper Node -> Zipper Node
+applyLabelPosition value zipper =
+    Zipper.mapLabel
+        (\node ->
+            case node.type_ of
+                TextFieldNode data ->
+                    { node | type_ = TextFieldNode (Input.setLabelPosition value data) }
+
+                TextFieldMultilineNode data ->
+                    { node | type_ = TextFieldNode (Input.setLabelPosition value data) }
+
+                CheckboxNode data ->
+                    { node | type_ = CheckboxNode (Input.setLabelPosition value data) }
+
+                RadioNode data ->
+                    { node | type_ = RadioNode (Input.setLabelPosition value data) }
+
+                _ ->
+                    node
+        )
+        zipper
+
+
+applyLabelColor : String -> Zipper Node -> Zipper Node
+applyLabelColor value zipper =
+    let
+        value_ =
+            Local (Css.stringToColor value)
+    in
+    Zipper.mapLabel
+        (\node ->
+            case node.type_ of
+                TextFieldNode data ->
+                    { node | type_ = TextFieldNode (Input.setLabelColor value_ data) }
+
+                TextFieldMultilineNode data ->
+                    { node | type_ = TextFieldNode (Input.setLabelColor value_ data) }
+
+                CheckboxNode data ->
+                    { node | type_ = CheckboxNode (Input.setLabelColor value_ data) }
+
+                RadioNode data ->
+                    { node | type_ = RadioNode (Input.setLabelColor value_ data) }
+
+                _ ->
+                    node
+        )
+        zipper
+
 
 -- applyImageSrc : String -> Zipper Node -> Zipper Node
 -- applyImageSrc value zipper =
@@ -1152,26 +1202,3 @@ applyShadowColor value zipper =
             Css.stringToColor value
     in
     Zipper.mapLabel (\node -> Shadow.setShadow (Shadow.setColor value_ node.shadow) node) zipper
-
-
-applyLabelPosition : LabelPosition -> Zipper Node -> Zipper Node
-applyLabelPosition value zipper =
-    Zipper.mapLabel
-        (\node ->
-            case node.type_ of
-                TextFieldNode data ->
-                    { node | type_ = TextFieldNode (Input.setLabelPosition value data) }
-
-                TextFieldMultilineNode data ->
-                    { node | type_ = TextFieldNode (Input.setLabelPosition value data) }
-
-                CheckboxNode data ->
-                    { node | type_ = CheckboxNode (Input.setLabelPosition value data) }
-
-                RadioNode data ->
-                    { node | type_ = RadioNode (Input.setLabelPosition value data) }
-
-                _ ->
-                    node
-        )
-        zipper

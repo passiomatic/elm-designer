@@ -466,8 +466,9 @@ emitTextField theme node label =
               , G.apply
                     [ emitLabelPosition label.position
                     , G.list
-                        [ G.apply [ G.fqFun fontModule "color", G.parens (emitColor theme.labelColor) ]
-                        ]
+                        ([]
+                            |> emitFontColor label.color
+                        )
                     , G.parens (G.apply [ G.fqFun elementModule "text", G.string label.text ])
                     ]
               )
@@ -492,8 +493,9 @@ emitTextFieldMultiline theme node label =
               , G.apply
                     [ emitLabelPosition label.position
                     , G.list
-                        [ G.apply [ G.fqFun fontModule "color", G.parens (emitColor theme.labelColor) ]
-                        ]
+                        ([]
+                            |> emitFontColor label.color
+                        )
                     , G.parens (G.apply [ G.fqFun elementModule "text", G.string label.text ])
                     ]
               )

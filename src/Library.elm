@@ -280,6 +280,7 @@ textField theme =
                     TextFieldNode
                         { text = "Label"
                         , position = LabelAbove
+                        , color = Inherit
                         }
                 , width = Layout.fill
                 , background = Background.solid theme.backgroundColor
@@ -306,6 +307,7 @@ textFieldMultiline theme =
                     TextFieldMultilineNode
                         { text = "Label"
                         , position = LabelAbove
+                        , color = Inherit
                         }
                 , width = Layout.fill
                 , background = Background.solid theme.backgroundColor
@@ -364,7 +366,12 @@ checkbox theme =
             { baseTemplate
                 | name = "Checkbox"
                 , spacing = Layout.spacingXY (Theme.xsmall theme) 0
-                , type_ = CheckboxNode { text = "Checkbox Label", position = LabelRight }
+                , type_ =
+                    CheckboxNode
+                        { text = "Checkbox Label"
+                        , position = LabelRight
+                        , color = Inherit
+                        }
             }
     }
 
@@ -380,7 +387,12 @@ radio theme =
             { baseTemplate
                 | name = "Radio Selection"
                 , spacing = Layout.spacingXY 0 (Theme.xsmall theme)
-                , type_ = RadioNode { text = "Radio Selection", position = LabelAbove }
+                , type_ =
+                    RadioNode
+                        { text = "Radio Selection"
+                        , position = LabelAbove
+                        , color = Inherit
+                        }
             }
             [ T.singleton
                 { baseTemplate
@@ -413,4 +425,3 @@ option theme =
 
 baseTemplate =
     Document.baseTemplate
-

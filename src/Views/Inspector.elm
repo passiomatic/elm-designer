@@ -137,6 +137,7 @@ resolveStyleViews model zipper =
                     [ sectionView "Label"
                         [ labelTextView label model node
                         , labelPositionView label model node
+                        , labelColorView label model zipper
                         , spacingYView model node
                         ]
                     , sectionView "Layout"
@@ -159,6 +160,7 @@ resolveStyleViews model zipper =
                     [ sectionView "Label"
                         [ labelTextView label model node
                         , labelPositionView label model node
+                        , labelColorView label model zipper                        
                         , spacingYView model node
                         ]
                     , sectionView "Layout"
@@ -321,6 +323,23 @@ labelTextView { text } model { type_ } =
                 []
             ]
         ]
+
+
+labelColorView : { a | color : Local Color } -> Model -> Zipper Node -> Html Msg
+labelColorView { color } model zipper =
+    let
+        theme =
+            Theme.defaultTheme
+
+        resolvedFontColor =
+            case color of
+                Local value ->
+                    value
+
+                Inherit ->
+                    Document.resolveInheritedFontColor theme.textColor zipper
+    in
+    colorView model (Just resolvedFontColor) LabelColorField LabelColorChanged
 
 
 labelPositionView : { a | position : LabelPosition } -> Model -> Node -> Html Msg

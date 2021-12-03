@@ -70,6 +70,7 @@ type Msg
     | BorderStyleChanged BorderStyle
     | ShadowColorChanged String
     | LabelPositionChanged LabelPosition
+    | LabelColorChanged String
     | FieldEditingStarted Widget String
     | FieldEditingConfirmed
     | FieldEditingFinished
@@ -132,6 +133,7 @@ type Widget
     | BorderBottomRightCornerField
     | BorderBottomLeftCornerField
     | LabelField
+    | LabelColorField
     | OffsetXField
     | OffsetYField
     | WidthMinField

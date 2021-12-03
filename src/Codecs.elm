@@ -658,6 +658,7 @@ labelCodec =
     Codec.object LabelData
         |> Codec.field "text" .text Codec.string
         |> Codec.field "position" .position labelPositionCodec
+        |> Codec.field "color" .color (localCodec colorCodec)
         |> Codec.buildObject
 
 

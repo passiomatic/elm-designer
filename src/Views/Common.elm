@@ -157,6 +157,9 @@ widgetId field =
         LabelField ->
             "label"
 
+        LabelColorField ->
+            "label-color"
+
         OffsetXField ->
             "offset-x"
 

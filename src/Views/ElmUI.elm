@@ -345,13 +345,16 @@ renderTextField ctx node selected label =
                     -- Deactivate field while in design mode
                     E.htmlAttribute (A.readonly (ctx.mode == DesignMode))
                         :: attrs
+
+                labelAttrs =
+                    applyFontColor label.color []
             in
             Input.text
                 newAttrs
                 { onChange = \_ -> NoOp
                 , text = ""
                 , placeholder = Nothing
-                , label = labelPosition label.position [ Font.color ctx.theme.labelColor ] label.text
+                , label = labelPosition label.position labelAttrs label.text
                 }
     in
     wrapElement ctx node selected renderer
@@ -367,6 +370,9 @@ renderTextFieldMultiline ctx node selected label =
                     -- Deactivate field while in design mode
                     E.htmlAttribute (A.readonly (ctx.mode == DesignMode))
                         :: attrs
+
+                labelAttrs =
+                    applyFontColor label.color []
             in
             Input.multiline
                 newAttrs
@@ -374,8 +380,7 @@ renderTextFieldMultiline ctx node selected label =
                 , text = ""
                 , placeholder = Nothing
                 , spellcheck = False
-                , label =
-                    labelPosition label.position [ Font.color ctx.theme.labelColor ] label.text
+                , label = labelPosition label.position labelAttrs label.text
                 }
     in
     wrapElement ctx node selected renderer
