@@ -33,6 +33,7 @@ module Document exposing
     , applyHeightMin
     , applyHeightWith
     , applyLabel
+    , applyLabelColor
     , applyLabelPosition
     , applyLetterSpacing
     , applyOffset
@@ -81,7 +82,7 @@ module Document exposing
     , selectParentOf
     , viewports
     , workspaceHeight
-    , workspaceWidth, applyLabelColor
+    , workspaceWidth
     )
 
 import Css
@@ -328,7 +329,7 @@ type alias HeadingData =
 type alias LabelData =
     { text : String
     , position : LabelPosition
-    , color: Local Color 
+    , color : Local Color
     }
 
 
@@ -407,8 +408,9 @@ defaultDocument seeds index =
 emptyPage : Theme -> Tree Node
 emptyPage theme =
     let
-        (width, height, _ )= defaultDeviceInfo
-    in 
+        ( width, height, _ ) =
+            defaultDeviceInfo
+    in
     T.singleton
         { baseTemplate
             | type_ = PageNode
@@ -451,19 +453,47 @@ type Viewport
 
 deviceInfo =
     Dict.fromList
-        [ ( "Galaxy S5", ( 360, 640, Portrait ) )
-        , ( "iPhone 5/SE", ( 320, 568, Portrait ) )
-        , ( "iPhone 6/7/8", defaultDeviceInfo )
-        , ( "iPhone 6/7/8 Plus", ( 414, 736, Portrait ) )
-        , ( "iPhone X", ( 375, 812, Portrait ) )
-        , ( "iPad", ( 768, 1024, Portrait ) )
+        [ ( "Android", ( 360, 640, Portrait ) )
+        , ( "Pixel 3", ( 411, 823, Portrait ) )
+        , ( "Pixel 3 XL", ( 411, 846, Portrait ) )
+        , ( "Pixel 4", ( 411, 869, Portrait ) )
+        , ( "Pixel 4 XL", ( 411, 869, Portrait ) )
+        , ( "Galaxy S10", ( 360, 760, Portrait ) )
+        , ( "Galaxy S10+", ( 412, 869, Portrait ) )
+        , ( "Galaxy S10 Lite", ( 412, 914, Portrait ) )
+
+        -- Android tablet
+        , ( "Nexus 7", ( 600, 690, Portrait ) )
+        , ( "Nexus 9", ( 768, 1024, Portrait ) )
+        , ( "Nexus 10", ( 800, 1280, Portrait ) )
+        , ( "Pixel Slate", ( 1333, 888, Portrait ) )
+        , ( "Pixelbook", ( 1200, 800, Portrait ) )
+
+        -- Apple
+        , ( "iPhone SE", ( 320, 568, Portrait ) )
+        , ( "iPhone 8", defaultDeviceInfo )
+        , ( "iPhone 8 Plus", ( 414, 736, Portrait ) )
+        , ( "iPhone 11 Pro", ( 375, 812, Portrait ) )
+        , ( "iPhone 11", ( 414, 896, Portrait ) )
+        , ( "iPhone 11 Pro Max", ( 414, 896, Portrait ) )
+        , ( "iPhone 12", ( 390, 844, Portrait ) )
+        , ( "iPhone 12 Pro", ( 390, 844, Portrait ) )
+        , ( "iPhone 12 Pro Max", ( 428, 926, Portrait ) )
+        , ( "iPad mini 7.9\" ", ( 768, 1024, Portrait ) )
+        , ( "iPad 10.2\"", ( 810, 1080, Portrait ) )
+        , ( "iPad Air 10.5\"", ( 834, 1112, Portrait ) )
+        , ( "iPad Air 10.9\" ", ( 840, 1180, Portrait ) )
+        , ( "iPad Pro 11\"", ( 834, 1194, Portrait ) )
         , ( "iPad Pro 12.9\"", ( 1024, 1366, Portrait ) )
-        , ( "Surface Duo", ( 540, 720, Portrait ) )
-        , ( "MacBook Pro 13\"", ( 1440, 900, Landscape ) )
+        , ( "Apple TV", ( 1920, 1080, Landscape ) )
+
+        -- Desktop
+        , ( "Desktop", ( 1024, 1024, Landscape ) )
+        , ( "Desktop HD", ( 1440, 1024, Landscape ) )
         ]
 
 
-{-| Default is iPhone 6/7/8
+{-| Default is iPhone 8
 -}
 defaultDeviceInfo =
     ( 375, 667, Portrait )
@@ -858,6 +888,7 @@ applyLabelColor value zipper =
                     node
         )
         zipper
+
 
 
 -- applyImageSrc : String -> Zipper Node -> Zipper Node
