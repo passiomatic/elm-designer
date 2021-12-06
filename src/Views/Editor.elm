@@ -437,7 +437,7 @@ outlineView model =
         tree =
             Zipper.toTree model.document.present
     in
-    H.div [ A.class "bp-3 scroll-y border-bottom flex-grow-1" ]
+    H.div [ A.class "bp-3 scroll-y border-bottom flex-grow-1", A.style "flex-basis" "0" ]
         [ T.restructure identity (outlineItemView model) tree
         ]
 
@@ -650,7 +650,7 @@ isCollapsed model node =
 
 libraryView : Model -> Html Msg
 libraryView _ =
-    H.div [ A.class "bp-3 scroll-y", A.style "height" "350px", A.style "min-height" "350px" ]
+    H.div [ A.class "bp-3 scroll-y flex-grow-1", A.style "flex-basis" "0" ]
         (H.div [ A.class "fw-500" ]
             [ H.text "Library" ]
             :: (Library.groups
