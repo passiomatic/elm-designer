@@ -406,12 +406,16 @@ defaultDocument seeds index =
 
 emptyPage : Theme -> Tree Node
 emptyPage theme =
+    let
+        (width, height, _ )= defaultDeviceInfo
+    in 
     T.singleton
         { baseTemplate
             | type_ = PageNode
             , name = "Page"
-            , width = Layout.px 375
-            , heightMin = Just 667
+            , width = Layout.px width
+            , height = Layout.unspecified
+            , heightMin = Just height
             , fontFamily = Local theme.textFontFamily
             , fontColor = Local theme.textColor
             , fontSize = Local theme.textSize
