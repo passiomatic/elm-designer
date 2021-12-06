@@ -603,8 +603,8 @@ emitStyles node attrs =
         |> emitTextAlign node.textAlignment
         |> emitAlignX node.alignmentX
         |> emitAlignY node.alignmentY
-        |> emitOffsetX node.offsetX
-        |> emitOffsetY node.offsetY
+        |> emitOffsetX node
+        |> emitOffsetY node
         |> emitRotation node.rotation
         |> emitScale node.scale
         |> emitBackground node
@@ -629,28 +629,40 @@ emitShadow value attrs =
             :: attrs
 
 
-emitOffsetX : Float -> List Expression -> List Expression
-emitOffsetX value attrs =
-    if value < 0 then
-        G.apply [ G.fqFun elementModule "moveLeft", G.float (abs value) ] :: attrs
+emitOffsetX : Node -> List Expression -> List Expression
+emitOffsetX node attrs =
+    case node.type_ of
+        PageNode ->
+            -- Offsets are used to render page on workspace, do no emit
+            attrs
 
-    else if value > 0 then
-        G.apply [ G.fqFun elementModule "moveRight", G.float value ] :: attrs
+        _ ->
+            if node.offsetX < 0 then
+                G.apply [ G.fqFun elementModule "moveLeft", G.float (abs node.offsetX) ] :: attrs
 
-    else
-        attrs
+            else if node.offsetX > 0 then
+                G.apply [ G.fqFun elementModule "moveRight", G.float node.offsetX ] :: attrs
+
+            else
+                attrs
 
 
-emitOffsetY : Float -> List Expression -> List Expression
-emitOffsetY value attrs =
-    if value < 0 then
-        G.apply [ G.fqFun elementModule "moveUp", G.float (abs value) ] :: attrs
+emitOffsetY : Node -> List Expression -> List Expression
+emitOffsetY node attrs =
+    case node.type_ of
+        PageNode ->
+            -- Offsets are used to render page on workspace, do no emit
+            attrs
 
-    else if value > 0 then
-        G.apply [ G.fqFun elementModule "moveDown", G.float value ] :: attrs
+        _ ->
+            if node.offsetY < 0 then
+                G.apply [ G.fqFun elementModule "moveUp", G.float (abs node.offsetY) ] :: attrs
 
-    else
-        attrs
+            else if node.offsetY > 0 then
+                G.apply [ G.fqFun elementModule "moveDown", G.float node.offsetY ] :: attrs
+
+            else
+                attrs
 
 
 emitRotation : Float -> List Expression -> List Expression
@@ -1108,7 +1120,7 @@ emitBackground node attrs =
                 TextFieldMultilineNode _ ->
                     emitBackgroundColor Palette.transparent :: attrs
 
-                _ -> 
+                _ ->
                     attrs
 
 
