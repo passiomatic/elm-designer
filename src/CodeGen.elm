@@ -5,7 +5,7 @@ module CodeGen exposing (backgroundModule, emit)
 
 import Document exposing (..)
 import Element exposing (Color)
-import Elm.CodeGen as G exposing (Expression)
+import Elm.CodeGen as G exposing (Declaration, Expression)
 import Elm.Pretty
 import Palette
 import Pretty
@@ -23,6 +23,7 @@ import Tree as T exposing (Tree)
 
 type EmittedNode
     = EmittedNode Position Expression
+    | EmittedDeclaration Declaration
 
 
 debugModule =
@@ -89,28 +90,28 @@ emit theme viewport tree =
                 ]
 
         decls =
-            [ emitView theme viewport tree
-            , msgs
-            , emitUpdate
-            , G.valDecl
-                Nothing
-                Nothing
-                "init"
-                G.unit
-            , G.valDecl
-                Nothing
-                Nothing
-                "main"
-                (G.apply
-                    [ G.fqFun browserModule "sandbox"
-                    , G.record
-                        [ ( "init", G.val "init" )
-                        , ( "view", G.val "view" )
-                        , ( "update", G.val "update" )
-                        ]
-                    ]
-                )
-            ]
+            emitView theme viewport tree
+                ++ [ msgs
+                   , emitUpdate
+                   , G.valDecl
+                        Nothing
+                        Nothing
+                        "init"
+                        G.unit
+                   , G.valDecl
+                        Nothing
+                        Nothing
+                        "main"
+                        (G.apply
+                            [ G.fqFun browserModule "sandbox"
+                            , G.record
+                                [ ( "init", G.val "init" )
+                                , ( "view", G.val "view" )
+                                , ( "update", G.val "update" )
+                                ]
+                            ]
+                        )
+                   ]
 
         comments =
             [ emitFontComment tree
@@ -123,45 +124,53 @@ emit theme viewport tree =
         |> Pretty.pretty 80
 
 
+emitView : Theme -> Viewport -> Tree Node -> List Declaration
 emitView theme viewport tree =
     let
-        emitMaxWidth =
-            case viewport of
-                DeviceModel name ->
-                    let
-                        ( w, _, _ ) =
-                            Document.findDeviceInfo name
-                    in
-                    [ G.apply
-                        [ G.fqFun elementModule "width"
-                        , G.parens
-                            (G.pipe (G.fqFun elementModule "fill")
-                                [ G.apply [ G.fqFun elementModule "maximum", G.int w ]
-                                ]
-                            )
-                        ]
-                    ]
-
-                _ ->
-                    []
+        root =
+            T.restructure identity (emitNode theme) tree
     in
-    G.funDecl
-        Nothing
-        Nothing
-        "view"
-        [ G.varPattern "model"
-        ]
-        (G.apply
-            [ G.fqFun elementModule "layout"
-            , G.list
-                emitMaxWidth
-            , G.parens (root (T.restructure identity (emitNode theme) tree))
+    case root of
+        EmittedDeclaration decl ->
+            [ decl ]
+
+        EmittedNode _ expr ->
+            let
+                -- TODO use page information instead
+                emitMaxWidth =
+                    case viewport of
+                        DeviceModel name ->
+                            let
+                                ( w, _, _ ) =
+                                    Document.findDeviceInfo name
+                            in
+                            [ G.apply
+                                [ G.fqFun elementModule "width"
+                                , G.parens
+                                    (G.pipe (G.fqFun elementModule "fill")
+                                        [ G.apply [ G.fqFun elementModule "maximum", G.int w ]
+                                        ]
+                                    )
+                                ]
+                            ]
+
+                        _ ->
+                            []
+            in
+            [ G.funDecl
+                Nothing
+                Nothing
+                "view"
+                [ G.varPattern "model"
+                ]
+                (G.apply
+                    [ G.fqFun elementModule "layout"
+                    , G.list
+                        emitMaxWidth
+                    , G.parens expr
+                    ]
+                )
             ]
-        )
-
-
-root (EmittedNode _ node) =
-    node
 
 
 emitUpdate =
@@ -243,70 +252,77 @@ emitFontLinks tree =
 
 emitNode : Theme -> Node -> List EmittedNode -> EmittedNode
 emitNode theme node children =
-    (case node.type_ of
+    case node.type_ of
+        -- TODO use emitDocument instead
         DocumentNode ->
-            emitPage node children
+            emitPage node children |> EmittedDeclaration
 
-        -- TODO
         PageNode ->
-            emitPage node children
+            emitPage node children |> EmittedDeclaration
 
         ParagraphNode data ->
-            emitParagraph node data
+            emitParagraph node data |> EmittedNode node.position
 
         TextNode data ->
-            emitText node data
+            emitText node data |> EmittedNode node.position
 
         ImageNode image ->
-            emitImage node image
+            emitImage node image |> EmittedNode node.position
 
         HeadingNode data ->
-            emitHeading node data
+            emitHeading node data |> EmittedNode node.position
 
         ColumnNode ->
-            emitColumn node children
+            emitColumn node children |> EmittedNode node.position
 
         TextColumnNode ->
-            emitTextColumn node children
+            emitTextColumn node children |> EmittedNode node.position
 
         RowNode data ->
-            emitRow node data children
+            emitRow node data children |> EmittedNode node.position
 
         ButtonNode data ->
-            emitButton node data
+            emitButton node data |> EmittedNode node.position
 
         CheckboxNode data ->
-            emitCheckbox theme node data
+            emitCheckbox theme node data |> EmittedNode node.position
 
         TextFieldNode data ->
-            emitTextField theme node data
+            emitTextField theme node data |> EmittedNode node.position
 
         TextFieldMultilineNode data ->
-            emitTextFieldMultiline theme node data
+            emitTextFieldMultiline theme node data |> EmittedNode node.position
 
         RadioNode data ->
-            emitRadio theme node data children
+            emitRadio theme node data children |> EmittedNode node.position
 
         OptionNode data ->
-            emitOption node data
-    )
-        |> EmittedNode node.position
+            emitOption node data |> EmittedNode node.position
 
 
-emitPage : Node -> List EmittedNode -> Expression
+
+-- emitDocument : Node -> List EmittedNode -> Expression
+-- emitDocument node children =
+--     let
+--         emitter (EmittedNode _ child) =
+--             emitLink "#some-name" child.name
+--     in
+--     G.apply
+--         [ G.fqFun elementModule "column"
+--         , G.list []
+--         , G.list  (List.map emitter children)
+--         ]
+
+
+emitPage : Node -> List EmittedNode -> Declaration
 emitPage node children =
-    let
-        emitter attrs children_ =
-            G.apply
-                [ G.fqFun elementModule "column"
-                , G.list
-                    (attrs
-                        |> emitStyles node
-                    )
-                , G.list children_
-                ]
-    in
-    addChildrenFor emitter children
+    G.funDecl
+        Nothing
+        Nothing
+        (String.toLower node.name ++ "View")
+        [ G.varPattern "model"
+        ]
+        (emitColumn node children)
 
 
 emitColumn : Node -> List EmittedNode -> Expression
@@ -1157,6 +1173,17 @@ emitLabelPosition position =
 -- HELPERS
 
 
+emitLink url label =
+    G.apply
+        [ G.fqFun elementModule "link"
+        , G.list []
+        , G.record
+            [ ( "url", G.string url )
+            , ( "label", G.apply [ G.fqFun elementModule "text", G.string label ] )
+            ]
+        ]
+
+
 addChildrenFor emitter children =
     let
         ( newAttrs, newChildren ) =
@@ -1175,65 +1202,70 @@ addChild :
     -> List Expression
     -> List Expression
     -> ( List Expression, List Expression )
-addChild (EmittedNode position child) attrs siblings =
-    case position of
-        Above ->
-            ( G.apply
-                [ G.fqFun elementModule "above"
-                , G.parens child
-                ]
-                :: attrs
-            , siblings
-            )
+addChild node attrs siblings =
+    case node of
+        EmittedNode position child ->
+            case position of
+                Above ->
+                    ( G.apply
+                        [ G.fqFun elementModule "above"
+                        , G.parens child
+                        ]
+                        :: attrs
+                    , siblings
+                    )
 
-        Below ->
-            ( G.apply
-                [ G.fqFun elementModule "below"
-                , G.parens child
-                ]
-                :: attrs
-            , siblings
-            )
+                Below ->
+                    ( G.apply
+                        [ G.fqFun elementModule "below"
+                        , G.parens child
+                        ]
+                        :: attrs
+                    , siblings
+                    )
 
-        OnStart ->
-            ( G.apply
-                [ G.fqFun elementModule "onLeft"
-                , G.parens child
-                ]
-                :: attrs
-            , siblings
-            )
+                OnStart ->
+                    ( G.apply
+                        [ G.fqFun elementModule "onLeft"
+                        , G.parens child
+                        ]
+                        :: attrs
+                    , siblings
+                    )
 
-        OnEnd ->
-            ( G.apply
-                [ G.fqFun elementModule "onRight"
-                , G.parens child
-                ]
-                :: attrs
-            , siblings
-            )
+                OnEnd ->
+                    ( G.apply
+                        [ G.fqFun elementModule "onRight"
+                        , G.parens child
+                        ]
+                        :: attrs
+                    , siblings
+                    )
 
-        InFront ->
-            ( G.apply
-                [ G.fqFun elementModule "inFront"
-                , G.parens child
-                ]
-                :: attrs
-            , siblings
-            )
+                InFront ->
+                    ( G.apply
+                        [ G.fqFun elementModule "inFront"
+                        , G.parens child
+                        ]
+                        :: attrs
+                    , siblings
+                    )
 
-        BehindContent ->
-            ( G.apply
-                [ G.fqFun elementModule "behindContent"
-                , G.parens child
-                ]
-                :: attrs
-            , siblings
-            )
+                BehindContent ->
+                    ( G.apply
+                        [ G.fqFun elementModule "behindContent"
+                        , G.parens child
+                        ]
+                        :: attrs
+                    , siblings
+                    )
 
-        Normal ->
-            -- Do not reverse children list
-            ( attrs, siblings ++ [ child ] )
+                Normal ->
+                    -- Do not reverse children list
+                    ( attrs, siblings ++ [ child ] )
+
+        EmittedDeclaration _ ->
+            ( attrs, siblings )
 
 
 clipIf pred attrs =
