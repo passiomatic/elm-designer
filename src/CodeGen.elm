@@ -7,6 +7,7 @@ import Document exposing (..)
 import Element exposing (Color)
 import Elm.CodeGen as G exposing (Expression)
 import Elm.Pretty
+import Palette
 import Pretty
 import Set exposing (Set)
 import String exposing (trim)
@@ -606,7 +607,7 @@ emitStyles node attrs =
         |> emitOffsetY node.offsetY
         |> emitRotation node.rotation
         |> emitScale node.scale
-        |> emitBackground node.background
+        |> emitBackground node
         |> emitShadow node.shadow
 
 
@@ -1089,22 +1090,34 @@ emitTextAlign value attrs =
             G.apply [ G.fqFun fontModule "justify" ] :: attrs
 
 
-emitBackground : Background -> List Expression -> List Expression
-emitBackground value attrs =
-    case value of
+emitBackground : Node -> List Expression -> List Expression
+emitBackground node attrs =
+    case node.background of
         Background.Image value_ ->
             G.apply [ G.fqFun backgroundModule "image", G.string value_ ] :: attrs
 
         Background.Solid value_ ->
-            G.apply
-                [ G.fqFun backgroundModule "color"
-                , G.parens
-                    (emitColor value_)
-                ]
-                :: attrs
+            emitBackgroundColor value_ :: attrs
 
         Background.None ->
-            attrs
+            case node.type_ of
+                -- Override Elm UI defauls for text fields
+                TextFieldNode _ ->
+                    emitBackgroundColor Palette.transparent :: attrs
+
+                TextFieldMultilineNode _ ->
+                    emitBackgroundColor Palette.transparent :: attrs
+
+                _ -> 
+                    attrs
+
+
+emitBackgroundColor color =
+    G.apply
+        [ G.fqFun backgroundModule "color"
+        , G.parens
+            (emitColor color)
+        ]
 
 
 emitLabelPosition : LabelPosition -> Expression

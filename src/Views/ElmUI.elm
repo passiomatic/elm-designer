@@ -823,7 +823,8 @@ applyBackground value attrs =
             Background.color value_ :: attrs
 
         Background.None ->
-            attrs
+            -- Always set a value to override Elm UI defaults
+             Background.color Palette.transparent :: attrs
 
 
 forceBackgroundColor value attrs =
