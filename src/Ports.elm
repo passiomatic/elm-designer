@@ -32,7 +32,7 @@ port selectText : String -> Cmd msg
 port setFontLinks : List String -> Cmd msg
 
 
-port setDragImage : Value -> Cmd msg
+port setDragImage : { event : Value, width : Int, height : Int } -> Cmd msg
 
 
 port showNotification :
@@ -40,6 +40,8 @@ port showNotification :
     , message : String
     }
     -> Cmd msg
+
+
 
 -- PORTS IN
 

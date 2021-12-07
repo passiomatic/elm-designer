@@ -177,7 +177,12 @@ type alias Node =
     , type_ : NodeType
     }
 
-
+{-| What's being dragged. 
+    
+    - Move is used to rearrage elements in the outlive view
+    - Drag is used while dragging elements (only pages for now) on the workspace
+    - Insert is used when dragging library elements into the workspace
+-}
 type DragId
     = Move Node
     | Drag Node

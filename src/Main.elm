@@ -522,12 +522,13 @@ update msg model =
                         UndoList.new newDocument model.document
 
                     else
+                        -- Replace current document
                         UndoList.mapPresent (\_ -> newDocument) model.document
                 , seeds = newSeeds
                 , saveState = Changed model.currentTime
               }
             , DragDrop.getDragstartEvent msg_
-                |> Maybe.map (.event >> Ports.setDragImage)
+                |> Maybe.map setDragImage
                 |> Maybe.withDefault Cmd.none
             )
 
@@ -643,6 +644,34 @@ update msg model =
 
         _ ->
             ( model, Cmd.none )
+
+
+setDragImage dragStart =
+    case dragStart.dragId of
+        Drag node ->
+            let
+                -- TODO Check node.widthMin as a fallback
+                width =
+                    case node.width of
+                        Px value ->
+                            value
+
+                        _ ->
+                            999
+
+                height =
+                    case node.heightMin of
+                        Just value ->
+                            value
+
+                        _ ->
+                            999
+            in
+            Ports.setDragImage { event = dragStart.event, width = width, height = height }
+
+        _ ->    
+            -- Use intrisct dimensions
+            Ports.setDragImage { event = dragStart.event, width = 0, height = 0 }
 
 
 minWorkspaceScale =
