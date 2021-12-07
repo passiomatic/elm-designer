@@ -13,6 +13,7 @@ import File exposing (File)
 import File.Select as Select
 import Fonts
 import Html5.DragDrop as DragDrop
+import DragDrop2 
 import Http exposing (Progress(..))
 import Imgbb
 import Json.Decode as Decode exposing (Decoder, Value)
@@ -500,18 +501,23 @@ update msg model =
                         Just ( dragId, dropId, position ) ->
                             let
                                 ( newSeeds_, maybeNode, newZipper ) =
-                                    getDroppedNode model dragId { x = toFloat position.x, y = toFloat position.y }
+                                    DragDrop2.getDroppedNode model dragId { x = toFloat position.x, y = toFloat position.y }
 
-                                --_ = Debug.log "Position->" position
+                                _ =
+                                    Debug.log "Final Position->" position
                             in
                             case maybeNode of
                                 Just node ->
-                                    ( newSeeds_, addDroppedNode model dropId node newZipper, True )
+                                    ( newSeeds_, DragDrop2.addDroppedNode model dropId node newZipper, True )
 
                                 Nothing ->
                                     ( model.seeds, model.document.present, False )
 
                         Nothing ->
+                            -- let
+                            --     _ =
+                            --         Debug.log "DroppablePosition->" (DragDrop.getDroppablePosition newDragDrop)
+                            -- in
                             -- Still going/failed drag and drop operation
                             ( model.seeds, model.document.present, False )
             in
@@ -528,7 +534,7 @@ update msg model =
                 , saveState = Changed model.currentTime
               }
             , DragDrop.getDragstartEvent msg_
-                |> Maybe.map setDragImage
+                |> Maybe.map DragDrop2.setDragImage
                 |> Maybe.withDefault Cmd.none
             )
 
@@ -644,34 +650,6 @@ update msg model =
 
         _ ->
             ( model, Cmd.none )
-
-
-setDragImage dragStart =
-    case dragStart.dragId of
-        Drag node ->
-            let
-                -- TODO Check node.widthMin as a fallback
-                width =
-                    case node.width of
-                        Px value ->
-                            value
-
-                        _ ->
-                            999
-
-                height =
-                    case node.heightMin of
-                        Just value ->
-                            value
-
-                        _ ->
-                            999
-            in
-            Ports.setDragImage { event = dragStart.event, width = width, height = height }
-
-        _ ->    
-            -- Use intrisct dimensions
-            Ports.setDragImage { event = dragStart.event, width = 0, height = 0 }
 
 
 minWorkspaceScale =
@@ -889,85 +867,8 @@ updateField model =
             ( model, Cmd.none )
 
 
-{-| Figure out _what_ user just dropped.
--}
-getDroppedNode : Model -> DragId -> { x : Float, y : Float } -> ( Seeds, Maybe (Tree Node), Zipper Node )
-getDroppedNode model dragId position =
-    case dragId of
-        Move node ->
-            case Document.selectNodeWith node.id model.document.present of
-                Just zipper ->
-                    if model.isAltDown then
-                        -- Duplicate node
-                        let
-                            ( newSeeds, newNode ) =
-                                Document.duplicateNode zipper model.seeds
-                        in
-                        ( newSeeds, Just newNode, zipper )
-
-                    else
-                        -- Move node
-                        let
-                            newZipper =
-                                Document.removeNode zipper
-                        in
-                        ( model.seeds, Just (Zipper.tree zipper), newZipper )
-
-                Nothing ->
-                    ( model.seeds, Nothing, model.document.present )
-
-        Drag node ->
-            case Document.selectNodeWith node.id model.document.present of
-                Just zipper ->
-                    let
-                        -- Update node at new position
-                        newNode =
-                            Zipper.mapLabel
-                                (\node_ ->
-                                    { node_
-                                        | offsetX = position.x
-                                        , offsetY = position.y
-                                    }
-                                )
-                                zipper
-                                |> Zipper.tree
-
-                        newZipper =
-                            Document.removeNode zipper
-                    in
-                    ( model.seeds, Just newNode, newZipper )
-
-                Nothing ->
-                    ( model.seeds, Nothing, model.document.present )
-
-        Insert node ->
-            let
-                ( newSeeds, newNode ) =
-                    Document.fromTemplateAt position node model.seeds
-            in
-            ( newSeeds, Just newNode, model.document.present )
 
 
-{-| Figure out _where_ user just dropped the node.
--}
-addDroppedNode model dropId node zipper =
-    case dropId of
-        -- Insert new element just before the sibling
-        InsertBefore siblingId ->
-            Document.insertNodeBefore siblingId node zipper
-
-        -- Insert new element just after the sibling
-        InsertAfter siblingId ->
-            Document.insertNodeAfter siblingId node zipper
-
-        -- Add new element as last child
-        AppendTo parentId ->
-            case Document.selectNodeWith parentId zipper of
-                Just zipper_ ->
-                    Document.appendNode node zipper_
-
-                Nothing ->
-                    zipper
 
 
 removeNode model zipper =

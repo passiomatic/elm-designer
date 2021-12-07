@@ -74,10 +74,11 @@ app.ports.selectText.subscribe(function (id) {
 // * https://transitory.technology/set-drag-image/
 //
 app.ports.setDragImage.subscribe(function (payload) {
+  console.log("setDragImage "+ payload.event)
   // FF compatibility
   payload.event.dataTransfer.setData("text", "");
 
-  var node = payload.event.target.cloneNode(true);
+  var node = payload.event.target.cloneNode(false);
   
   node.title = "";
   node.style.position = "absolute";
