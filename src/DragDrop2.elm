@@ -104,7 +104,7 @@ setDragImage dragStart =
                 _ =
                     Debug.log "DragEvent" (Decode.decodeValue dragEventDecoder dragStart.event)
 
-                -- TODO Check node.widthMin as a fallback
+                -- TODO Check node.widthMin as fallback
                 width =
                     case node.width of
                         Px value ->
@@ -121,11 +121,11 @@ setDragImage dragStart =
                         _ ->
                             999
             in
-            Ports.setDragImage { event = dragStart.event, width = width, height = height }
+            Ports.setDragImage { event = dragStart.event, width = Just width, height = Just height }
 
         _ ->
             -- Use intrisct dimensions
-            Ports.setDragImage { event = dragStart.event, width = 0, height = 0 }
+            Ports.setDragImage { event = dragStart.event, width = Nothing, height = Nothing }
 
 
 type alias DragEvent =

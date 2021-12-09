@@ -8,12 +8,12 @@ import Codecs
 import ContextMenu exposing (ContextMenu)
 import Dict exposing (Dict)
 import Document exposing (DragId(..), DropId(..), Node, Viewport(..))
+import DragDrop2
 import Env
 import File exposing (File)
 import File.Select as Select
 import Fonts
 import Html5.DragDrop as DragDrop
-import DragDrop2 
 import Http exposing (Progress(..))
 import Imgbb
 import Json.Decode as Decode exposing (Decoder, Value)
@@ -865,10 +865,6 @@ updateField model =
 
         _ ->
             ( model, Cmd.none )
-
-
-
-
 
 
 removeNode model zipper =

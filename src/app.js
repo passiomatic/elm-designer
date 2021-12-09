@@ -74,22 +74,23 @@ app.ports.selectText.subscribe(function (id) {
 // * https://transitory.technology/set-drag-image/
 //
 app.ports.setDragImage.subscribe(function (payload) {
-  console.log("setDragImage "+ payload.event)
+  //console.log(payload.event)
   // FF compatibility
   payload.event.dataTransfer.setData("text", "");
 
-  var node = payload.event.target.cloneNode(false);
-  
-  node.title = "";
-  node.style.position = "absolute";
-  node.style.top = "-9999px";
-  if (payload.width > 0 && payload.height > 0) {
+  var node = null;
+  if (payload.width && payload.height) {
+    node = payload.event.target.cloneNode(false);
     node.style.width = payload.width + "px";
     node.style.height = payload.height + "px";
   } else {
+    node = payload.event.target.cloneNode(true);
     // Don't add a ghost class for pages already in the workspace
     node.classList.add("library__item-ghost");
   }
+  node.title = "";
+  node.style.position = "absolute";
+  node.style.top = "-9999px";
   document.body.appendChild(node);
 
   var clientRect = payload.event.target.getBoundingClientRect();
