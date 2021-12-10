@@ -1087,7 +1087,7 @@ borderStyleView model borderStyle =
             [ H.div [ A.class "btn-group w-100", A.attribute "role" "group" ]
                 [ H.button
                     [ A.classList
-                        [ ( "btn btn-outline-secondary btn-sm", True )
+                        [ ( "btn btn-secondary btn-sm", True )
                         , ( "active", Border.isSolid borderStyle )
                         ]
                     , E.onClick (BorderStyleChanged Solid)
@@ -1096,7 +1096,7 @@ borderStyleView model borderStyle =
                     [ H.text "Solid" ]
                 , H.button
                     [ A.classList
-                        [ ( "btn btn-outline-secondary btn-sm", True )
+                        [ ( "btn btn-secondary btn-sm", True )
                         , ( "active", Border.isDashed borderStyle )
                         ]
                     , E.onClick (BorderStyleChanged Dashed)
@@ -1105,7 +1105,7 @@ borderStyleView model borderStyle =
                     [ H.text "Dashed" ]
                 , H.button
                     [ A.classList
-                        [ ( "btn btn-outline-secondary btn-sm", True )
+                        [ ( "btn btn-secondary btn-sm", True )
                         , ( "active", Border.isDotted borderStyle )
                         ]
                     , E.onClick (BorderStyleChanged Dotted)
@@ -1209,7 +1209,7 @@ backgroundView model { background } =
         , H.div [ A.class "btn-group w-100 mb-2", A.attribute "role" "group" ]
             [ H.button
                 [ A.classList
-                    [ ( "btn btn-outline-secondary btn-sm", True )
+                    [ ( "btn btn-secondary btn-sm", True )
                     , ( "active", Background.isNone background )
                     ]
                 , E.onClick (BackgroundChanged Background.None)
@@ -1218,7 +1218,7 @@ backgroundView model { background } =
                 [ H.text "None" ]
             , H.button
                 [ A.classList
-                    [ ( "btn btn-outline-secondary btn-sm", True )
+                    [ ( "btn btn-secondary btn-sm", True )
                     , ( "active", Background.isSolid background )
                     ]
                 , E.onClick (BackgroundChanged (Background.Solid Palette.white))
@@ -1227,7 +1227,7 @@ backgroundView model { background } =
                 [ H.text "Color" ]
             , H.button
                 [ A.classList
-                    [ ( "btn btn-outline-secondary btn-sm", True )
+                    [ ( "btn btn-secondary btn-sm", True )
                     , ( "active", Background.isImage background )
                     ]
                 , E.onClick (BackgroundChanged (Background.Image ""))
@@ -1450,7 +1450,7 @@ widthView model { width, widthMin, widthMax } =
             [ H.div [ A.class "btn-group w-100 mb-1", A.attribute "role" "group" ]
                 [ H.button
                     [ A.classList
-                        [ ( "btn btn-outline-secondary btn-sm", True )
+                        [ ( "btn btn-secondary btn-sm", True )
                         , ( "active", isContent width )
                         ]
                     , E.onClick (WidthChanged Layout.fit)
@@ -1461,7 +1461,7 @@ widthView model { width, widthMin, widthMax } =
                     Fill value ->
                         H.button
                             [ A.classList
-                                [ ( "btn btn-outline-secondary btn-sm", True )
+                                [ ( "btn btn-secondary btn-sm", True )
                                 , ( "active", True )
                                 ]
                             , E.onClick (WidthChanged (Layout.portion value))
@@ -1472,7 +1472,7 @@ widthView model { width, widthMin, widthMax } =
                     _ ->
                         H.button
                             [ A.classList
-                                [ ( "btn btn-outline-secondary btn-sm", True )
+                                [ ( "btn btn-secondary btn-sm", True )
                                 ]
                             , E.onClick (WidthChanged Layout.fill)
                             , A.type_ "button"
@@ -1482,7 +1482,7 @@ widthView model { width, widthMin, widthMax } =
                     Px value ->
                         H.button
                             [ A.classList
-                                [ ( "btn btn-outline-secondary btn-sm", True )
+                                [ ( "btn btn-secondary btn-sm", True )
                                 , ( "active", isPxOrUnspecified width )
                                 ]
                             , E.onClick (WidthChanged (Layout.px value))
@@ -1493,7 +1493,7 @@ widthView model { width, widthMin, widthMax } =
                     _ ->
                         H.button
                             [ A.classList
-                                [ ( "btn btn-outline-secondary btn-sm", True )
+                                [ ( "btn btn-secondary btn-sm", True )
                                 , ( "active", isPxOrUnspecified width )
                                 ]
                             , E.onClick (WidthChanged Layout.unspecified)
@@ -1650,7 +1650,7 @@ heightView model { height, heightMin, heightMax } =
                 [ H.div [ A.class "btn-group w-100 mb-1", A.attribute "role" "group" ]
                     [ H.button
                         [ A.classList
-                            [ ( "btn btn-outline-secondary btn-sm", True )
+                            [ ( "btn btn-secondary btn-sm", True )
                             , ( "active", isContent height )
                             ]
                         , E.onClick (HeightChanged Layout.fit)
@@ -1661,7 +1661,7 @@ heightView model { height, heightMin, heightMax } =
                         Fill value ->
                             H.button
                                 [ A.classList
-                                    [ ( "btn btn-outline-secondary btn-sm", True )
+                                    [ ( "btn btn-secondary btn-sm", True )
                                     , ( "active", True )
                                     ]
                                 , E.onClick (HeightChanged (Layout.portion value))
@@ -1672,7 +1672,7 @@ heightView model { height, heightMin, heightMax } =
                         _ ->
                             H.button
                                 [ A.classList
-                                    [ ( "btn btn-outline-secondary btn-sm", True )
+                                    [ ( "btn btn-secondary btn-sm", True )
                                     ]
                                 , E.onClick (HeightChanged Layout.fill)
                                 , A.type_ "button"
@@ -1682,7 +1682,7 @@ heightView model { height, heightMin, heightMax } =
                         Px value ->
                             H.button
                                 [ A.classList
-                                    [ ( "btn btn-outline-secondary btn-sm", True )
+                                    [ ( "btn btn-secondary btn-sm", True )
                                     , ( "active", isPxOrUnspecified height )
                                     ]
                                 , E.onClick (HeightChanged (Layout.px value))
@@ -1693,7 +1693,7 @@ heightView model { height, heightMin, heightMax } =
                         _ ->
                             H.button
                                 [ A.classList
-                                    [ ( "btn btn-outline-secondary btn-sm", True )
+                                    [ ( "btn btn-secondary btn-sm", True )
                                     , ( "active", isPxOrUnspecified height )
                                     ]
                                 , E.onClick (HeightChanged Layout.unspecified)
@@ -2064,7 +2064,7 @@ textAlignmentView _ value =
         , H.div [ A.class "col-9 btn-group", A.attribute "role" "group" ]
             [ H.button
                 [ A.classList
-                    [ ( "btn btn-outline-secondary btn-sm w-25", True )
+                    [ ( "btn btn-secondary btn-sm w-25", True )
                     , ( "active", value == TextStart )
                     ]
                 , E.onClick (TextAlignChanged TextStart)
@@ -2073,7 +2073,7 @@ textAlignmentView _ value =
                 [ Icons.alignLeft ]
             , H.button
                 [ A.classList
-                    [ ( "btn btn-outline-secondary btn-sm w-25", True )
+                    [ ( "btn btn-secondary btn-sm w-25", True )
                     , ( "active", value == TextCenter )
                     ]
                 , E.onClick (TextAlignChanged TextCenter)
@@ -2082,7 +2082,7 @@ textAlignmentView _ value =
                 [ Icons.alignCenter ]
             , H.button
                 [ A.classList
-                    [ ( "btn btn-outline-secondary btn-sm w-25", True )
+                    [ ( "btn btn-secondary btn-sm w-25", True )
                     , ( "active", value == TextEnd )
                     ]
                 , E.onClick (TextAlignChanged TextEnd)
@@ -2091,7 +2091,7 @@ textAlignmentView _ value =
                 [ Icons.alignRight ]
             , H.button
                 [ A.classList
-                    [ ( "btn btn-outline-secondary btn-sm w-25", True )
+                    [ ( "btn btn-secondary btn-sm w-25", True )
                     , ( "active", value == TextJustify )
                     ]
                 , E.onClick (TextAlignChanged TextJustify)

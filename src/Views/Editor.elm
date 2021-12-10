@@ -147,7 +147,7 @@ headerView model =
                 DesignMode ->
                     H.button
                         ([ A.type_ "button"
-                         , A.class "btn btn-light btn-sm"
+                         , A.class "btn btn-secondary btn-sm"
                          , E.onClick (ModeChanged PreviewMode)
                          ]
                             |> Common.addTooltipDown "Start preview mode"
@@ -157,7 +157,7 @@ headerView model =
                 PreviewMode ->
                     H.button
                         ([ A.type_ "button"
-                         , A.class "btn btn-light btn-sm"
+                         , A.class "btn btn-secondary btn-sm"
                          , E.onClick (ModeChanged DesignMode)
                          ]
                             |> Common.addTooltipDown "Stop preview mode"
@@ -174,10 +174,10 @@ headerView model =
 
 
 undoRedoView model =
-    H.div [ A.class "me-auto" ]
+    H.div [ A.class "me-auto btn-group" ]
         [ H.button
             ([ A.type_ "button"
-             , A.class "btn btn-light btn-sm"
+             , A.class "btn btn-secondary btn-sm"
              , A.disabled (not (UndoList.hasPast model.document))
              , E.onClick Undo
              ]
@@ -186,7 +186,7 @@ undoRedoView model =
             [ Icons.cornerUpLeft ]
         , H.button
             ([ A.type_ "button"
-             , A.class "btn btn-light btn-sm"
+             , A.class "btn btn-secondary btn-sm"
              , A.disabled (not (UndoList.hasFuture model.document))
              , E.onClick Redo
              ]
@@ -213,7 +213,7 @@ insertView model =
         [ A.class "dropdown"
         ]
         [ H.button
-            [ A.class "btn btn-light btn-sm dropdown-toggle"
+            [ A.class "btn btn-secondary btn-sm dropdown-toggle"
             , A.type_ "button"
             , E.onClick
                 (DropDownChanged
