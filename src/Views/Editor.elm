@@ -579,7 +579,9 @@ emptyDocumentNotice model node =
             ]
             :: makeDroppableIf (Common.canDropInto node model.dragDrop) (AppendTo node.id) []
         )
-        []
+        [ H.div [ A.class "large fw-bold" ] [ H.text "Workspace is empty" ]
+        , H.text "Start adding pages."
+        ]
 
 
 treeLabel node =
