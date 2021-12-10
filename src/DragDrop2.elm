@@ -101,8 +101,8 @@ setDragImage dragStart =
     case dragStart.dragId of
         Drag node ->
             let
-                _ =
-                    Debug.log "DragEvent" (Decode.decodeValue dragEventDecoder dragStart.event)
+                -- _ =
+                --     Debug.log "DragEvent" (Decode.decodeValue dragEventDecoder dragStart.event)
 
                 -- TODO Check node.widthMin as fallback
                 width =

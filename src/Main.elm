@@ -44,11 +44,6 @@ saveInterval =
 appName =
     "Elm Designer"
 
-
-appVersion =
-    ( 0, 4, 0 )
-
-
 init : Flags -> ( Model, Cmd Msg )
 init flags =
     let
@@ -503,8 +498,8 @@ update msg model =
                                 ( newSeeds_, maybeNode, newZipper ) =
                                     DragDrop2.getDroppedNode model dragId { x = toFloat position.x, y = toFloat position.y }
 
-                                _ =
-                                    Debug.log "Final Position->" position
+                                -- _ =
+                                --     Debug.log "Final Position->" position
                             in
                             case maybeNode of
                                 Just node ->
