@@ -167,8 +167,8 @@ headerView model =
     H.header [ A.class "header d-flex justify-content-between align-items-center bp-2 border-bottom", A.style "gap" "1rem" ]
         [ insertView model
         , undoRedoView model
-        , zoomView model
 
+        --, zoomView model
         --, modeButton
         ]
 
