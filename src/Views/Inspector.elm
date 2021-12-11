@@ -705,7 +705,6 @@ addDropdown widgetId_ state items parent =
                 Hidden ->
                     False
     in
-    -- FIXME: https://getbootstrap.com/docs/5.0/forms/input-group/
     H.div [ A.class "input-group" ]
         [ parent
         , H.div
@@ -717,9 +716,8 @@ addDropdown widgetId_ state items parent =
             ]
             items
         , H.button
-            [ --A.attribute "aria-expanded" "false"
-              A.attribute "aria-haspopup" "true"
-            , A.class "btn btn-light btn-sm dropdown-toggle"
+            [ A.attribute "aria-haspopup" "true"
+            , A.class "btn btn-outline-secondary btn-sm dropdown-toggle"
             , E.onClick
                 (DropDownChanged
                     (if visible then
@@ -733,7 +731,7 @@ addDropdown widgetId_ state items parent =
             --, A.attribute "data-toggle" "dropdown"
             , A.type_ "button"
             ]
-            [ H.text "" ]
+            [ H.span [ A.class "visually-hidden" ]  [ H.text "Pick a font size" ] ]
         ]
 
 

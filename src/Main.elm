@@ -556,12 +556,10 @@ update msg model =
                     removeNode model model.document.present
 
                 -- ############
-                -- Toggle preview/design mode
-                -- ############
-                -- ( False, "p", NotEdited ) ->
-                --     ( { model | mode = PreviewMode }, Cmd.none )
+                -- Close any dropdown
+                -- ############                    
                 ( False, "Escape", NotEdited ) ->
-                    ( { model | mode = DesignMode }, Cmd.none )
+                    ( { model | dropDownState = Hidden }, Cmd.none )
 
                 -- ############
                 -- Stop field and inline editing
