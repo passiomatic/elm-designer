@@ -115,6 +115,7 @@ type alias Document =
     { schemaVersion : Int
     , lastUpdatedOn : Posix
     , root : Tree Node
+    , selectedNodeId : NodeId
     , viewport : Viewport
     , collapsedTreeItems : Set String
     }

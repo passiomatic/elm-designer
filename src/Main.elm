@@ -9,6 +9,7 @@ import ContextMenu exposing (ContextMenu)
 import Dict exposing (Dict)
 import Document exposing (DragId(..), DropId(..), Node, Viewport(..))
 import DragDrop2
+import Element exposing (Orientation(..))
 import Env
 import File exposing (File)
 import File.Select as Select
@@ -26,6 +27,7 @@ import Style.Font as Font exposing (..)
 import Style.Layout as Layout exposing (..)
 import Style.Shadow as Shadow exposing (Shadow, ShadowType(..))
 import Style.Theme as Theme exposing (Theme)
+import Svg.Attributes exposing (orientation)
 import Task
 import Time
 import Time.Extra as Time exposing (Interval(..))
@@ -35,8 +37,6 @@ import UUID exposing (Seeds)
 import UndoList
 import Views.Common as Common
 import Views.Editor as Editor
-import Svg.Attributes exposing (orientation)
-import Element exposing (Orientation(..))
 
 
 saveInterval =
@@ -45,6 +45,7 @@ saveInterval =
 
 appName =
     "Elm Designer"
+
 
 init : Flags -> ( Model, Cmd Msg )
 init flags =
@@ -217,6 +218,7 @@ update msg model =
                                         { schemaVersion = Document.schemaVersion
                                         , lastUpdatedOn = now
                                         , root = Zipper.toTree model.document.present
+                                        , selectedNodeId = Zipper.label model.document.present |> .id
                                         , viewport = model.viewport
                                         , collapsedTreeItems = model.collapsedTreeItems
                                         }
@@ -245,7 +247,6 @@ update msg model =
                     Document.findDeviceInfo name
             in
             applyChange model Document.apply (\node -> { node | width = Layout.px width, heightMin = Just height })
-
 
         InsertNodeClicked template ->
             let
@@ -293,8 +294,18 @@ update msg model =
         DocumentLoaded value ->
             case Codecs.fromString value of
                 Ok document ->
-                    ( { model
-                        | document = UndoList.mapPresent (\_ -> Zipper.fromTree document.root) model.document
+                    let
+                        zipper =
+                            Zipper.fromTree document.root
+
+                        -- FIXME: Avoid zipper _and_ newZipper
+                        newZipper =
+                            zipper
+                                |> Document.selectNodeWith document.selectedNodeId
+                                |> Maybe.withDefault zipper
+                    in
+                    ( { model                        
+                        | document = UndoList.fresh newZipper
                         , viewport = document.viewport
                         , saveState = Original
                       }
@@ -560,7 +571,7 @@ update msg model =
 
                 -- ############
                 -- Close any dropdown
-                -- ############                    
+                -- ############
                 ( False, "Escape", NotEdited ) ->
                     ( { model | dropDownState = Hidden }, Cmd.none )
 

@@ -53,6 +53,7 @@ documentCodec =
         |> Codec.field "schemaVersion" .schemaVersion Codec.int
         |> Codec.field "lastUpdatedOn" .lastUpdatedOn timeCodec
         |> Codec.field "root" .root (treeCodec nodeCodec)
+        |> Codec.field "selectedNodeId" .selectedNodeId nodeIdCodec
         |> Codec.field "viewport" .viewport viewportCodec
         |> Codec.field "collapsedTreeItems" .collapsedTreeItems setCodec
         |> Codec.buildObject
