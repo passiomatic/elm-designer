@@ -14,10 +14,10 @@ Images added to the page are automatically uploaded to [Imgbb][imgbb] servers an
 
 By uploading images and referencing them by URL sidesteps a number of issues like: huge serialized JSON files, hit `localStorage` quota limits, and dealing with clumsy generated code.
 
-## Known issues
+## Limitations
 
+- UI is still pretty crude since the app is in an exploratory phase and I'm trying out different ideas.
 - Color picker is quite limited at the moment since Elm Designer is using HTML 5 `input type=color`. Specifically you can't reset a color or specify `inherit`. See [#1][issue1]
-- "Insert" menu allows to create non-renderable nodes. See [#20][issue20]
 
 ## Build Elm Designer from sources
 
@@ -38,8 +38,6 @@ Then the build process will create a `Env.imgbbApiKey` value.
 [2]: https://parceljs.org
 [d]: https://github.com/passiomatic/elm-designer/releases/tag/v0.3.0
 [issue1]: https://github.com/passiomatic/elm-designer/issues/1 
-[issue2]: https://github.com/passiomatic/elm-designer/issues/2 
-[issue20]: https://github.com/passiomatic/elm-designer/issues/20
 [elmui]: https://github.com/mdgriffith/elm-ui
 [r]: https://github.com/passiomatic/elm-designer/releases
 [api]: https://api.imgbb.com
