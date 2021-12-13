@@ -135,28 +135,27 @@ emitView theme viewport tree =
             [ decl ]
 
         EmittedNode _ expr ->
-            let
-                -- TODO use page information instead
-                emitMaxWidth =
-                    case viewport of
-                        DeviceModel name ->
-                            let
-                                ( w, _, _ ) =
-                                    Document.findDeviceInfo name
-                            in
-                            [ G.apply
-                                [ G.fqFun elementModule "width"
-                                , G.parens
-                                    (G.pipe (G.fqFun elementModule "fill")
-                                        [ G.apply [ G.fqFun elementModule "maximum", G.int w ]
-                                        ]
-                                    )
-                                ]
-                            ]
+            -- let
+            --     emitMaxWidth =
+            --         case viewport of
+            --             DeviceModel name ->
+            --                 let
+            --                     ( w, _, _ ) =
+            --                         Document.findDeviceInfo name
+            --                 in
+            --                 [ G.apply
+            --                     [ G.fqFun elementModule "width"
+            --                     , G.parens
+            --                         (G.pipe (G.fqFun elementModule "fill")
+            --                             [ G.apply [ G.fqFun elementModule "maximum", G.int w ]
+            --                             ]
+            --                         )
+            --                     ]
+            --                 ]
 
-                        _ ->
-                            []
-            in
+            --             _ ->
+            --                 []
+            -- in
             [ G.funDecl
                 Nothing
                 Nothing
@@ -165,8 +164,8 @@ emitView theme viewport tree =
                 ]
                 (G.apply
                     [ G.fqFun elementModule "layout"
-                    , G.list
-                        emitMaxWidth
+                    , G.list []
+                        --emitMaxWidth
                     , G.parens expr
                     ]
                 )
