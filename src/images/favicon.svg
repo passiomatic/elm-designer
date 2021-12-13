@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="74px" height="74px" viewBox="0 0 74 74" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>SVG Icon</title>
+    <g id="SVG-Icon" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="Horse" transform="translate(34.260108, 39.000000) rotate(-8.000000) translate(-34.260108, -39.000000) translate(-3.000000, 11.000000)" fill="#3C4A6E" fill-rule="nonzero">
+            <polygon id="Path" transform="translate(65.609892, 32.627312) rotate(-146.000000) translate(-65.609892, -32.627312) " points="65.6124744 36.6341391 73.655046 28.6255577 57.5647373 28.6204846"></polygon>
+            <polygon id="Path" transform="translate(11.602483, 32.704374) scale(-1, 1) rotate(-132.000000) translate(-11.602483, -32.704374) " points="-1.24436141 28.6590442 6.85332444 36.7437548 24.4493276 36.7497047 16.3515267 28.664994"></polygon>
+            <polygon id="Rectangle" transform="translate(54.999441, 12.986008) rotate(34.000000) translate(-54.999441, -12.986008) " points="48.7705586 6.70786109 61.2244045 6.83145467 61.2283234 19.2641547 48.8552111 19.2602536"></polygon>
+            <polygon id="Path" transform="translate(63.320386, 9.632162) rotate(-10.500000) translate(-63.320386, -9.632162) " points="71.5784177 17.8974529 71.5804313 1.36687067 55.0603402 1.36888427"></polygon>
+            <polygon id="Path" transform="translate(25.171680, 25.261949) rotate(-146.000000) translate(-25.171680, -25.261949) " points="33.9411425 25.2673618 16.4022173 7.68800983 16.4132963 42.8358875"></polygon>
+            <polygon id="Path" transform="translate(25.506401, 47.603765) rotate(-11.000000) translate(-25.506401, -47.603765) " points="21.6103291 47.6046997 29.400488 55.3998301 29.4024734 39.8076991"></polygon>
+            <polygon id="Path" transform="translate(45.886010, 23.400436) rotate(-11.000000) translate(-45.886010, -23.400436) " points="45.8881862 14.6287436 28.319849 32.1721291 63.4521714 32.1676528"></polygon>
+        </g>
+    </g>
+</svg>
