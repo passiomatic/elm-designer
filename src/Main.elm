@@ -35,6 +35,8 @@ import UUID exposing (Seeds)
 import UndoList
 import Views.Common as Common
 import Views.Editor as Editor
+import Svg.Attributes exposing (orientation)
+import Element exposing (Orientation(..))
 
 
 saveInterval =
@@ -239,10 +241,11 @@ update msg model =
 
         PresetSizeChanged name ->
             let
-                ( w, h, _ ) =
+                ( width, height, _ ) =
                     Document.findDeviceInfo name
             in
-            applyChange model Document.apply (\node -> { node | width = Layout.px w, heightMin = Just h })
+            applyChange model Document.apply (\node -> { node | width = Layout.px width, heightMin = Just height })
+
 
         InsertNodeClicked template ->
             let

@@ -731,7 +731,7 @@ addDropdown widgetId_ state items parent =
             --, A.attribute "data-toggle" "dropdown"
             , A.type_ "button"
             ]
-            [ H.span [ A.class "visually-hidden" ]  [ H.text "Pick a font size" ] ]
+            [ H.span [ A.class "visually-hidden" ] [ H.text "Pick a font size" ] ]
         ]
 
 
@@ -1356,49 +1356,52 @@ lengthView model node =
 pageLengthView : Model -> Node -> Html Msg
 pageLengthView model node =
     H.div [ A.class "mb-3" ]
-        [ presetSizeView model
+        [ presetSizeView model node
         , pageWidthView model node
         , pageHeightView model node
         ]
 
 
-presetSizeView : Model -> Html Msg
-presetSizeView model =
+presetSizeView : Model -> Node -> Html Msg
+presetSizeView model node =
     H.div [ A.class "row align-items-center mb-2" ]
         [ H.label [ A.class "col-3 col-form-label-sm m-0" ]
             [ H.text "Preset" ]
         , H.div [ A.class "col-9" ]
             [ H.select [ E.onInput PresetSizeChanged, A.class "form-select form-select-sm" ]
-                (Dict.values
-                    (Dict.map
-                        (\name ( width, height, _ ) ->
-                            let
-                                label =
-                                    name
-                                        ++ Entity.ensp
-                                        ++ String.fromInt width
-                                        ++ Entity.times
-                                        ++ String.fromInt height
-                                        ++ "px"
-
-                                -- Custom w h _ ->
-                                --     "Custom"
-                                --         ++ " "
-                                --         ++ Entity.mdash
-                                --         ++ " "
-                                --         ++ String.fromInt w
-                                --         ++ Entity.times
-                                --         ++ String.fromInt h
-                                --         ++ " px"
-                            in
-                            H.option [ A.value name ]
-                                [ H.text label ]
+                (H.option [] [ H.text "Custom" ]
+                    :: Dict.values
+                        (Dict.map
+                            (\name ( width, height, orientation ) ->
+                                let
+                                    label =
+                                        name
+                                            ++ Entity.ensp
+                                            ++ String.fromInt width
+                                            ++ Entity.times
+                                            ++ String.fromInt height
+                                            ++ "px"
+                                            ++ Entity.ensp
+                                            ++ orientationLabel orientation
+                                in
+                                H.option [ A.selected (node.width == Px width && node.heightMin == Just height), A.value name ]
+                                    [ H.text label ]
+                            )
+                            Document.deviceInfo
                         )
-                        Document.deviceInfo
-                    )
                 )
             ]
         ]
+
+
+orientationLabel : Orientation -> String
+orientationLabel value =
+    case value of
+        Portrait ->
+            "Portrait"
+
+        Landscape ->
+            "Landscape"
 
 
 wrapRowOptionView : Bool -> Html Msg
@@ -1567,14 +1570,13 @@ pageWidthView model { width, widthMin, widthMax } =
                     Maybe.map String.fromInt widthMin
                         |> Maybe.withDefault ""
 
-        max =
-            case model.inspector of
-                EditingField WidthMaxField new ->
-                    new
-
-                _ ->
-                    Maybe.map String.fromInt widthMax
-                        |> Maybe.withDefault ""
+        -- max =
+        --     case model.inspector of
+        --         EditingField WidthMaxField new ->
+        --             new
+        --         _ ->
+        --             Maybe.map String.fromInt widthMax
+        --                 |> Maybe.withDefault ""
     in
     H.div [ A.class "row align-items-center mb-3" ]
         [ H.label [ A.class "col-3 col-form-label-sm m-0" ]
@@ -1594,7 +1596,8 @@ pageWidthView model { width, widthMin, widthMax } =
                         in
                         [ numericFieldView WidthPxField "Exact" value_
                         , numericFieldView WidthMinField "Min." min
-                        , numericFieldView WidthMaxField "Max." max
+
+                        --, numericFieldView WidthMaxField "Max." max
                         ]
 
                     Unspecified ->
@@ -1609,7 +1612,8 @@ pageWidthView model { width, widthMin, widthMax } =
                         in
                         [ numericFieldView WidthPxField "Exact" value_
                         , numericFieldView WidthMinField "Min." min
-                        , numericFieldView WidthMaxField "Max." max
+
+                        --, numericFieldView WidthMaxField "Max." max
                         ]
 
                     _ ->
@@ -1768,14 +1772,13 @@ pageHeightView model { height, heightMin, heightMax } =
                     Maybe.map String.fromInt heightMin
                         |> Maybe.withDefault ""
 
-        max =
-            case model.inspector of
-                EditingField HeightMaxField new ->
-                    new
-
-                _ ->
-                    Maybe.map String.fromInt heightMax
-                        |> Maybe.withDefault ""
+        -- max =
+        --     case model.inspector of
+        --         EditingField HeightMaxField new ->
+        --             new
+        --         _ ->
+        --             Maybe.map String.fromInt heightMax
+        --                 |> Maybe.withDefault ""
     in
     H.div []
         [ H.div [ A.class "row align-items-center  mb-3" ]
@@ -1796,7 +1799,8 @@ pageHeightView model { height, heightMin, heightMax } =
                             in
                             [ numericFieldView HeightPxField "Exact" value_
                             , numericFieldView HeightMinField "Min." min
-                            , numericFieldView HeightMaxField "Max." max
+
+                            --, numericFieldView HeightMaxField "Max." max
                             ]
 
                         Unspecified ->
@@ -1811,7 +1815,8 @@ pageHeightView model { height, heightMin, heightMax } =
                             in
                             [ numericFieldView HeightPxField "Exact" value_
                             , numericFieldView HeightMinField "Min." min
-                            , numericFieldView HeightMaxField "Max." max
+
+                            --, numericFieldView HeightMaxField "Max." max
                             ]
 
                         _ ->
