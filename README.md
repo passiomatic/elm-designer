@@ -25,9 +25,13 @@ Elm Designer uses [Parcel][2] to compile Elm and SASS source. To install all the
 
     npm ci 
 
-If you need to edit the source files the `package.json` contains a bunch on script entries which automate the most common operations. To run Elm Design locally in dev mode type:
+To run it locally in dev mode type
 
     npm run dev
+
+or if your prefer to turn off the Elm debugger type
+
+    npm run dev-no-debug
 
 **Note**: you will need a valid [Imgbb API][api] key to be able to upload images. API access is free and requires only to sign up to the service. Once you get the API key set the `IMGBB_API_KEY` environment variable or create a `.env` file in the repo root containing such key:
 
