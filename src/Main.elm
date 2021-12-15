@@ -304,7 +304,7 @@ update msg model =
                                 |> Document.selectNodeWith document.selectedNodeId
                                 |> Maybe.withDefault zipper
                     in
-                    ( { model                        
+                    ( { model
                         | document = UndoList.fresh newZipper
                         , viewport = document.viewport
                         , saveState = Original
@@ -502,6 +502,15 @@ update msg model =
 
         DragDropMsg msg_ ->
             let
+                dragEvent =
+                    DragDrop.getDragstartEvent msg_
+                        |> Maybe.map DragDrop2.dragEvent
+                        |> Maybe.andThen
+                            (\event ->
+                                event
+                            )
+                        |> Maybe.withDefault { offsetX = model.dragOffsetX, offsetY = model.dragOffsetY }
+
                 ( newDragDrop, dragDropResult ) =
                     DragDrop.update msg_ model.dragDrop
 
@@ -510,7 +519,11 @@ update msg model =
                         Just ( dragId, dropId, position ) ->
                             let
                                 ( newSeeds_, maybeNode, newZipper ) =
-                                    DragDrop2.getDroppedNode model dragId { x = toFloat position.x, y = toFloat position.y }
+                                    DragDrop2.getDroppedNode model
+                                        dragId
+                                        { x = toFloat position.x - toFloat model.dragOffsetX
+                                        , y = toFloat position.y - toFloat model.dragOffsetY
+                                        }
 
                                 -- _ =
                                 --     Debug.log "Final Position->" position
@@ -525,7 +538,7 @@ update msg model =
                         Nothing ->
                             -- let
                             --     _ =
-                            --         Debug.log "DroppablePosition->" (DragDrop.getDroppablePosition newDragDrop)
+                            --         DragDrop2.dragEvent (DragDrop.getDragstartEvent msg_)
                             -- in
                             -- Still going/failed drag and drop operation
                             ( model.seeds, model.document.present, False )
@@ -541,6 +554,8 @@ update msg model =
                         UndoList.mapPresent (\_ -> newDocument) model.document
                 , seeds = newSeeds
                 , saveState = Changed model.currentTime
+                , dragOffsetX = dragEvent.offsetX
+                , dragOffsetY = dragEvent.offsetY
               }
             , DragDrop.getDragstartEvent msg_
                 |> Maybe.map DragDrop2.setDragImage

@@ -1,11 +1,11 @@
-module DragDrop2 exposing (addDroppedNode, getDroppedNode, setDragImage)
+module DragDrop2 exposing (addDroppedNode, dragEvent, getDroppedNode, setDragImage)
 
 {-| Drag and drop helpers.
 -}
 
 --import Html5.DragDrop as DragDrop
 
-import Document exposing (DragId(..), DropId(..), Node)
+import Document exposing (DragEvent, DragId(..), DropId(..), Node)
 import Json.Decode as Decode exposing (Decoder, Value)
 import Model exposing (..)
 import Ports
@@ -103,7 +103,6 @@ setDragImage dragStart =
             let
                 -- _ =
                 --     Debug.log "DragEvent" (Decode.decodeValue dragEventDecoder dragStart.event)
-
                 -- TODO Check node.widthMin as fallback
                 width =
                     case node.width of
@@ -128,10 +127,10 @@ setDragImage dragStart =
             Ports.setDragImage { event = dragStart.event, width = Nothing, height = Nothing }
 
 
-type alias DragEvent =
-    { offsetX : Int
-    , offsetY : Int
-    }
+dragEvent value =
+    Decode.decodeValue dragEventDecoder value.event 
+        |> Result.toMaybe 
+        |> Debug.log "Start position->"
 
 
 dragEventDecoder : Decoder DragEvent

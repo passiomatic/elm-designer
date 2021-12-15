@@ -180,6 +180,8 @@ type alias Model =
     -- , windowHeight : Int
     , mouseX : Int
     , mouseY : Int
+    , dragOffsetX: Int
+    , dragOffsetY: Int
     , isMouseButtonDown : Bool
     , isAltDown : Bool
     , isMetaDown : Bool
@@ -314,6 +316,8 @@ initialModel { width, height, seed1, seed2, seed3, seed4, platform } =
       --   , windowHeight = height
       , mouseX = 0
       , mouseY = 0
+      , dragOffsetX = 0
+      , dragOffsetY = 0
       , isMouseButtonDown = False
       , isAltDown = False
       , isMetaDown = False
