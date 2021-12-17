@@ -525,8 +525,8 @@ update msg model =
                                         , y = toFloat position.y - toFloat model.dragOffsetY
                                         }
 
-                                -- _ =
-                                --     Debug.log "Final Position->" position
+                                _ =
+                                    Debug.log "Final Position->" position
                             in
                             case maybeNode of
                                 Just node ->
