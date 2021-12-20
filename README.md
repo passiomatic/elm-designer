@@ -8,6 +8,10 @@ The application is in early stages of development and supports a subset of [Elm 
 
 Previously Elm Designer was an Electron app, you can still download older versions on the [Releases page][r].
 
+# New to Elm Desogner? 
+
+The [one minute gude][guide] is waiting for you.
+
 ## About images
 
 Images added to the page are automatically uploaded to [Imgbb][imgbb] servers and will remain available for 180 days.  
@@ -46,3 +50,4 @@ Then the build process will create a `Env.imgbbApiKey` value.
 [r]: https://github.com/passiomatic/elm-designer/releases
 [api]: https://api.imgbb.com
 [imgbb]: https://imgbb.com
+[guide]: ./Guide.md
