@@ -33,9 +33,9 @@ module Document exposing
     , applyHeightMax
     , applyHeightMin
     , applyHeightWith
-    , applyLabel
     , applyLabelColor
     , applyLabelPosition
+    , applyLabelText
     , applyLetterSpacing
     , applyOffset
     , applyPadding
@@ -829,8 +829,8 @@ apply setter zipper =
     Zipper.mapLabel setter zipper
 
 
-applyLabel : String -> Zipper Node -> Zipper Node
-applyLabel value zipper =
+applyLabelText : String -> Zipper Node -> Zipper Node
+applyLabelText value zipper =
     let
         value_ =
             String.trim value
@@ -882,6 +882,9 @@ applyLabelPosition value zipper =
                 RadioNode data ->
                     { node | type_ = RadioNode (Input.setLabelPosition value data) }
 
+                SliderNode slider label ->
+                    { node | type_ = SliderNode slider (Input.setLabelPosition value label) }
+
                 _ ->
                     node
         )
@@ -908,6 +911,9 @@ applyLabelColor value zipper =
 
                 RadioNode data ->
                     { node | type_ = RadioNode (Input.setLabelColor value_ data) }
+
+                SliderNode slider label ->
+                    { node | type_ = SliderNode slider (Input.setLabelColor value_ label) }
 
                 _ ->
                     node

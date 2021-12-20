@@ -677,7 +677,7 @@ updateField model =
         -- Label
         -- ###########
         EditingField LabelField newValue ->
-            applyChange model Document.applyLabel newValue
+            applyChange model Document.applyLabelText newValue
 
         EditingField LabelColorField newValue ->
             applyChange model Document.applyLabelColor newValue
