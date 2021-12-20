@@ -16,7 +16,7 @@ Chunk of text that will wrap if needed ([learn more][paragraph]).
 
 Actionable items that trigger a functionality ([learn more][button])
 
-## Text fields, checkboxes and radio selections
+### Text fields, checkboxes and radio selections
 
 These will allow user to input text information, on/off values and predefined choices. ([learn more][input]).
 
@@ -44,7 +44,7 @@ By clicking on different elements you can copy code for the entire workspace, th
 
 ## Using the outline view
 
-The outline view on the upper left of the screen shows your document as a tree. From here you can rearrange, duplicate and delete elements.
+The outline view on the upper left of the screen shows your document as a tree. Here you can rearrange, duplicate and delete elements.
 
 [paragraph]: https://package.elm-lang.org/packages/mdgriffith/elm-ui/latest/Element#paragraph
 [input]: https://package.elm-lang.org/packages/mdgriffith/elm-ui/latest/Element-Input
