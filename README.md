@@ -8,7 +8,7 @@ The application is in early stages of development and supports a subset of [Elm 
 
 Previously Elm Designer was an Electron app, you can still download older versions on the [Releases page][r].
 
-# New to Elm Desogner? 
+## New to Elm Designer? 
 
 The [one minute gude][guide] is waiting for you.
 
