@@ -859,7 +859,7 @@ applyLabelPosition value zipper =
                     { node | type_ = TextFieldNode (Input.setLabelPosition value data) }
 
                 TextFieldMultilineNode data ->
-                    { node | type_ = TextFieldNode (Input.setLabelPosition value data) }
+                    { node | type_ = TextFieldMultilineNode (Input.setLabelPosition value data) }
 
                 CheckboxNode data ->
                     { node | type_ = CheckboxNode (Input.setLabelPosition value data) }
@@ -886,7 +886,7 @@ applyLabelColor value zipper =
                     { node | type_ = TextFieldNode (Input.setLabelColor value_ data) }
 
                 TextFieldMultilineNode data ->
-                    { node | type_ = TextFieldNode (Input.setLabelColor value_ data) }
+                    { node | type_ = TextFieldMultilineNode (Input.setLabelColor value_ data) }
 
                 CheckboxNode data ->
                     { node | type_ = CheckboxNode (Input.setLabelColor value_ data) }
