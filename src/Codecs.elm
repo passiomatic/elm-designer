@@ -541,7 +541,7 @@ shadowTypeCodec =
 nodeTypeCodec : Codec NodeType
 nodeTypeCodec =
     Codec.custom
-        (\headingNode paragraphNode textNode rowNode columnNode textColumnNode imageNode buttonNode checkboxNode textFieldNode textFieldMultilineNode radioNode optionNode pageNode documentNode value ->
+        (\headingNode paragraphNode textNode rowNode columnNode textColumnNode imageNode buttonNode checkboxNode textFieldNode textFieldMultilineNode radioNode optionNode sliderNode pageNode documentNode value ->
             case value of
                 DocumentNode ->
                     documentNode
@@ -585,6 +585,9 @@ nodeTypeCodec =
                 OptionNode data ->
                     optionNode data
 
+                SliderNode data label ->
+                    sliderNode data label
+
                 PageNode ->
                     pageNode
         )
@@ -601,6 +604,7 @@ nodeTypeCodec =
         |> Codec.variant1 "TextFieldMultilineNode" TextFieldMultilineNode labelCodec
         |> Codec.variant1 "RadioNode" RadioNode labelCodec
         |> Codec.variant1 "OptionNode" OptionNode textCodec
+        |> Codec.variant2 "SliderNode" SliderNode sliderCodec labelCodec
         |> Codec.variant0 "PageNode" PageNode
         |> Codec.variant0 "DocumentNode" DocumentNode
         |> Codec.buildCustom
@@ -652,6 +656,15 @@ orientationCodec =
         |> Codec.variant0 "Portrait" Portrait
         |> Codec.variant0 "Landscape" Landscape
         |> Codec.buildCustom
+
+
+sliderCodec : Codec SliderData
+sliderCodec =
+    Codec.object SliderData
+        |> Codec.field "min" .min Codec.float
+        |> Codec.field "max" .max Codec.float
+        |> Codec.field "step" .step (Codec.maybe Codec.float)
+        |> Codec.buildObject
 
 
 labelCodec : Codec LabelData

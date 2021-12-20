@@ -9,6 +9,7 @@ module Document exposing
     , NodeId
     , NodeType(..)
     , RowData
+    , SliderData
     , TextData
     , Viewport(..)
     , appendNode
@@ -250,6 +251,7 @@ type NodeType
     | TextFieldMultilineNode LabelData
     | RadioNode LabelData
     | OptionNode TextData
+    | SliderNode SliderData LabelData
     | PageNode
     | DocumentNode
 
@@ -304,6 +306,9 @@ nodeType value =
         TextNode _ ->
             "Text Snippet"
 
+        SliderNode _ _ ->
+            "Slider"
+
 
 isPageNode : Node -> Bool
 isPageNode node =
@@ -351,6 +356,13 @@ type alias ImageData =
 
 type alias RowData =
     { wrapped : Bool
+    }
+
+
+type alias SliderData =
+    { min : Float
+    , max : Float
+    , step : Maybe Float
     }
 
 
@@ -843,6 +855,9 @@ applyLabel value zipper =
 
                 OptionNode label ->
                     { node | type_ = OptionNode (setText value_ label) }
+
+                SliderNode slider label ->
+                    { node | type_ = SliderNode slider (setText value_ label) }
 
                 _ ->
                     node

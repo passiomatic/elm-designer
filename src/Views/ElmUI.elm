@@ -121,6 +121,9 @@ renderNode ctx node children =
         OptionNode data ->
             renderOption ctx node selected data
 
+        SliderNode data label ->
+            renderSlider ctx node selected data label
+
 
 
 -- ELEMENTS
@@ -443,6 +446,43 @@ renderOption ctx node selected { text } =
     wrapElement ctx node selected renderer
         |> Input.option node.id
         |> RenderedOption
+
+
+renderSlider : Context -> Node -> Bool -> SliderData -> LabelData -> RenderedNode
+renderSlider ctx node selected { min, max, step } label =
+    let
+        renderer attrs =
+            let
+                newAttrs =
+                    -- Create the "track" portion of the slider
+                    E.behindContent
+                        (E.el
+                            [ E.width E.fill
+                            , E.height (E.px 8)
+                            , E.centerY
+                            , Background.color Palette.darkGray
+                            , Border.rounded 2
+                            ]
+                            E.none
+                        )
+                        :: attrs
+
+                labelAttrs =
+                    applyFontColor label.color []
+            in
+            Input.slider
+                newAttrs
+                { onChange = \_ -> NoOp
+                , min = min
+                , max = max
+                , step = step
+                , value = clamp min max 0
+                , thumb = Input.defaultThumb
+                , label = labelPosition label.position labelAttrs label.text
+                }
+    in
+    wrapElement ctx node selected renderer
+        |> RenderedElement node.position
 
 
 
@@ -824,7 +864,7 @@ applyBackground value attrs =
 
         Background.None ->
             -- Always set a value to override Elm UI defaults
-             Background.color Palette.transparent :: attrs
+            Background.color Palette.transparent :: attrs
 
 
 forceBackgroundColor value attrs =
@@ -998,8 +1038,8 @@ elementClasses ctx node selected =
     let
         dropId =
             AppendTo node.id
-        
-        type_ = 
+
+        type_ =
             String.replace " " "-" (nodeType node.type_)
     in
     E.htmlAttribute

@@ -258,6 +258,27 @@ resolveStyleViews model zipper =
                     , shadowView model node
                     ]
 
+                SliderNode slider label ->
+                    [ sectionView "Label"
+                        [ labelTextView label model node
+                        , labelPositionView label model node
+                        , labelColorView label model zipper
+                        , spacingYView model node
+                        ]
+                    , sectionView "Layout"
+                        [ alignmentView model node
+                        , positionView model node
+                        , lengthView model node
+                        , paddingView model node
+                        ]
+                    , sectionView "Text"
+                        [ fontView model zipper
+                        ]
+                    , bordersView model node
+                    , backgroundView model node
+                    , shadowView model node
+                    ]
+
                 _ ->
                     commonViews zipper model node
            )

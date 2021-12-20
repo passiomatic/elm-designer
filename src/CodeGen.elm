@@ -289,6 +289,9 @@ emitNode theme node children =
 
         OptionNode data ->
             emitOption node data
+
+        SliderNode data label ->
+            emitSlider node data label
     )
         |> EmittedNode node.position
 
@@ -548,6 +551,14 @@ emitOption node { text } =
                 , G.parens (G.apply [ G.fqFun elementModule "text", G.string text ])
                 ]
             )
+        ]
+
+
+emitSlider : Node -> SliderData -> LabelData -> Expression
+emitSlider node { min, max, step } label =
+    -- TODO emit actual code
+    G.apply
+        [ G.fqFun inputModule "slider"
         ]
 
 

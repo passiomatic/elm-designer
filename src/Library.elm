@@ -69,6 +69,7 @@ items =
     , checkbox
     , radio
     , option
+    , slider
     ]
         |> List.map (\item -> item Theme.defaultTheme)
 
@@ -276,12 +277,7 @@ textField theme =
                 | name = "Text Field"
                 , padding = Layout.padding (Theme.small theme)
                 , spacing = Layout.spacingXY 0 (Theme.xsmall theme)
-                , type_ =
-                    TextFieldNode
-                        { text = "Label"
-                        , position = LabelAbove
-                        , color = Inherit
-                        }
+                , type_ = TextFieldNode (labelAbove "Label")
                 , width = Layout.fill
                 , background = Background.solid theme.backgroundColor
                 , borderWidth = theme.borderWidth
@@ -303,12 +299,7 @@ textFieldMultiline theme =
                 | name = "Multiline Field"
                 , padding = Layout.padding (Theme.small theme)
                 , spacing = Layout.spacingXY 0 (Theme.xsmall theme)
-                , type_ =
-                    TextFieldMultilineNode
-                        { text = "Label"
-                        , position = LabelAbove
-                        , color = Inherit
-                        }
+                , type_ = TextFieldMultilineNode (labelAbove "Label")
                 , width = Layout.fill
                 , background = Background.solid theme.backgroundColor
                 , borderWidth = theme.borderWidth
@@ -367,11 +358,8 @@ checkbox theme =
                 | name = "Checkbox"
                 , spacing = Layout.spacingXY (Theme.xsmall theme) 0
                 , type_ =
-                    CheckboxNode
-                        { text = "Checkbox Label"
-                        , position = LabelRight
-                        , color = Inherit
-                        }
+                    CheckboxNode (labelRight  "Checkbox Label")
+                     
             }
     }
 
@@ -388,11 +376,8 @@ radio theme =
                 | name = "Radio Selection"
                 , spacing = Layout.spacingXY 0 (Theme.xsmall theme)
                 , type_ =
-                    RadioNode
-                        { text = "Radio Selection"
-                        , position = LabelAbove
-                        , color = Inherit
-                        }
+                    RadioNode (labelAbove "Radio Selection")
+                        
             }
             [ T.singleton
                 { baseTemplate
@@ -423,5 +408,33 @@ option theme =
     }
 
 
+slider : Theme -> LibraryItem msg
+slider theme =
+    { icon = Icons.sliders
+    , group = formElementsLabel
+    , description = ""
+    , accelerator = ""
+    , root =
+        T.singleton
+            { baseTemplate
+                | name = "Slider"
+                , height = Layout.Px 30
+                , type_ = SliderNode { min = 0, max = 100, step = Just 5 } (labelAbove "Label")
+            }
+    }
+
+
+
+-- HELPERS
+
+
 baseTemplate =
     Document.baseTemplate
+
+
+labelAbove text =
+    { text = text, position = LabelAbove, color = Inherit }
+
+
+labelRight text =
+    { text = text, position = LabelRight, color = Inherit }

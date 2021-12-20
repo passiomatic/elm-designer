@@ -7,6 +7,7 @@ Elm Designer is now a web app. No more Electron binaries to download. Yay!
 * New scrollable workspace
 * Reworked outline view and context menu
 * Add a label color for text fields
+* Add slider control to library
 
 ## Bugs fixed 
 

@@ -13,6 +13,8 @@ module Icons exposing
     , chevronDown
     , chevronRight
     , coloredSquare
+    , cornerUpLeft
+    , cornerUpRight
     , edit
     , file
     , image
@@ -31,9 +33,7 @@ module Icons exposing
     , tablet
     , type_
     , unlock
-    , xCircle
-    , cornerUpLeft
-    , cornerUpRight
+    , xCircle, sliders
     )
 
 import Css
@@ -55,15 +55,18 @@ mediumSize =
 largeSize =
     18
 
-cornerUpLeft = 
+
+cornerUpLeft =
     I.cornerUpLeft
         |> I.withSize smallSize
-        |> I.toHtml []    
+        |> I.toHtml []
 
-cornerUpRight = 
+
+cornerUpRight =
     I.cornerUpRight
         |> I.withSize smallSize
-        |> I.toHtml []   
+        |> I.toHtml []
+
 
 file : Html msg
 file =
@@ -264,6 +267,13 @@ checkCircle =
 edit : Html msg
 edit =
     I.edit
+        |> I.withSize smallSize
+        |> I.toHtml []
+
+
+sliders : Html msg
+sliders =
+    I.sliders
         |> I.withSize smallSize
         |> I.toHtml []
 
