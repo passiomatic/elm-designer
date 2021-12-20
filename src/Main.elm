@@ -8,7 +8,7 @@ import Codecs
 import ContextMenu exposing (ContextMenu)
 import Dict exposing (Dict)
 import Document exposing (DragId(..), DropId(..), Node, Viewport(..))
-import DragDrop2
+import DragDropHelper
 import Element exposing (Orientation(..))
 import Env
 import File exposing (File)
@@ -510,14 +510,14 @@ update msg model =
                         Just ( dragId, dropId, position ) ->
                             let
                                 ( newSeeds_, maybeNode, newZipper ) =
-                                    DragDrop2.getDroppedNode model dragId { x = toFloat position.x, y = toFloat position.y }
+                                    DragDropHelper.getDroppedNode model dragId { x = toFloat position.x, y = toFloat position.y }
 
                                 -- _ =
                                 --     Debug.log "Final Position->" position
                             in
                             case maybeNode of
                                 Just node ->
-                                    ( newSeeds_, DragDrop2.addDroppedNode model dropId node newZipper, True )
+                                    ( newSeeds_, DragDropHelper.addDroppedNode model dropId node newZipper, True )
 
                                 Nothing ->
                                     ( model.seeds, model.document.present, False )
@@ -543,7 +543,7 @@ update msg model =
                 , saveState = Changed model.currentTime
               }
             , DragDrop.getDragstartEvent msg_
-                |> Maybe.map DragDrop2.setDragImage
+                |> Maybe.map DragDropHelper.setDragImage
                 |> Maybe.withDefault Cmd.none
             )
 
