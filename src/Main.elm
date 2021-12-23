@@ -1,7 +1,7 @@
 module Main exposing (main)
 
 import Browser
-import Browser.Dom as Dom
+import Browser.Dom as Dom exposing (Error(..))
 import Browser.Events as BE
 import CodeGen
 import Codecs
@@ -298,13 +298,20 @@ update msg model =
                         zipper =
                             Zipper.fromTree document.root
 
+                        -- newZipper =
+                        --     Document.selectNodeWith document.selectedNodeId zipper
+                        -- centerCmd =
+                        --     case Document.selectPageOf selectedNode newZipper of
+                        --         Just zipper ->
+                        --         Nothing ->
+                        --             Cmd.none
                         -- FIXME: Avoid zipper _and_ newZipper
                         newZipper =
                             zipper
                                 |> Document.selectNodeWith document.selectedNodeId
                                 |> Maybe.withDefault zipper
                     in
-                    ( { model                        
+                    ( { model
                         | document = UndoList.fresh newZipper
                         , viewport = document.viewport
                         , saveState = Original
@@ -355,21 +362,6 @@ update msg model =
                     let
                         node =
                             Zipper.label zipper
-
-                        length value =
-                            case value of
-                                Px value_ ->
-                                    toFloat value_
-
-                                _ ->
-                                    0
-
-                        offsetX =
-                            node.offsetX - model.workspaceViewportWidth / 2 + length node.width / 2
-
-                        offsetY =
-                            -- A tad above the middle line
-                            node.offsetY - model.workspaceViewportHeight / 2 + 100
                     in
                     ( { model
                         | document =
@@ -383,8 +375,7 @@ update msg model =
                         , inspector = NotEdited
                       }
                     , if reveal then
-                        Dom.setViewportOf Model.workspaceWrapperId offsetX offsetY
-                            |> Task.attempt (\_ -> NoOp)
+                        revealNode model node
 
                       else
                         Cmd.none
@@ -902,6 +893,44 @@ unfocusElement id =
 focusElement : String -> Cmd Msg
 focusElement id =
     Task.attempt (\_ -> NoOp) (Dom.focus id)
+
+
+revealNode : Model -> Node -> Cmd Msg
+revealNode model node =
+    let
+        length value =
+            case value of
+                Px value_ ->
+                    toFloat value_
+
+                _ ->
+                    0
+    in
+    Dom.getElement (Document.nodeId node.id)
+        |> Task.andThen
+            (\info ->
+                let
+                    _ =
+                        Debug.log "info.element.x" info
+                in
+                     
+                (if info.element.x < info.viewport.width || info.element.y < info.viewport.height  then 
+                    Task.fail (NotFound "xxx")
+                else 
+                    let
+
+                        offsetX = 
+                            Debug.log "offsetX" (info.element.x - (info.viewport.width / 2) + (length node.width / 2))
+
+                        offsetY =
+                            -- A tad above the middle line, so we can see the top part of the element
+                            Debug.log "offsetY" (info.element.y - (info.viewport.height / 2) + 100)
+
+                    in
+                    Dom.setViewportOf Model.workspaceWrapperId offsetX offsetY
+                )
+            )
+        |> Task.attempt (\_ -> NoOp)
 
 
 

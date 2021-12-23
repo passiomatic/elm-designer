@@ -79,7 +79,7 @@ module Document exposing
     , resolveInheritedFontSize
     , schemaVersion
     , selectNodeWith
-    , selectParentOf
+    , selectPageOf
     , viewports
     , workspaceHeight
     , workspaceWidth
@@ -531,12 +531,38 @@ selectNodeWith id zipper =
     Zipper.findFromRoot (\node -> node.id == id) zipper
 
 
-{-| Find the parent of the node with the given id and if successuful move zipper focus to it.
+
+{- Find the parent of the node with the given id and if successuful move zipper focus to it. -}
+-- selectParentOf : NodeId -> Zipper Node -> Maybe (Zipper Node)
+-- selectParentOf id zipper =
+--     selectNodeWith id zipper
+--         |> Maybe.andThen Zipper.parent
+
+
+{-| Find the page containing the node with the given id.
 -}
-selectParentOf : NodeId -> Zipper Node -> Maybe (Zipper Node)
-selectParentOf id zipper =
+selectPageOf : NodeId -> Zipper Node -> Maybe (Zipper Node)
+selectPageOf id zipper =
     selectNodeWith id zipper
-        |> Maybe.andThen Zipper.parent
+        |> selectPageOf_
+
+
+selectPageOf_ : Maybe (Zipper Node) -> Maybe (Zipper Node)
+selectPageOf_ maybeZipper =
+    Maybe.andThen
+        (\zipper ->
+            let
+                node =
+                    Zipper.label zipper
+            in
+            case node.type_ of
+                PageNode ->
+                    Just zipper
+
+                _ ->
+                    selectPageOf_ (Zipper.parent zipper)
+        )
+        maybeZipper
 
 
 resolveInheritedFontColor : Color -> Zipper Node -> Color
