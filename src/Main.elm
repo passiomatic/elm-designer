@@ -470,6 +470,9 @@ update msg model =
         ShadowColorChanged value ->
             applyChange model Document.applyShadowColor value
 
+        ShadowTypeChanged value ->
+            applyChange model Document.applyShadowType value
+
         FontColorChanged value ->
             applyChange model Document.applyFontColor value
 
