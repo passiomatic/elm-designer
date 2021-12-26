@@ -42,6 +42,7 @@ module Document exposing
     , applyPosition
     , applyShadow
     , applyShadowColor
+    , applyShadowType
     , applySpacing
     , applyText
     , applyTextAlign
@@ -97,7 +98,7 @@ import Style.Border as Border exposing (BorderCorner, BorderStyle(..), BorderWid
 import Style.Font as Font exposing (..)
 import Style.Input as Input exposing (LabelPosition(..))
 import Style.Layout as Layout exposing (..)
-import Style.Shadow as Shadow exposing (Shadow)
+import Style.Shadow as Shadow exposing (Shadow, ShadowType)
 import Style.Theme as Theme exposing (Theme)
 import Time exposing (Posix)
 import Tree as T exposing (Tree)
@@ -1273,3 +1274,8 @@ applyShadowColor value zipper =
             Css.stringToColor value
     in
     Zipper.mapLabel (\node -> Shadow.setShadow (Shadow.setColor value_ node.shadow) node) zipper
+
+
+applyShadowType : ShadowType -> Zipper Node -> Zipper Node
+applyShadowType value zipper =
+    Zipper.mapLabel (\node -> Shadow.setShadow (Shadow.setType value node.shadow) node) zipper

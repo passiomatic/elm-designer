@@ -23,6 +23,7 @@ import Style.Border as Border exposing (BorderStyle(..))
 import Style.Font as Font exposing (..)
 import Style.Input as Input exposing (..)
 import Style.Layout as Layout exposing (..)
+import Style.Shadow as Shadow
 import Style.Theme as Theme
 import Tree as T exposing (Tree)
 import Tree.Zipper as Zipper exposing (Zipper)
@@ -842,6 +843,26 @@ shadowView model { shadow } =
                 ]
             ]
         , colorView model (Just shadow.color) ShadowColorField ShadowColorChanged
+        , H.div [ A.class "btn-group w-100 mb-2", A.attribute "role" "group" ]
+            [ H.button
+                [ A.classList
+                    [ ( "btn btn-outline-secondary btn-sm", True )
+                    , ( "active", Shadow.isInner shadow.type_ )
+                    ]
+                , E.onClick (ShadowTypeChanged Shadow.Inner)
+                , A.type_ "button"
+                ]
+                [ H.text "Inner" ]
+            , H.button
+                [ A.classList
+                    [ ( "btn btn-outline-secondary btn-sm", True )
+                    , ( "active", Shadow.isOuter shadow.type_ )
+                    ]
+                , E.onClick (ShadowTypeChanged Shadow.Outer)
+                , A.type_ "button"
+                ]
+                [ H.text "Outer" ]
+            ]
         ]
 
 
