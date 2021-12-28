@@ -246,13 +246,12 @@ dividerView =
 
 
 insertImageView : Node -> Html Msg
-insertImageView container =
+insertImageView node =
     H.li []
         [ H.button
             [ A.classList
                 [ ( "dropdown-item", True )
-
-                --, ( "disabled", not (Document.canDropInto container) )
+                , ( "disabled", not (Document.canInsertInto node Document.blankImageNode || Document.canInsertNextTo node Document.blankImageNode) )
                 ]
             , A.type_ "button"
             , E.onClick InsertImageClicked
@@ -271,7 +270,7 @@ insertItemView node item =
         [ H.button
             [ A.classList
                 [ ( "dropdown-item", True )
-                , ( "disabled", not (Document.canInsertInto node template || Document.canInsertNextTo node template) )
+                , ( "disabled", not (Document.canInsertInto node template.type_ || Document.canInsertNextTo node template.type_) )
                 ]
             , A.type_ "button"
             , E.onClick (InsertNodeClicked item.root)

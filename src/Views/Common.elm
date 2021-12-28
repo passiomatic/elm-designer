@@ -56,13 +56,13 @@ canDropInto container dragDrop =
         Just dragId ->
             case dragId of
                 Move node ->
-                    Document.canInsertInto container node
+                    Document.canInsertInto container node.type_
 
                 Drag node ->
-                    Document.canInsertInto container node
+                    Document.canInsertInto container node.type_
 
                 Insert template ->
-                    Document.canInsertInto container (T.label template)
+                    Document.canInsertInto container (T.label template).type_
 
         Nothing ->
             False
@@ -73,13 +73,13 @@ canDropNextTo sibling dragDrop =
         Just dragId ->
             case dragId of
                 Move node ->
-                    Document.canInsertNextTo sibling node
+                    Document.canInsertNextTo sibling node.type_
 
                 Drag node ->
-                    Document.canInsertNextTo sibling node
+                    Document.canInsertNextTo sibling node.type_
 
                 Insert template ->
-                    Document.canInsertNextTo sibling (T.label template)
+                    Document.canInsertNextTo sibling (T.label template).type_
 
         Nothing ->
             False

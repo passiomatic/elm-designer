@@ -53,8 +53,10 @@ module Document exposing
     , applyWordSpacing
     , applyWrapRowItems
     , baseTemplate
+    , blankImageNode
     , canInsertInto
     , canInsertNextTo
+    , createImageNode
     , defaultDeviceInfo
     , defaultDocument
     , deviceInfo
@@ -64,7 +66,6 @@ module Document exposing
     , fromTemplate
     , fromTemplateAt
     , generateId
-    , imageNode
     , insertNode
     , insertNodeAfter
     , insertNodeBefore
@@ -439,17 +440,27 @@ emptyPage theme =
 
 {-| Images require the user to drop them _into_ the app workspace so we bypass the pick-from-library process here.
 -}
-imageNode : String -> Seeds -> ( Seeds, Tree Node )
-imageNode url seeds =
+createImageNode : String -> Seeds -> ( Seeds, Tree Node )
+createImageNode url seeds =
     let
         template =
             T.singleton
                 { baseTemplate
-                    | type_ = ImageNode { src = url, description = "" }
+                    | type_ = imageNode url
                     , name = "Image"
                 }
     in
     fromTemplate template seeds
+
+
+{-| An empty placeholder image type.
+-}
+blankImageNode =
+    imageNode ""
+
+
+imageNode url =
+    ImageNode { src = url, description = "" }
 
 
 
@@ -645,8 +656,8 @@ isContainer node =
             False
 
 
-canInsertInto : Node -> { a | type_ : NodeType } -> Bool
-canInsertInto node { type_ } =
+canInsertInto : Node -> NodeType -> Bool
+canInsertInto node type_ =
     case ( node.type_, type_ ) of
         ( RadioNode _, OptionNode _ ) ->
             True
@@ -682,8 +693,8 @@ canInsertInto node { type_ } =
             False
 
 
-canInsertNextTo : Node -> { a | type_ : NodeType } -> Bool
-canInsertNextTo node { type_ } =
+canInsertNextTo : Node -> NodeType -> Bool
+canInsertNextTo node type_ =
     case ( node.type_, type_ ) of
         -- Only drop radio options next to another option
         ( OptionNode _, OptionNode _ ) ->
@@ -783,7 +794,7 @@ insertNode newTree zipper =
         selectedNode =
             Zipper.label zipper
     in
-    if canInsertInto selectedNode (T.label newTree) then
+    if canInsertInto selectedNode (T.label newTree).type_ then
         appendNode newTree zipper
 
     else
