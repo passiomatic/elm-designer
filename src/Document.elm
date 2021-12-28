@@ -53,8 +53,8 @@ module Document exposing
     , applyWordSpacing
     , applyWrapRowItems
     , baseTemplate
-    , canDropInto
-    , canDropSibling
+    , canInsertInto
+    , canInsertNextTo
     , defaultDeviceInfo
     , defaultDocument
     , deviceInfo
@@ -645,9 +645,9 @@ isContainer node =
             False
 
 
-canDropInto : Node -> { a | type_ : NodeType } -> Bool
-canDropInto container { type_ } =
-    case ( container.type_, type_ ) of
+canInsertInto : Node -> { a | type_ : NodeType } -> Bool
+canInsertInto node { type_ } =
+    case ( node.type_, type_ ) of
         ( RadioNode _, OptionNode _ ) ->
             True
 
@@ -682,9 +682,9 @@ canDropInto container { type_ } =
             False
 
 
-canDropSibling : Node -> { a | type_ : NodeType } -> Bool
-canDropSibling sibling { type_ } =
-    case ( sibling.type_, type_ ) of
+canInsertNextTo : Node -> { a | type_ : NodeType } -> Bool
+canInsertNextTo node { type_ } =
+    case ( node.type_, type_ ) of
         -- Only drop radio options next to another option
         ( OptionNode _, OptionNode _ ) ->
             True
@@ -693,6 +693,10 @@ canDropSibling sibling { type_ } =
             False
 
         ( _, OptionNode _ ) ->
+            False
+
+        -- You cannot insert anything as document sibling
+        ( DocumentNode, _ ) ->
             False
 
         -- Only drop pages next to another page
@@ -779,13 +783,10 @@ insertNode newTree zipper =
         selectedNode =
             Zipper.label zipper
     in
-    if isContainer selectedNode then
-        -- If the selected node is a container
-        --   append the new one as last children...
+    if canInsertInto selectedNode (T.label newTree) then
         appendNode newTree zipper
 
     else
-        -- ...otherwise insert as sibling
         let
             parentZipper =
                 Zipper.parent zipper

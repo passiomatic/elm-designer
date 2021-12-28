@@ -4,7 +4,7 @@ module Views.Common exposing
     , addTooltipRight
     , addTooltipUp
     , canDropInto
-    , canDropSibling
+    , canDropNextTo
     , isDragging
     , none
     , widgetId
@@ -56,30 +56,30 @@ canDropInto container dragDrop =
         Just dragId ->
             case dragId of
                 Move node ->
-                    Document.canDropInto container node
+                    Document.canInsertInto container node
 
                 Drag node ->
-                    Document.canDropInto container node
+                    Document.canInsertInto container node
 
                 Insert template ->
-                    Document.canDropInto container (T.label template)
+                    Document.canInsertInto container (T.label template)
 
         Nothing ->
             False
 
 
-canDropSibling sibling dragDrop =
+canDropNextTo sibling dragDrop =
     case DragDrop.getDragId dragDrop of
         Just dragId ->
             case dragId of
                 Move node ->
-                    Document.canDropSibling sibling node
+                    Document.canInsertNextTo sibling node
 
                 Drag node ->
-                    Document.canDropSibling sibling node
+                    Document.canInsertNextTo sibling node
 
                 Insert template ->
-                    Document.canDropSibling sibling (T.label template)
+                    Document.canInsertNextTo sibling (T.label template)
 
         Nothing ->
             False

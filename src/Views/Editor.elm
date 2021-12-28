@@ -262,7 +262,7 @@ insertImageView container =
 
 
 insertItemView : Node -> LibraryItem Msg -> Html Msg
-insertItemView container item =
+insertItemView node item =
     let
         template =
             T.label item.root
@@ -271,7 +271,7 @@ insertItemView container item =
         [ H.button
             [ A.classList
                 [ ( "dropdown-item", True )
-                , ( "disabled", not (Document.canDropInto container template) )
+                , ( "disabled", not (Document.canInsertInto node template || Document.canInsertNextTo node template) )
                 ]
             , A.type_ "button"
             , E.onClick (InsertNodeClicked item.root)
@@ -450,7 +450,7 @@ outlineItemView model node children =
 
         topHint =
             H.div
-                (makeDroppableIf (Common.canDropSibling node model.dragDrop)
+                (makeDroppableIf (Common.canDropNextTo node model.dragDrop)
                     (InsertBefore node.id)
                     [ A.classList
                         [ ( "tree__drop-hint tree__drop-hint--before", True )
@@ -462,7 +462,7 @@ outlineItemView model node children =
 
         bottomHint =
             H.div
-                (makeDroppableIf (Common.canDropSibling node model.dragDrop)
+                (makeDroppableIf (Common.canDropNextTo node model.dragDrop)
                     (InsertAfter node.id)
                     [ A.classList
                         [ ( "tree__drop-hint tree__drop-hint--after", True )
