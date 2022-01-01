@@ -97,33 +97,11 @@ addDroppedNode model dropId node zipper =
 
 setDragImage dragStart =
     case dragStart.dragId of
-        Drag node ->
-            let
-                -- _ =
-                --     Debug.log "DragEvent" (Decode.decodeValue dragEventDecoder dragStart.event)
-
-                -- TODO Check node.widthMin as fallback
-                width =
-                    case node.width of
-                        Px value ->
-                            value
-
-                        _ ->
-                            999
-
-                height =
-                    case node.heightMin of
-                        Just value ->
-                            value
-
-                        _ ->
-                            999
-            in
-            Ports.setDragImage { event = dragStart.event, width = Just width, height = Just height }
+        Drag _ ->
+            Ports.setDragImage { event = dragStart.event, dragging = True }
 
         _ ->
-            -- Use intrisct dimensions
-            Ports.setDragImage { event = dragStart.event, width = Nothing, height = Nothing }
+            Ports.setDragImage { event = dragStart.event, dragging = False }
 
 
 type alias DragEvent =
