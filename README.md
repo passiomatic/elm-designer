@@ -31,17 +31,17 @@ Elm Designer uses [Parcel][2] to compile Elm and SASS source. To install all the
 
 To run it locally in dev mode type
 
-    npm run dev
+    make dev
 
 or if your prefer to turn off the Elm debugger type
 
-    npm run dev-no-debug
+    make dev-no-debug
 
 **Note**: you will need a valid [Imgbb API][api] key to be able to upload images. API access is free and requires only to sign up to the service. Once you get the API key set the `IMGBB_API_KEY` environment variable or create a `.env` file in the repo root containing such key:
 
     IMGBB_API_KEY=your-API-key
 
-Then the build process will create a `Env.imgbbApiKey` value.
+The build process will create a `Env.imgbbApiKey` value.
 
 [2]: https://parceljs.org
 [d]: https://github.com/passiomatic/elm-designer/releases/tag/v0.3.0
