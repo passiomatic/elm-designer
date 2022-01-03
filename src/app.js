@@ -74,18 +74,20 @@ app.ports.selectText.subscribe(function (id) {
 // * https://transitory.technology/set-drag-image/
 //
 app.ports.setDragImage.subscribe(function (payload) {
-  //console.log(payload.event)
   // FF compatibility
   payload.event.dataTransfer.setData("text", "");
+  var clientRect = payload.event.target.getBoundingClientRect();
 
   var node = null;
-  if (payload.width && payload.height) {
+  if (payload.dragging) {
+    // Dragging elements on workspace
     node = payload.event.target.cloneNode(false);
-    node.style.width = payload.width + "px";
-    node.style.height = payload.height + "px";
+    // Safari has issues with big ghost drag images, so set explictly final dimensions
+    node.style.width = clientRect.width + "px";
+    node.style.height = clientRect.height + "px";
   } else {
+    // Library/outline
     node = payload.event.target.cloneNode(true);
-    // Don't add a ghost class for pages already in the workspace
     node.classList.add("library__item-ghost");
   }
   node.title = "";
@@ -93,9 +95,6 @@ app.ports.setDragImage.subscribe(function (payload) {
   node.style.top = "-9999px";
   document.body.appendChild(node);
 
-  var clientRect = payload.event.target.getBoundingClientRect();
-  // console.log("target.clientRect.top "+ clientRect.top)
-  // console.log("target.clientRect.left "+ clientRect.left)
   // console.log("event.clientX "+ payload.event.clientX)
   // console.log("event.clientY "+ payload.event.clientY)
   var offsetX = payload.event.clientX - clientRect.left;

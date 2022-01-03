@@ -617,14 +617,21 @@ emitShadow value attrs =
         attrs
 
     else
-        G.apply
-            [ G.fqFun borderModule "shadow"
-            , G.record
+        let 
+            record = G.record
                 [ ( "offset", G.tuple [ G.float value.offsetX, G.float value.offsetY ] )
                 , ( "size", G.float value.size )
                 , ( "blur", G.float value.blur )
                 , ( "color", emitColor value.color )
                 ]
+        in
+        G.apply
+            [ case value.type_ of
+                Inner ->
+                    G.fqFun borderModule "innerShadow"
+                Outer ->
+                    G.fqFun borderModule "shadow"
+            , record
             ]
             :: attrs
 

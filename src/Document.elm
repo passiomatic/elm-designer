@@ -42,6 +42,7 @@ module Document exposing
     , applyPosition
     , applyShadow
     , applyShadowColor
+    , applyShadowType
     , applySpacing
     , applyText
     , applyTextAlign
@@ -52,8 +53,10 @@ module Document exposing
     , applyWordSpacing
     , applyWrapRowItems
     , baseTemplate
-    , canDropInto
-    , canDropSibling
+    , blankImageNode
+    , canInsertInto
+    , canInsertNextTo
+    , createImageNode
     , defaultDeviceInfo
     , defaultDocument
     , deviceInfo
@@ -63,7 +66,6 @@ module Document exposing
     , fromTemplate
     , fromTemplateAt
     , generateId
-    , imageNode
     , insertNode
     , insertNodeAfter
     , insertNodeBefore
@@ -97,7 +99,7 @@ import Style.Border as Border exposing (BorderCorner, BorderStyle(..), BorderWid
 import Style.Font as Font exposing (..)
 import Style.Input as Input exposing (LabelPosition(..))
 import Style.Layout as Layout exposing (..)
-import Style.Shadow as Shadow exposing (Shadow)
+import Style.Shadow as Shadow exposing (Shadow, ShadowType)
 import Style.Theme as Theme exposing (Theme)
 import Time exposing (Posix)
 import Tree as T exposing (Tree)
@@ -438,17 +440,27 @@ emptyPage theme =
 
 {-| Images require the user to drop them _into_ the app workspace so we bypass the pick-from-library process here.
 -}
-imageNode : String -> Seeds -> ( Seeds, Tree Node )
-imageNode url seeds =
+createImageNode : String -> Seeds -> ( Seeds, Tree Node )
+createImageNode url seeds =
     let
         template =
             T.singleton
                 { baseTemplate
-                    | type_ = ImageNode { src = url, description = "" }
+                    | type_ = imageNode url
                     , name = "Image"
                 }
     in
     fromTemplate template seeds
+
+
+{-| An empty placeholder image type.
+-}
+blankImageNode =
+    imageNode ""
+
+
+imageNode url =
+    ImageNode { src = url, description = "" }
 
 
 
@@ -644,9 +656,9 @@ isContainer node =
             False
 
 
-canDropInto : Node -> { a | type_ : NodeType } -> Bool
-canDropInto container { type_ } =
-    case ( container.type_, type_ ) of
+canInsertInto : Node -> NodeType -> Bool
+canInsertInto node type_ =
+    case ( node.type_, type_ ) of
         ( RadioNode _, OptionNode _ ) ->
             True
 
@@ -681,9 +693,9 @@ canDropInto container { type_ } =
             False
 
 
-canDropSibling : Node -> { a | type_ : NodeType } -> Bool
-canDropSibling sibling { type_ } =
-    case ( sibling.type_, type_ ) of
+canInsertNextTo : Node -> NodeType -> Bool
+canInsertNextTo node type_ =
+    case ( node.type_, type_ ) of
         -- Only drop radio options next to another option
         ( OptionNode _, OptionNode _ ) ->
             True
@@ -692,6 +704,10 @@ canDropSibling sibling { type_ } =
             False
 
         ( _, OptionNode _ ) ->
+            False
+
+        -- You cannot insert anything as document sibling
+        ( DocumentNode, _ ) ->
             False
 
         -- Only drop pages next to another page
@@ -778,13 +794,10 @@ insertNode newTree zipper =
         selectedNode =
             Zipper.label zipper
     in
-    if isContainer selectedNode then
-        -- If the selected node is a container
-        --   append the new one as last children...
+    if canInsertInto selectedNode (T.label newTree).type_ then
         appendNode newTree zipper
 
     else
-        -- ...otherwise insert as sibling
         let
             parentZipper =
                 Zipper.parent zipper
@@ -1273,3 +1286,8 @@ applyShadowColor value zipper =
             Css.stringToColor value
     in
     Zipper.mapLabel (\node -> Shadow.setShadow (Shadow.setColor value_ node.shadow) node) zipper
+
+
+applyShadowType : ShadowType -> Zipper Node -> Zipper Node
+applyShadowType value zipper =
+    Zipper.mapLabel (\node -> Shadow.setShadow (Shadow.setType value node.shadow) node) zipper

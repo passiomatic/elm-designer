@@ -246,13 +246,12 @@ dividerView =
 
 
 insertImageView : Node -> Html Msg
-insertImageView container =
+insertImageView node =
     H.li []
         [ H.button
             [ A.classList
                 [ ( "dropdown-item", True )
-
-                --, ( "disabled", not (Document.canDropInto container) )
+                , ( "disabled", not (Document.canInsertInto node Document.blankImageNode || Document.canInsertNextTo node Document.blankImageNode) )
                 ]
             , A.type_ "button"
             , E.onClick InsertImageClicked
@@ -262,7 +261,7 @@ insertImageView container =
 
 
 insertItemView : Node -> LibraryItem Msg -> Html Msg
-insertItemView container item =
+insertItemView node item =
     let
         template =
             T.label item.root
@@ -271,7 +270,7 @@ insertItemView container item =
         [ H.button
             [ A.classList
                 [ ( "dropdown-item", True )
-                , ( "disabled", not (Document.canDropInto container template) )
+                , ( "disabled", not (Document.canInsertInto node template.type_ || Document.canInsertNextTo node template.type_) )
                 ]
             , A.type_ "button"
             , E.onClick (InsertNodeClicked item.root)
@@ -450,7 +449,7 @@ outlineItemView model node children =
 
         topHint =
             H.div
-                (makeDroppableIf (Common.canDropSibling node model.dragDrop)
+                (makeDroppableIf (Common.canDropNextTo node model.dragDrop)
                     (InsertBefore node.id)
                     [ A.classList
                         [ ( "tree__drop-hint tree__drop-hint--before", True )
@@ -462,7 +461,7 @@ outlineItemView model node children =
 
         bottomHint =
             H.div
-                (makeDroppableIf (Common.canDropSibling node model.dragDrop)
+                (makeDroppableIf (Common.canDropNextTo node model.dragDrop)
                     (InsertAfter node.id)
                     [ A.classList
                         [ ( "tree__drop-hint tree__drop-hint--after", True )
