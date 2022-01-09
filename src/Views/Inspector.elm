@@ -842,27 +842,33 @@ shadowView model { shadow } =
                     ]
                 ]
             ]
-        , colorView model (Just shadow.color) ShadowColorField ShadowColorChanged
-        , H.div [ A.class "btn-group w-100 mb-2", A.attribute "role" "group" ]
-            [ H.button
-                [ A.classList
-                    [ ( "btn btn-outline-secondary btn-sm", True )
-                    , ( "active", Shadow.isInner shadow.type_ )
+        , H.div [ A.class "row align-items-center mb-2" ]
+            [ H.label [ A.class "col-3 col-form-label-sm m-0 text-nowrap" ]
+                [ H.text "Type" ]
+            , H.div [ A.class "col-9 d-flex" ]
+                [ H.div [ A.class "btn-group w-100 mb-2", A.attribute "role" "group" ]
+                    [ H.button
+                        [ A.classList
+                            [ ( "btn btn-secondary btn-sm", True )
+                            , ( "active", Shadow.isInner shadow.type_ )
+                            ]
+                        , E.onClick (ShadowTypeChanged Shadow.Inner)
+                        , A.type_ "button"
+                        ]
+                        [ H.text "Inner" ]
+                    , H.button
+                        [ A.classList
+                            [ ( "btn btn-secondary btn-sm", True )
+                            , ( "active", Shadow.isOuter shadow.type_ )
+                            ]
+                        , E.onClick (ShadowTypeChanged Shadow.Outer)
+                        , A.type_ "button"
+                        ]
+                        [ H.text "Outer" ]
                     ]
-                , E.onClick (ShadowTypeChanged Shadow.Inner)
-                , A.type_ "button"
                 ]
-                [ H.text "Inner" ]
-            , H.button
-                [ A.classList
-                    [ ( "btn btn-outline-secondary btn-sm", True )
-                    , ( "active", Shadow.isOuter shadow.type_ )
-                    ]
-                , E.onClick (ShadowTypeChanged Shadow.Outer)
-                , A.type_ "button"
-                ]
-                [ H.text "Outer" ]
             ]
+        , colorView model (Just shadow.color) ShadowColorField ShadowColorChanged
         ]
 
 
