@@ -505,9 +505,6 @@ update msg model =
                             let
                                 ( newSeeds_, maybeNode, newZipper ) =
                                     DragDropHelper.getDroppedNode model dragId { x = toFloat position.x, y = toFloat position.y }
-
-                                -- _ =
-                                --     Debug.log "Final Position->" position
                             in
                             case maybeNode of
                                 Just node ->
@@ -517,10 +514,6 @@ update msg model =
                                     ( model.seeds, model.document.present, False )
 
                         Nothing ->
-                            -- let
-                            --     _ =
-                            --         DragDrop2.dragEvent (DragDrop.getDragstartEvent msg_)
-                            -- in
                             -- Still going/failed drag and drop operation
                             ( model.seeds, model.document.present, False )
             in
