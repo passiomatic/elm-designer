@@ -1,8 +1,9 @@
 module Html5.DragDrop exposing
-    ( Model, init, Msg, Position, update, updateSticky
+    ( Model, init, Msg, update, updateSticky
     , draggable, droppable
     , getDragId, getDropId, getDroppablePosition
     , getDragstartEvent
+    , DroppablePosition
     )
 
 {-| This library handles dragging and dropping using the API
@@ -69,8 +70,8 @@ This should be placed inside your application's model like this:
 -}
 type Model dragId dropId
     = NotDragging
-    | Dragging dragId (Maybe DraggablePosition)
-    | DraggedOver dragId dropId Int (Maybe Position)
+    | Dragging dragId DraggablePosition
+    | DraggedOver dragId dropId Int DraggablePosition (Maybe DroppablePosition)
 
 
 {-| The position inside a droppable. Contains the droppable's
@@ -82,7 +83,7 @@ Note, that in some cases, x and y may be negative, or larger than the clientWidt
 if a drop event is registered outside the CSS padding edge.
 
 -}
-type alias Position =
+type alias DroppablePosition =
     { width : Int
     , height : Int
     , x : Int
@@ -120,8 +121,8 @@ type Msg dragId dropId
     | DragEnd
     | DragEnter dropId
     | DragLeave dropId
-    | DragOver dropId Int Position
-    | Drop dropId Position
+    | DragOver dropId Int DroppablePosition
+    | Drop dropId DroppablePosition
 
 
 {-| The update function.
@@ -148,7 +149,7 @@ This should be placed inside your application's update function, like this:
                     }
 
 -}
-update : Msg dragId dropId -> Model dragId dropId -> ( Model dragId dropId, Maybe ( dragId, dropId, Position ) )
+update : Msg dragId dropId -> Model dragId dropId -> ( Model dragId dropId, Maybe ( dragId, dropId, DroppablePosition ) )
 update =
     updateCommon False
 
@@ -162,7 +163,7 @@ provide some sort of indication (using [`getDropId`](#getDropId)) where the drop
 place if you use this function.
 
 -}
-updateSticky : Msg dragId dropId -> Model dragId dropId -> ( Model dragId dropId, Maybe ( dragId, dropId, Position ) )
+updateSticky : Msg dragId dropId -> Model dragId dropId -> ( Model dragId dropId, Maybe ( dragId, dropId, DroppablePosition ) )
 updateSticky =
     updateCommon True
 
@@ -171,41 +172,45 @@ updateCommon :
     Bool
     -> Msg dragId dropId
     -> Model dragId dropId
-    -> ( Model dragId dropId, Maybe ( dragId, dropId, Position ) )
+    -> ( Model dragId dropId, Maybe ( dragId, dropId, DroppablePosition ) )
 updateCommon sticky msg model =
     case ( msg, model, sticky ) of
         ( DragStart dragId event, _, _ ) ->
             let
-                pos = 
+                pos =
                     Json.decodeValue draggablePositionDecoder event
                         |> Result.toMaybe
+                        |> Maybe.withDefault (DraggablePosition 0 0)
             in
             ( Dragging dragId pos, Nothing )
 
         ( DragEnd, _, _ ) ->
             ( NotDragging, Nothing )
 
-        ( DragEnter dropId, Dragging dragId _, _ ) ->
-            ( DraggedOver dragId dropId 0 Nothing, Nothing )
+        ( DragEnter dropId, Dragging dragId pos, _ ) ->
+            let
+                _ =
+                    Debug.log "DragEnter on Dragging" pos
+            in
+            ( DraggedOver dragId dropId 0 pos Nothing, Nothing )
 
-        ( DragEnter dropId, DraggedOver dragId _ _ pos, _ ) ->
-            ( DraggedOver dragId dropId 0 pos, Nothing )
+        ( DragEnter dropId, DraggedOver dragId _ _ draggablePos droppablePos, _ ) ->
+            ( DraggedOver dragId dropId 0 draggablePos droppablePos, Nothing )
 
         -- Only handle DragLeave if it is for the current dropId.
         -- DragLeave and DragEnter sometimes come in the wrong order
         -- when two droppables are next to each other.
-        ( DragLeave dropId_, DraggedOver dragId dropId _ _, False ) ->
+        ( DragLeave dropId_, DraggedOver dragId dropId _ draggablePos _, False ) ->
             if dropId_ == dropId then
-                -- TODO
-                ( Dragging dragId Nothing, Nothing )
+                ( Dragging dragId draggablePos, Nothing )
 
             else
                 ( model, Nothing )
 
-        ( DragOver dropId timeStamp pos, Dragging dragId _, _ ) ->
-            ( DraggedOver dragId dropId timeStamp (Just pos), Nothing )
+        ( DragOver dropId timeStamp pos, Dragging dragId draggablePos, _ ) ->
+            ( DraggedOver dragId dropId timeStamp draggablePos (Just pos), Nothing )
 
-        ( DragOver dropId timeStamp pos, DraggedOver dragId currentDropId currentTimeStamp currentPos, _ ) ->
+        ( DragOver dropId timeStamp pos, DraggedOver dragId _ currentTimeStamp draggablePos _, _ ) ->
             if timeStamp == currentTimeStamp then
                 -- Handle dragover bubbling, if we already have handled this event
                 -- (by looking at the timeStamp), do nothing. Also, this does some rate limiting
@@ -214,16 +219,31 @@ updateCommon sticky msg model =
 
             else
                 -- Update coordinates
-                ( DraggedOver dragId dropId timeStamp (Just pos), Nothing )
+                ( DraggedOver dragId dropId timeStamp draggablePos (Just pos), Nothing )
 
-        ( Drop dropId pos, Dragging dragId _, _ ) ->
-            ( NotDragging, Just ( dragId, dropId, pos ) )
+        ( Drop dropId pos, Dragging dragId draggablePos, _ ) ->
+            let
+                pos_ =
+                    getFinalPosition draggablePos pos
+            in
+            ( NotDragging, Just ( dragId, dropId, pos_ ) )
 
-        ( Drop dropId pos, DraggedOver dragId _ _ _, _ ) ->
-            ( NotDragging, Just ( dragId, dropId, pos ) )
+        ( Drop dropId pos, DraggedOver dragId _ _ draggablePos _, _ ) ->
+            let
+                pos_ =
+                    getFinalPosition draggablePos pos
+            in
+            ( NotDragging, Just ( dragId, dropId, pos_ ) )
 
         _ ->
             ( model, Nothing )
+
+
+getFinalPosition draggablePos pos =
+    { pos
+        | x = pos.x - draggablePos.offsetX
+        , y = pos.y - draggablePos.offsetY
+    }
 
 
 {-| Attributes to make a node draggable.
@@ -271,9 +291,9 @@ timeStampDecoder =
     Json.at [ "timeStamp" ] Json.float |> Json.map round
 
 
-positionDecoder : Json.Decoder Position
+positionDecoder : Json.Decoder DroppablePosition
 positionDecoder =
-    Json.map4 Position
+    Json.map4 DroppablePosition
         (Json.at [ "currentTarget", "clientWidth" ] Json.int)
         (Json.at [ "currentTarget", "clientHeight" ] Json.int)
         (Json.at [ "offsetX" ] Json.float |> Json.map round)
@@ -301,7 +321,7 @@ getDragId model =
         Dragging dragId _ ->
             Just dragId
 
-        DraggedOver dragId dropId _ _ ->
+        DraggedOver dragId dropId _ _ _ ->
             Just dragId
 
 
@@ -323,16 +343,16 @@ getDropId model =
         Dragging dragId _ ->
             Nothing
 
-        DraggedOver dragId dropId _ _ ->
+        DraggedOver dragId dropId _ _ _ ->
             Just dropId
 
 
 {-| Get the current `Position` when dragging over the droppable.
 -}
-getDroppablePosition : Model dragId dropId -> Maybe Position
+getDroppablePosition : Model dragId dropId -> Maybe DroppablePosition
 getDroppablePosition model =
     case model of
-        DraggedOver _ _ _ pos ->
+        DraggedOver _ _ _ _ pos ->
             pos
 
         _ ->
@@ -357,7 +377,7 @@ getDragstartEvent msg =
             Nothing
 
 
-{-| polyfill for onWithOptions
+{-| Polyfill for onWithOptions
 -}
 onWithOptions :
     String

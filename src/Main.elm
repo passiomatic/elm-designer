@@ -502,15 +502,6 @@ update msg model =
 
         DragDropMsg msg_ ->
             let
-                dragEvent =
-                    DragDrop.getDragstartEvent msg_
-                        |> Maybe.map DragDrop2.dragEvent
-                        |> Maybe.andThen
-                            (\event ->
-                                event
-                            )
-                        |> Maybe.withDefault { offsetX = model.dragOffsetX, offsetY = model.dragOffsetY }
-
                 ( newDragDrop, dragDropResult ) =
                     DragDrop.update msg_ model.dragDrop
 
@@ -521,12 +512,12 @@ update msg model =
                                 ( newSeeds_, maybeNode, newZipper ) =
                                     DragDrop2.getDroppedNode model
                                         dragId
-                                        { x = toFloat position.x - toFloat model.dragOffsetX
-                                        , y = toFloat position.y - toFloat model.dragOffsetY
+                                        { x = toFloat position.x 
+                                        , y = toFloat position.y
                                         }
 
-                                _ =
-                                    Debug.log "Final Position->" position
+                                -- _ =
+                                --     Debug.log "Final Position->" position
                             in
                             case maybeNode of
                                 Just node ->
@@ -554,8 +545,6 @@ update msg model =
                         UndoList.mapPresent (\_ -> newDocument) model.document
                 , seeds = newSeeds
                 , saveState = Changed model.currentTime
-                , dragOffsetX = dragEvent.offsetX
-                , dragOffsetY = dragEvent.offsetY
               }
             , DragDrop.getDragstartEvent msg_
                 |> Maybe.map DragDrop2.setDragImage
