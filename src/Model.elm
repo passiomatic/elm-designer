@@ -34,6 +34,7 @@ import Style.Border exposing (BorderStyle)
 import Style.Font as Font exposing (..)
 import Style.Input as Input exposing (LabelPosition(..))
 import Style.Layout as Layout exposing (..)
+import Style.Shadow as Shadow exposing (..)
 import Style.Theme as Theme exposing (Theme)
 import Task
 import Time exposing (Posix)
@@ -69,6 +70,7 @@ type Msg
     | BorderColorChanged String
     | BorderStyleChanged BorderStyle
     | ShadowColorChanged String
+    | ShadowTypeChanged ShadowType
     | LabelPositionChanged LabelPosition
     | LabelColorChanged String
     | FieldEditingStarted Widget String

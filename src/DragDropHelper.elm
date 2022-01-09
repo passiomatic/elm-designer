@@ -1,11 +1,9 @@
-module DragDrop2 exposing (addDroppedNode, dragEvent, getDroppedNode, setDragImage)
+module DragDropHelper exposing (addDroppedNode, getDroppedNode, setDragImage)
 
 {-| Drag and drop helpers.
 -}
 
---import Html5.DragDrop as DragDrop
-
-import Document exposing (DragEvent, DragId(..), DropId(..), Node)
+import Document exposing (DragId(..), DropId(..), Node)
 import Json.Decode as Decode exposing (Decoder, Value)
 import Model exposing (..)
 import Ports
@@ -99,42 +97,8 @@ addDroppedNode model dropId node zipper =
 
 setDragImage dragStart =
     case dragStart.dragId of
-        Drag node ->
-            let
-                -- _ =
-                --     Debug.log "DragEvent" (Decode.decodeValue dragEventDecoder dragStart.event)
-                -- TODO Check node.widthMin as fallback
-                width =
-                    case node.width of
-                        Px value ->
-                            value
-
-                        _ ->
-                            999
-
-                height =
-                    case node.heightMin of
-                        Just value ->
-                            value
-
-                        _ ->
-                            999
-            in
-            Ports.setDragImage { event = dragStart.event, width = Just width, height = Just height }
+        Drag _ ->
+            Ports.setDragImage { event = dragStart.event, dragging = True }
 
         _ ->
-            -- Use intrisct dimensions
-            Ports.setDragImage { event = dragStart.event, width = Nothing, height = Nothing }
-
-
-dragEvent value =
-    Decode.decodeValue dragEventDecoder value.event 
-        |> Result.toMaybe 
-        |> Debug.log "Start position->"
-
-
-dragEventDecoder : Decoder DragEvent
-dragEventDecoder =
-    Decode.map2 DragEvent
-        (Decode.field "offsetX" Decode.float |> Decode.map round)
-        (Decode.field "offsetY" Decode.float |> Decode.map round)
+            Ports.setDragImage { event = dragStart.event, dragging = False }
