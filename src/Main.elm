@@ -902,29 +902,21 @@ revealNode model node =
                 _ ->
                     0
     in
-    Dom.getElement (Document.nodeId node.id)
+    Dom.getElement (Model.workspaceWrapperId)
         |> Task.andThen
-            (\info ->
+            (\workspace ->
                 let
                     _ =
-                        Debug.log "info.element.x" info
+                        Debug.log "workspace.element.x" workspace
+
+                    offsetX = 
+                        Debug.log "offsetX" (node.offsetX - workspace.element.width / 2 + length node.width / 2) 
+
+                    offsetY =
+                        -- TODO: Pages has 0px lenght 
+                        Debug.log "offsetY"  (node.offsetY - workspace.element.height / 2 + length node.height / 2)                        
                 in
-                     
-                (if info.element.x < info.viewport.width || info.element.y < info.viewport.height  then 
-                    Task.fail (NotFound "xxx")
-                else 
-                    let
-
-                        offsetX = 
-                            Debug.log "offsetX" (info.element.x - (info.viewport.width / 2) + (length node.width / 2))
-
-                        offsetY =
-                            -- A tad above the middle line, so we can see the top part of the element
-                            Debug.log "offsetY" (info.element.y - (info.viewport.height / 2) + 100)
-
-                    in
-                    Dom.setViewportOf Model.workspaceWrapperId offsetX offsetY
-                )
+                Dom.setViewportOf Model.workspaceWrapperId offsetX offsetY
             )
         |> Task.attempt (\_ -> NoOp)
 

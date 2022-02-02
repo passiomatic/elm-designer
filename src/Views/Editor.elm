@@ -101,9 +101,7 @@ workspaceView model =
                 ]
             , A.style "width" (px Document.workspaceWidth)
             , A.style "height" (px Document.workspaceHeight)
-
-            --, transformAttr
-            --, transformOriginAttr
+            , A.id "workspace"
             ]
             [ documentView model
             ]

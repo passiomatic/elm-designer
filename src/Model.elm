@@ -15,7 +15,7 @@ module Model exposing
     , WidgetState(..)
     , context
     , initialModel
-    , workspaceWrapperId
+    , workspaceWrapperId, workspaceId
     )
 
 import Bootstrap.Tab as Tab
@@ -350,3 +350,7 @@ initialModel { width, height, seed1, seed2, seed3, seed4, platform } =
 
 workspaceWrapperId =
     "workspace-wrapper"
+
+
+workspaceId =
+    "workspace"
