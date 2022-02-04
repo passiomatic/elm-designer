@@ -15,7 +15,8 @@ module Model exposing
     , WidgetState(..)
     , context
     , initialModel
-    , workspaceWrapperId, workspaceId
+    , workspaceId
+    , workspaceWrapperId
     )
 
 import Bootstrap.Tab as Tab
@@ -198,7 +199,7 @@ type alias Model =
     , uploadState : UploadState
     , collapsedTreeItems : Set String
     , contextMenu : ContextMenu ContextMenuPopup
-    , isMac: Bool 
+    , isMac : Bool
     }
 
 

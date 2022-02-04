@@ -7,7 +7,7 @@ import CodeGen
 import Codecs
 import ContextMenu exposing (ContextMenu)
 import Dict exposing (Dict)
-import Document exposing (DragId(..), DropId(..), Node, Viewport(..))
+import Document exposing (DragId(..), DropId(..), Node, Viewport(..), nodeId)
 import DragDropHelper
 import Element exposing (Orientation(..))
 import Env
@@ -359,10 +359,10 @@ update msg model =
             in
             case maybeZipper of
                 Just zipper ->
-                    let
-                        node =
-                            Zipper.label zipper
-                    in
+                    -- let
+                    --     node =
+                    --         Zipper.label zipper
+                    -- in
                     ( { model
                         | document =
                             UndoList.mapPresent
@@ -375,7 +375,7 @@ update msg model =
                         , inspector = NotEdited
                       }
                     , if reveal then
-                        revealNode model node
+                        revealNode model zipper
 
                       else
                         Cmd.none
@@ -891,9 +891,12 @@ focusElement id =
     Task.attempt (\_ -> NoOp) (Dom.focus id)
 
 
-revealNode : Model -> Node -> Cmd Msg
-revealNode model node =
+revealNode : Model -> Zipper Node -> Cmd Msg
+revealNode _ zipper =
     let
+        node =
+            Zipper.label zipper
+
         length value =
             case value of
                 Px value_ ->
@@ -902,23 +905,27 @@ revealNode model node =
                 _ ->
                     0
     in
-    Dom.getElement (Model.workspaceWrapperId)
-        |> Task.andThen
-            (\workspace ->
-                let
-                    _ =
-                        Debug.log "workspace.element.x" workspace
+    case Document.selectPageOf node.id zipper |> Maybe.map Zipper.label of
+        Just page ->
+            Dom.getElement workspaceWrapperId
+                |> Task.andThen
+                    (\workspace ->
+                        let
+                            offsetX =
+                                --Debug.log "offsetX" (page.offsetX - workspace.element.width / 2 + length page.width / 2)
+                                page.offsetX - workspace.element.width / 2 + length page.width / 2
 
-                    offsetX = 
-                        Debug.log "offsetX" (node.offsetX - workspace.element.width / 2 + length node.width / 2) 
+                            offsetY =
+                                -- TODO: Pages with default size have always  0px length
+                                --Debug.log "offsetY" (page.offsetY - workspace.element.height / 2 + length page.height / 2)
+                                page.offsetY - workspace.element.height / 2 + length page.height / 2
+                        in
+                        Dom.setViewportOf Model.workspaceWrapperId offsetX offsetY
+                    )
+                |> Task.attempt (\_ -> NoOp)
 
-                    offsetY =
-                        -- TODO: Pages has 0px lenght 
-                        Debug.log "offsetY"  (node.offsetY - workspace.element.height / 2 + length node.height / 2)                        
-                in
-                Dom.setViewportOf Model.workspaceWrapperId offsetX offsetY
-            )
-        |> Task.attempt (\_ -> NoOp)
+        Nothing ->
+            Cmd.none
 
 
 
