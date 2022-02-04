@@ -16,8 +16,6 @@ The [one minute gude][guide] is waiting for you.
 
 Images added to the page are automatically uploaded to [Imgbb][imgbb] servers and will remain available for 180 days.  
 
-By uploading images and referencing them by URL sidesteps a number of issues like: huge serialized JSON files, hit `localStorage` quota limits, and dealing with clumsy generated code.
-
 ## Limitations
 
 - UI is still pretty crude since the app is in an exploratory phase and I'm trying out different ideas.
@@ -29,11 +27,11 @@ Elm Designer uses [Parcel][2] to compile Elm and SASS source. To install all the
 
     npm ci 
 
-To run it locally in dev mode type
+To run it locally in dev mode type:
 
     make dev
 
-or if your prefer to turn off the Elm debugger type
+or if your prefer to turn off the Elm debugger type:
 
     make dev-no-debug
 
@@ -41,7 +39,7 @@ or if your prefer to turn off the Elm debugger type
 
     IMGBB_API_KEY=your-API-key
 
-The build process will create a `Env.imgbbApiKey` value.
+Then the build process will create a `Env.imgbbApiKey` value.
 
 [2]: https://parceljs.org
 [d]: https://github.com/passiomatic/elm-designer/releases/tag/v0.3.0
