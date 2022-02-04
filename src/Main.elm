@@ -298,25 +298,21 @@ update msg model =
                         zipper =
                             Zipper.fromTree document.root
 
-                        -- newZipper =
-                        --     Document.selectNodeWith document.selectedNodeId zipper
-                        -- centerCmd =
-                        --     case Document.selectPageOf selectedNode newZipper of
-                        --         Just zipper ->
-                        --         Nothing ->
-                        --             Cmd.none
                         -- FIXME: Avoid zipper _and_ newZipper
                         newZipper =
                             zipper
                                 |> Document.selectNodeWith document.selectedNodeId
                                 |> Maybe.withDefault zipper
+
+                        centerCmd =
+                            revealNode model newZipper
                     in
                     ( { model
                         | document = UndoList.fresh newZipper
                         , viewport = document.viewport
                         , saveState = Original
                       }
-                    , Cmd.none
+                    , centerCmd
                     )
 
                 Err reason ->
@@ -896,14 +892,6 @@ revealNode _ zipper =
     let
         node =
             Zipper.label zipper
-
-        length value =
-            case value of
-                Px value_ ->
-                    toFloat value_
-
-                _ ->
-                    0
     in
     case Document.selectPageOf node.id zipper |> Maybe.map Zipper.label of
         Just page ->
@@ -913,12 +901,11 @@ revealNode _ zipper =
                         let
                             offsetX =
                                 --Debug.log "offsetX" (page.offsetX - workspace.element.width / 2 + length page.width / 2)
-                                page.offsetX - workspace.element.width / 2 + length page.width / 2
+                                page.offsetX - workspace.element.width / 2 + pageWidth page / 2
 
                             offsetY =
-                                -- TODO: Pages with default size have always  0px length
                                 --Debug.log "offsetY" (page.offsetY - workspace.element.height / 2 + length page.height / 2)
-                                page.offsetY - workspace.element.height / 2 + length page.height / 2
+                                page.offsetY - workspace.element.height / 2 + pageHeight page / 2
                         in
                         Dom.setViewportOf Model.workspaceWrapperId offsetX offsetY
                     )
@@ -928,6 +915,25 @@ revealNode _ zipper =
             Cmd.none
 
 
+pageWidth node =
+    case node.width of
+        Px value_ ->
+            toFloat value_
+
+        _ ->
+            node.widthMin 
+                |> Maybe.map toFloat
+                |> Maybe.withDefault 0
+
+pageHeight node =
+    case node.height of
+        Px value_ ->
+            toFloat value_
+
+        _ ->
+            node.heightMin 
+                |> Maybe.map toFloat
+                |> Maybe.withDefault 0
 
 -- MAIN
 
