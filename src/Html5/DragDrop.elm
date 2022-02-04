@@ -188,10 +188,10 @@ updateCommon sticky msg model =
             ( NotDragging, Nothing )
 
         ( DragEnter dropId, Dragging dragId pos, _ ) ->
-            let
-                _ =
-                    Debug.log "DragEnter on Dragging" pos
-            in
+            -- let
+            --     _ =
+            --         Debug.log "DragEnter on Dragging" pos
+            -- in
             ( DraggedOver dragId dropId 0 pos Nothing, Nothing )
 
         ( DragEnter dropId, DraggedOver dragId _ _ draggablePos droppablePos, _ ) ->

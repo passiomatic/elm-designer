@@ -495,7 +495,7 @@ update msg model =
                 ( newDragDrop, dragDropResult ) =
                     DragDrop.update msg_ model.dragDrop
 
-                ( newSeeds, newDocument, hasNewUndo ) =
+                ( newSeeds, newDocument, wasDragDropSuccessful ) =
                     case dragDropResult of
                         Just ( dragId, dropId, position ) ->
                             let
@@ -513,22 +513,25 @@ update msg model =
                             -- Still going/failed drag and drop operation
                             ( model.seeds, model.document.present, False )
             in
-            ( { model
-                | dragDrop = newDragDrop
-                , document =
-                    if hasNewUndo then
-                        UndoList.new newDocument model.document
+            if wasDragDropSuccessful then
+                ( { model
+                    | dragDrop = newDragDrop
+                    , document = UndoList.new newDocument model.document
+                    , saveState = Changed model.currentTime
+                    , seeds = newSeeds
+                  }
+                -- TODO We should fire this even when D&D fails, however JS will take care of this
+                , Ports.endDrag ()
+                )
 
-                    else
-                        -- Replace current document
-                        UndoList.mapPresent (\_ -> newDocument) model.document
-                , seeds = newSeeds
-                , saveState = Changed model.currentTime
-              }
-            , DragDrop.getDragstartEvent msg_
-                |> Maybe.map DragDropHelper.setDragImage
-                |> Maybe.withDefault Cmd.none
-            )
+            else
+                ( { model
+                    | dragDrop = newDragDrop
+                  }
+                , DragDrop.getDragstartEvent msg_
+                    |> Maybe.map DragDropHelper.setDragImage
+                    |> Maybe.withDefault Cmd.none
+                )
 
         ViewportChanged viewport ->
             ( { model
@@ -921,9 +924,10 @@ pageWidth node =
             toFloat value_
 
         _ ->
-            node.widthMin 
+            node.widthMin
                 |> Maybe.map toFloat
                 |> Maybe.withDefault 0
+
 
 pageHeight node =
     case node.height of
@@ -931,9 +935,11 @@ pageHeight node =
             toFloat value_
 
         _ ->
-            node.heightMin 
+            node.heightMin
                 |> Maybe.map toFloat
                 |> Maybe.withDefault 0
+
+
 
 -- MAIN
 

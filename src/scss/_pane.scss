@@ -46,6 +46,7 @@
   // Force styles to apply to dragged nodes as well
   background: #fff !important;
   color: $body-color !important;
+  white-space: nowrap;
 }
 
 // Inspector

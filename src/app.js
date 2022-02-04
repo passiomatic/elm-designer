@@ -85,14 +85,16 @@ app.ports.setDragImage.subscribe(function (payload) {
     // Safari has issues with big ghost drag images, so set explictly final dimensions
     node.style.width = clientRect.width + "px";
     node.style.height = clientRect.height + "px";
+    node.classList.add("ghost-image");
   } else {
-    // Library/outline
+    // Dragging from Library/outline
     node = payload.event.target.cloneNode(true);
+    node.classList.add("ghost-image");
     node.classList.add("library__item-ghost");
   }
   node.title = "";
   node.style.position = "absolute";
-  node.style.top = "-9999px";
+  node.style.right = "9999px"; // Put offscreen
   document.body.appendChild(node);
 
   // console.log("event.clientX "+ payload.event.clientX)
@@ -100,6 +102,13 @@ app.ports.setDragImage.subscribe(function (payload) {
   var offsetX = payload.event.clientX - clientRect.left;
   var offsetY = payload.event.clientY - clientRect.top;
   payload.event.dataTransfer.setDragImage(node, offsetX, offsetY);
+});
+
+app.ports.endDrag.subscribe(function () {
+  // Cleanup
+  document.querySelectorAll(".ghost-image").forEach((el) => {
+    el.remove(); 
+  });
 });
 
 // app.ports.setDragCursor.subscribe(function (event, cursor) {
