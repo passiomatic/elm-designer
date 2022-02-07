@@ -150,6 +150,7 @@ nodeId value =
 
 type alias Node =
     { id : NodeId
+    , index : Int
     , name : String
     , width : Length
     , widthMin : Maybe Int
@@ -214,6 +215,7 @@ baseTemplate : Node
 baseTemplate =
     { name = ""
     , id = UUID.forName "node-element" defaultNamespace
+    , index = 0
     , width = Layout.fit
     , widthMin = Nothing
     , widthMax = Nothing
@@ -381,8 +383,11 @@ fromTemplateAt position template seeds indexer =
                 ( uuid, newSeeds ) =
                     generateId seeds_
 
+                nextIndex = 
+                    indexer template_.type_ 
+
                 newName =
-                    template_.name ++ " " ++ (indexer template_.type_ |> String.fromInt)
+                    template_.name ++ " " ++ (String.fromInt nextIndex)
 
                 newNode =
                     case template_.type_ of
@@ -390,6 +395,7 @@ fromTemplateAt position template seeds indexer =
                         PageNode ->
                             { template_
                                 | id = uuid
+                                , index = nextIndex 
                                 , name = newName
                                 , offsetX = position.x
                                 , offsetY = position.y
@@ -398,6 +404,7 @@ fromTemplateAt position template seeds indexer =
                         _ ->
                             { template_
                                 | id = uuid
+                                , index = nextIndex 
                                 , name = newName
                             }
             in
@@ -562,8 +569,8 @@ getNextIndexFor : NodeType -> Zipper Node -> Int
 getNextIndexFor type_ zipper =
     T.foldl
         (\node accum ->
-            if type_ == node.type_ then
-                accum + 1
+            if type_ == node.type_ && node.index >= accum then
+                node.index + 1
 
             else
                 accum

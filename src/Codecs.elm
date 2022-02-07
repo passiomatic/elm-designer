@@ -104,6 +104,7 @@ nodeCodec : Codec Node
 nodeCodec =
     Codec.object Node
         |> Codec.field "id" .id nodeIdCodec
+        |> Codec.field "index" .index Codec.int
         |> Codec.field "name" .name Codec.string
         |> Codec.field "width" .width lengthCodec
         |> Codec.field "widthMin" .widthMin (Codec.maybe Codec.int)
