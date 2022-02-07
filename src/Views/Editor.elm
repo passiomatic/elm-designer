@@ -101,9 +101,7 @@ workspaceView model =
                 ]
             , A.style "width" (px Document.workspaceWidth)
             , A.style "height" (px Document.workspaceHeight)
-
-            --, transformAttr
-            --, transformOriginAttr
+            , A.id "workspace"
             ]
             [ documentView model
             ]
@@ -147,7 +145,7 @@ headerView model =
                 DesignMode ->
                     H.button
                         ([ A.type_ "button"
-                         , A.class "btn btn-light btn-sm"
+                         , A.class "btn btn-secondary btn-sm"
                          , E.onClick (ModeChanged PreviewMode)
                          ]
                             |> Common.addTooltipDown "Start preview mode"
@@ -157,7 +155,7 @@ headerView model =
                 PreviewMode ->
                     H.button
                         ([ A.type_ "button"
-                         , A.class "btn btn-light btn-sm"
+                         , A.class "btn btn-secondary btn-sm"
                          , E.onClick (ModeChanged DesignMode)
                          ]
                             |> Common.addTooltipDown "Stop preview mode"
@@ -167,17 +165,17 @@ headerView model =
     H.header [ A.class "header d-flex justify-content-between align-items-center bp-2 border-bottom", A.style "gap" "1rem" ]
         [ insertView model
         , undoRedoView model
-        , zoomView model
 
+        --, zoomView model
         --, modeButton
         ]
 
 
 undoRedoView model =
-    H.div [ A.class "me-auto" ]
+    H.div [ A.class "me-auto btn-group" ]
         [ H.button
             ([ A.type_ "button"
-             , A.class "btn btn-light btn-sm"
+             , A.class "btn btn-secondary btn-sm"
              , A.disabled (not (UndoList.hasPast model.document))
              , E.onClick Undo
              ]
@@ -186,7 +184,7 @@ undoRedoView model =
             [ Icons.cornerUpLeft ]
         , H.button
             ([ A.type_ "button"
-             , A.class "btn btn-light btn-sm"
+             , A.class "btn btn-secondary btn-sm"
              , A.disabled (not (UndoList.hasFuture model.document))
              , E.onClick Redo
              ]
@@ -213,7 +211,7 @@ insertView model =
         [ A.class "dropdown"
         ]
         [ H.button
-            [ A.class "btn btn-light btn-sm dropdown-toggle"
+            [ A.class "btn btn-secondary btn-sm dropdown-toggle"
             , A.type_ "button"
             , E.onClick
                 (DropDownChanged
@@ -246,13 +244,12 @@ dividerView =
 
 
 insertImageView : Node -> Html Msg
-insertImageView container =
+insertImageView node =
     H.li []
         [ H.button
             [ A.classList
                 [ ( "dropdown-item", True )
-
-                --, ( "disabled", not (Document.canDropInto container) )
+                , ( "disabled", not (Document.canInsertInto node Document.blankImageNode || Document.canInsertNextTo node Document.blankImageNode) )
                 ]
             , A.type_ "button"
             , E.onClick InsertImageClicked
@@ -262,7 +259,7 @@ insertImageView container =
 
 
 insertItemView : Node -> LibraryItem Msg -> Html Msg
-insertItemView container item =
+insertItemView node item =
     let
         template =
             T.label item.root
@@ -271,7 +268,7 @@ insertItemView container item =
         [ H.button
             [ A.classList
                 [ ( "dropdown-item", True )
-                , ( "disabled", not (Document.canDropInto container template) )
+                , ( "disabled", not (Document.canInsertInto node template.type_ || Document.canInsertNextTo node template.type_) )
                 ]
             , A.type_ "button"
             , E.onClick (InsertNodeClicked item.root)
@@ -450,7 +447,7 @@ outlineItemView model node children =
 
         topHint =
             H.div
-                (makeDroppableIf (Common.canDropSibling node model.dragDrop)
+                (makeDroppableIf (Common.canDropNextTo node model.dragDrop)
                     (InsertBefore node.id)
                     [ A.classList
                         [ ( "tree__drop-hint tree__drop-hint--before", True )
@@ -462,7 +459,7 @@ outlineItemView model node children =
 
         bottomHint =
             H.div
-                (makeDroppableIf (Common.canDropSibling node model.dragDrop)
+                (makeDroppableIf (Common.canDropNextTo node model.dragDrop)
                     (InsertAfter node.id)
                     [ A.classList
                         [ ( "tree__drop-hint tree__drop-hint--after", True )
@@ -579,7 +576,9 @@ emptyDocumentNotice model node =
             ]
             :: makeDroppableIf (Common.canDropInto node model.dragDrop) (AppendTo node.id) []
         )
-        []
+        [ H.div [ A.class "large fw-bold" ] [ H.text "Workspace is empty" ]
+        , H.text "Start adding pages."
+        ]
 
 
 treeLabel node =

@@ -1,14 +1,6 @@
 .font-size-dropdown {
     min-width: 3.75rem;   
-}
-
-// Blue button pills
-.btn-light:not(:disabled):not(.disabled):active, 
-.btn-light:not(:disabled):not(.disabled).active, 
-.show > .btn-light.dropdown-toggle {
-    color: white;
-    background-color: $primary;
-    border-color: $primary;
+    transform: translate(0px, 30px);
 }
 
 // Hide spinners from numeric inputs 

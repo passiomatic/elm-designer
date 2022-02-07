@@ -23,6 +23,7 @@ import Style.Border as Border exposing (BorderStyle(..))
 import Style.Font as Font exposing (..)
 import Style.Input as Input exposing (..)
 import Style.Layout as Layout exposing (..)
+import Style.Shadow as Shadow
 import Style.Theme as Theme
 import Tree as T exposing (Tree)
 import Tree.Zipper as Zipper exposing (Zipper)
@@ -705,7 +706,6 @@ addDropdown widgetId_ state items parent =
                 Hidden ->
                     False
     in
-    -- FIXME: https://getbootstrap.com/docs/5.0/forms/input-group/
     H.div [ A.class "input-group" ]
         [ parent
         , H.div
@@ -717,9 +717,8 @@ addDropdown widgetId_ state items parent =
             ]
             items
         , H.button
-            [ --A.attribute "aria-expanded" "false"
-              A.attribute "aria-haspopup" "true"
-            , A.class "btn btn-light btn-sm dropdown-toggle"
+            [ A.attribute "aria-haspopup" "true"
+            , A.class "btn btn-outline-secondary btn-sm dropdown-toggle"
             , E.onClick
                 (DropDownChanged
                     (if visible then
@@ -733,7 +732,7 @@ addDropdown widgetId_ state items parent =
             --, A.attribute "data-toggle" "dropdown"
             , A.type_ "button"
             ]
-            [ H.text "" ]
+            [ H.span [ A.class "visually-hidden" ] [ H.text "Pick a font size" ] ]
         ]
 
 
@@ -840,6 +839,32 @@ shadowView model { shadow } =
                             ]
                             []
                         ]
+                    ]
+                ]
+            ]
+        , H.div [ A.class "row align-items-center mb-2" ]
+            [ H.label [ A.class "col-3 col-form-label-sm m-0 text-nowrap" ]
+                [ H.text "Type" ]
+            , H.div [ A.class "col-9 d-flex" ]
+                [ H.div [ A.class "btn-group w-100 mb-2", A.attribute "role" "group" ]
+                    [ H.button
+                        [ A.classList
+                            [ ( "btn btn-secondary btn-sm", True )
+                            , ( "active", Shadow.isInner shadow.type_ )
+                            ]
+                        , E.onClick (ShadowTypeChanged Shadow.Inner)
+                        , A.type_ "button"
+                        ]
+                        [ H.text "Inner" ]
+                    , H.button
+                        [ A.classList
+                            [ ( "btn btn-secondary btn-sm", True )
+                            , ( "active", Shadow.isOuter shadow.type_ )
+                            ]
+                        , E.onClick (ShadowTypeChanged Shadow.Outer)
+                        , A.type_ "button"
+                        ]
+                        [ H.text "Outer" ]
                     ]
                 ]
             ]
@@ -1087,7 +1112,7 @@ borderStyleView model borderStyle =
             [ H.div [ A.class "btn-group w-100", A.attribute "role" "group" ]
                 [ H.button
                     [ A.classList
-                        [ ( "btn btn-outline-secondary btn-sm", True )
+                        [ ( "btn btn-secondary btn-sm", True )
                         , ( "active", Border.isSolid borderStyle )
                         ]
                     , E.onClick (BorderStyleChanged Solid)
@@ -1096,7 +1121,7 @@ borderStyleView model borderStyle =
                     [ H.text "Solid" ]
                 , H.button
                     [ A.classList
-                        [ ( "btn btn-outline-secondary btn-sm", True )
+                        [ ( "btn btn-secondary btn-sm", True )
                         , ( "active", Border.isDashed borderStyle )
                         ]
                     , E.onClick (BorderStyleChanged Dashed)
@@ -1105,7 +1130,7 @@ borderStyleView model borderStyle =
                     [ H.text "Dashed" ]
                 , H.button
                     [ A.classList
-                        [ ( "btn btn-outline-secondary btn-sm", True )
+                        [ ( "btn btn-secondary btn-sm", True )
                         , ( "active", Border.isDotted borderStyle )
                         ]
                     , E.onClick (BorderStyleChanged Dotted)
@@ -1209,7 +1234,7 @@ backgroundView model { background } =
         , H.div [ A.class "btn-group w-100 mb-2", A.attribute "role" "group" ]
             [ H.button
                 [ A.classList
-                    [ ( "btn btn-outline-secondary btn-sm", True )
+                    [ ( "btn btn-secondary btn-sm", True )
                     , ( "active", Background.isNone background )
                     ]
                 , E.onClick (BackgroundChanged Background.None)
@@ -1218,7 +1243,7 @@ backgroundView model { background } =
                 [ H.text "None" ]
             , H.button
                 [ A.classList
-                    [ ( "btn btn-outline-secondary btn-sm", True )
+                    [ ( "btn btn-secondary btn-sm", True )
                     , ( "active", Background.isSolid background )
                     ]
                 , E.onClick (BackgroundChanged (Background.Solid Palette.white))
@@ -1227,7 +1252,7 @@ backgroundView model { background } =
                 [ H.text "Color" ]
             , H.button
                 [ A.classList
-                    [ ( "btn btn-outline-secondary btn-sm", True )
+                    [ ( "btn btn-secondary btn-sm", True )
                     , ( "active", Background.isImage background )
                     ]
                 , E.onClick (BackgroundChanged (Background.Image ""))
@@ -1358,49 +1383,52 @@ lengthView model node =
 pageLengthView : Model -> Node -> Html Msg
 pageLengthView model node =
     H.div [ A.class "mb-3" ]
-        [ presetSizeView model
+        [ presetSizeView model node
         , pageWidthView model node
         , pageHeightView model node
         ]
 
 
-presetSizeView : Model -> Html Msg
-presetSizeView model =
+presetSizeView : Model -> Node -> Html Msg
+presetSizeView model node =
     H.div [ A.class "row align-items-center mb-2" ]
         [ H.label [ A.class "col-3 col-form-label-sm m-0" ]
             [ H.text "Preset" ]
         , H.div [ A.class "col-9" ]
             [ H.select [ E.onInput PresetSizeChanged, A.class "form-select form-select-sm" ]
-                (Dict.values
-                    (Dict.map
-                        (\name ( width, height, _ ) ->
-                            let
-                                label =
-                                    name
-                                        ++ Entity.ensp
-                                        ++ String.fromInt width
-                                        ++ Entity.times
-                                        ++ String.fromInt height
-                                        ++ "px"
-
-                                -- Custom w h _ ->
-                                --     "Custom"
-                                --         ++ " "
-                                --         ++ Entity.mdash
-                                --         ++ " "
-                                --         ++ String.fromInt w
-                                --         ++ Entity.times
-                                --         ++ String.fromInt h
-                                --         ++ " px"
-                            in
-                            H.option [ A.value name ]
-                                [ H.text label ]
+                (H.option [] [ H.text "Custom" ]
+                    :: Dict.values
+                        (Dict.map
+                            (\name ( width, height, orientation ) ->
+                                let
+                                    label =
+                                        name
+                                            ++ Entity.ensp
+                                            ++ String.fromInt width
+                                            ++ Entity.times
+                                            ++ String.fromInt height
+                                            ++ "px"
+                                            ++ Entity.ensp
+                                            ++ orientationLabel orientation
+                                in
+                                H.option [ A.selected (node.width == Px width && node.heightMin == Just height), A.value name ]
+                                    [ H.text label ]
+                            )
+                            Document.deviceInfo
                         )
-                        Document.deviceInfo
-                    )
                 )
             ]
         ]
+
+
+orientationLabel : Orientation -> String
+orientationLabel value =
+    case value of
+        Portrait ->
+            "Portrait"
+
+        Landscape ->
+            "Landscape"
 
 
 wrapRowOptionView : Bool -> Html Msg
@@ -1450,7 +1478,7 @@ widthView model { width, widthMin, widthMax } =
             [ H.div [ A.class "btn-group w-100 mb-1", A.attribute "role" "group" ]
                 [ H.button
                     [ A.classList
-                        [ ( "btn btn-outline-secondary btn-sm", True )
+                        [ ( "btn btn-secondary btn-sm", True )
                         , ( "active", isContent width )
                         ]
                     , E.onClick (WidthChanged Layout.fit)
@@ -1461,7 +1489,7 @@ widthView model { width, widthMin, widthMax } =
                     Fill value ->
                         H.button
                             [ A.classList
-                                [ ( "btn btn-outline-secondary btn-sm", True )
+                                [ ( "btn btn-secondary btn-sm", True )
                                 , ( "active", True )
                                 ]
                             , E.onClick (WidthChanged (Layout.portion value))
@@ -1472,7 +1500,7 @@ widthView model { width, widthMin, widthMax } =
                     _ ->
                         H.button
                             [ A.classList
-                                [ ( "btn btn-outline-secondary btn-sm", True )
+                                [ ( "btn btn-secondary btn-sm", True )
                                 ]
                             , E.onClick (WidthChanged Layout.fill)
                             , A.type_ "button"
@@ -1482,7 +1510,7 @@ widthView model { width, widthMin, widthMax } =
                     Px value ->
                         H.button
                             [ A.classList
-                                [ ( "btn btn-outline-secondary btn-sm", True )
+                                [ ( "btn btn-secondary btn-sm", True )
                                 , ( "active", isPxOrUnspecified width )
                                 ]
                             , E.onClick (WidthChanged (Layout.px value))
@@ -1493,7 +1521,7 @@ widthView model { width, widthMin, widthMax } =
                     _ ->
                         H.button
                             [ A.classList
-                                [ ( "btn btn-outline-secondary btn-sm", True )
+                                [ ( "btn btn-secondary btn-sm", True )
                                 , ( "active", isPxOrUnspecified width )
                                 ]
                             , E.onClick (WidthChanged Layout.unspecified)
@@ -1569,14 +1597,13 @@ pageWidthView model { width, widthMin, widthMax } =
                     Maybe.map String.fromInt widthMin
                         |> Maybe.withDefault ""
 
-        max =
-            case model.inspector of
-                EditingField WidthMaxField new ->
-                    new
-
-                _ ->
-                    Maybe.map String.fromInt widthMax
-                        |> Maybe.withDefault ""
+        -- max =
+        --     case model.inspector of
+        --         EditingField WidthMaxField new ->
+        --             new
+        --         _ ->
+        --             Maybe.map String.fromInt widthMax
+        --                 |> Maybe.withDefault ""
     in
     H.div [ A.class "row align-items-center mb-3" ]
         [ H.label [ A.class "col-3 col-form-label-sm m-0" ]
@@ -1596,7 +1623,8 @@ pageWidthView model { width, widthMin, widthMax } =
                         in
                         [ numericFieldView WidthPxField "Exact" value_
                         , numericFieldView WidthMinField "Min." min
-                        , numericFieldView WidthMaxField "Max." max
+
+                        --, numericFieldView WidthMaxField "Max." max
                         ]
 
                     Unspecified ->
@@ -1611,7 +1639,8 @@ pageWidthView model { width, widthMin, widthMax } =
                         in
                         [ numericFieldView WidthPxField "Exact" value_
                         , numericFieldView WidthMinField "Min." min
-                        , numericFieldView WidthMaxField "Max." max
+
+                        --, numericFieldView WidthMaxField "Max." max
                         ]
 
                     _ ->
@@ -1650,7 +1679,7 @@ heightView model { height, heightMin, heightMax } =
                 [ H.div [ A.class "btn-group w-100 mb-1", A.attribute "role" "group" ]
                     [ H.button
                         [ A.classList
-                            [ ( "btn btn-outline-secondary btn-sm", True )
+                            [ ( "btn btn-secondary btn-sm", True )
                             , ( "active", isContent height )
                             ]
                         , E.onClick (HeightChanged Layout.fit)
@@ -1661,7 +1690,7 @@ heightView model { height, heightMin, heightMax } =
                         Fill value ->
                             H.button
                                 [ A.classList
-                                    [ ( "btn btn-outline-secondary btn-sm", True )
+                                    [ ( "btn btn-secondary btn-sm", True )
                                     , ( "active", True )
                                     ]
                                 , E.onClick (HeightChanged (Layout.portion value))
@@ -1672,7 +1701,7 @@ heightView model { height, heightMin, heightMax } =
                         _ ->
                             H.button
                                 [ A.classList
-                                    [ ( "btn btn-outline-secondary btn-sm", True )
+                                    [ ( "btn btn-secondary btn-sm", True )
                                     ]
                                 , E.onClick (HeightChanged Layout.fill)
                                 , A.type_ "button"
@@ -1682,7 +1711,7 @@ heightView model { height, heightMin, heightMax } =
                         Px value ->
                             H.button
                                 [ A.classList
-                                    [ ( "btn btn-outline-secondary btn-sm", True )
+                                    [ ( "btn btn-secondary btn-sm", True )
                                     , ( "active", isPxOrUnspecified height )
                                     ]
                                 , E.onClick (HeightChanged (Layout.px value))
@@ -1693,7 +1722,7 @@ heightView model { height, heightMin, heightMax } =
                         _ ->
                             H.button
                                 [ A.classList
-                                    [ ( "btn btn-outline-secondary btn-sm", True )
+                                    [ ( "btn btn-secondary btn-sm", True )
                                     , ( "active", isPxOrUnspecified height )
                                     ]
                                 , E.onClick (HeightChanged Layout.unspecified)
@@ -1770,14 +1799,13 @@ pageHeightView model { height, heightMin, heightMax } =
                     Maybe.map String.fromInt heightMin
                         |> Maybe.withDefault ""
 
-        max =
-            case model.inspector of
-                EditingField HeightMaxField new ->
-                    new
-
-                _ ->
-                    Maybe.map String.fromInt heightMax
-                        |> Maybe.withDefault ""
+        -- max =
+        --     case model.inspector of
+        --         EditingField HeightMaxField new ->
+        --             new
+        --         _ ->
+        --             Maybe.map String.fromInt heightMax
+        --                 |> Maybe.withDefault ""
     in
     H.div []
         [ H.div [ A.class "row align-items-center  mb-3" ]
@@ -1798,7 +1826,8 @@ pageHeightView model { height, heightMin, heightMax } =
                             in
                             [ numericFieldView HeightPxField "Exact" value_
                             , numericFieldView HeightMinField "Min." min
-                            , numericFieldView HeightMaxField "Max." max
+
+                            --, numericFieldView HeightMaxField "Max." max
                             ]
 
                         Unspecified ->
@@ -1813,7 +1842,8 @@ pageHeightView model { height, heightMin, heightMax } =
                             in
                             [ numericFieldView HeightPxField "Exact" value_
                             , numericFieldView HeightMinField "Min." min
-                            , numericFieldView HeightMaxField "Max." max
+
+                            --, numericFieldView HeightMaxField "Max." max
                             ]
 
                         _ ->
@@ -2064,7 +2094,7 @@ textAlignmentView _ value =
         , H.div [ A.class "col-9 btn-group", A.attribute "role" "group" ]
             [ H.button
                 [ A.classList
-                    [ ( "btn btn-outline-secondary btn-sm w-25", True )
+                    [ ( "btn btn-secondary btn-sm w-25", True )
                     , ( "active", value == TextStart )
                     ]
                 , E.onClick (TextAlignChanged TextStart)
@@ -2073,7 +2103,7 @@ textAlignmentView _ value =
                 [ Icons.alignLeft ]
             , H.button
                 [ A.classList
-                    [ ( "btn btn-outline-secondary btn-sm w-25", True )
+                    [ ( "btn btn-secondary btn-sm w-25", True )
                     , ( "active", value == TextCenter )
                     ]
                 , E.onClick (TextAlignChanged TextCenter)
@@ -2082,7 +2112,7 @@ textAlignmentView _ value =
                 [ Icons.alignCenter ]
             , H.button
                 [ A.classList
-                    [ ( "btn btn-outline-secondary btn-sm w-25", True )
+                    [ ( "btn btn-secondary btn-sm w-25", True )
                     , ( "active", value == TextEnd )
                     ]
                 , E.onClick (TextAlignChanged TextEnd)
@@ -2091,7 +2121,7 @@ textAlignmentView _ value =
                 [ Icons.alignRight ]
             , H.button
                 [ A.classList
-                    [ ( "btn btn-outline-secondary btn-sm w-25", True )
+                    [ ( "btn btn-secondary btn-sm w-25", True )
                     , ( "active", value == TextJustify )
                     ]
                 , E.onClick (TextAlignChanged TextJustify)

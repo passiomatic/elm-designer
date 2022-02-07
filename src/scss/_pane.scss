@@ -27,8 +27,6 @@
   cursor: move;
   cursor: grab; // Safari
   border: 1px solid $border-color;
-  max-width: 8rem;
-  flex-grow: 1;
   @include font-size($input-font-size-sm);
   background: #fff;
   color: $body-color;
@@ -48,6 +46,7 @@
   // Force styles to apply to dragged nodes as well
   background: #fff !important;
   color: $body-color !important;
+  white-space: nowrap;
 }
 
 // Inspector

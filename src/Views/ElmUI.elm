@@ -998,13 +998,16 @@ elementClasses ctx node selected =
     let
         dropId =
             AppendTo node.id
+        
+        type_ = 
+            String.replace " " "-" (nodeType node.type_)
     in
     E.htmlAttribute
         (A.classList
             [ ( "element", True )
             , ( "element--dropped", isDroppingInto dropId ctx.dragDrop )
             , ( "element--selected", selected )
-            , ( "element--" ++ nodeType node.type_, True )
+            , ( "element--" ++ type_, True )
             , ( "dragging--file", isDroppingFileInto node.id ctx.fileDrop )
             ]
         )

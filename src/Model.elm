@@ -15,6 +15,7 @@ module Model exposing
     , WidgetState(..)
     , context
     , initialModel
+    , workspaceId
     , workspaceWrapperId
     )
 
@@ -34,6 +35,7 @@ import Style.Border exposing (BorderStyle)
 import Style.Font as Font exposing (..)
 import Style.Input as Input exposing (LabelPosition(..))
 import Style.Layout as Layout exposing (..)
+import Style.Shadow as Shadow exposing (..)
 import Style.Theme as Theme exposing (Theme)
 import Task
 import Time exposing (Posix)
@@ -69,6 +71,7 @@ type Msg
     | BorderColorChanged String
     | BorderStyleChanged BorderStyle
     | ShadowColorChanged String
+    | ShadowTypeChanged ShadowType
     | LabelPositionChanged LabelPosition
     | LabelColorChanged String
     | FieldEditingStarted Widget String
@@ -196,7 +199,7 @@ type alias Model =
     , uploadState : UploadState
     , collapsedTreeItems : Set String
     , contextMenu : ContextMenu ContextMenuPopup
-    , isMac: Bool 
+    , isMac : Bool
     }
 
 
@@ -348,3 +351,7 @@ initialModel { width, height, seed1, seed2, seed3, seed4, platform } =
 
 workspaceWrapperId =
     "workspace-wrapper"
+
+
+workspaceId =
+    "workspace"

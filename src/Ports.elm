@@ -1,5 +1,6 @@
 port module Ports exposing
     ( copyToClipboard
+    , endDrag
     , loadDocument
     , onDocumentLoad
     , saveDocument
@@ -32,7 +33,10 @@ port selectText : String -> Cmd msg
 port setFontLinks : List String -> Cmd msg
 
 
-port setDragImage : Value -> Cmd msg
+port setDragImage : { event : Value, dragging : Bool } -> Cmd msg
+
+
+port endDrag : () -> Cmd msg
 
 
 port showNotification :
@@ -40,6 +44,8 @@ port showNotification :
     , message : String
     }
     -> Cmd msg
+
+
 
 -- PORTS IN
 
