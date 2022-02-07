@@ -113,7 +113,7 @@ heading1 theme =
         T.singleton
             { baseTemplate
                 | type_ = HeadingNode { level = 1, text = "" }
-                , name = "Heading 1"
+                , name = "Heading"
                 , width = Layout.fill
                 , spacing = theme.headingSpacing
                 , fontWeight = theme.headingFontWeight
@@ -133,7 +133,7 @@ heading2 theme =
         T.singleton
             { baseTemplate
                 | type_ = HeadingNode { level = 2, text = "" }
-                , name = "Heading 2"
+                , name = "Heading"
                 , width = Layout.fill
                 , spacing = theme.headingSpacing
                 , fontWeight = theme.headingFontWeight
@@ -153,7 +153,7 @@ heading3 theme =
         T.singleton
             { baseTemplate
                 | type_ = HeadingNode { level = 3, text = "" }
-                , name = "Heading 3"
+                , name = "Heading"
                 , width = Layout.fill
                 , spacing = theme.headingSpacing
                 , fontWeight = theme.headingFontWeight
@@ -396,12 +396,12 @@ radio theme =
             }
             [ T.singleton
                 { baseTemplate
-                    | name = "Option 1"
+                    | name = "Option"
                     , type_ = OptionNode { text = "Option 1" }
                 }
             , T.singleton
                 { baseTemplate
-                    | name = "Option 2"
+                    | name = "Option"
                     , type_ = OptionNode { text = "Option 2" }
                 }
             ]

@@ -66,8 +66,11 @@ getDroppedNode model dragId position =
 
         Insert node ->
             let
+                indexer type_ = 
+                    Document.getNextIndexFor type_ model.document.present
+                                
                 ( newSeeds, newNode ) =
-                    Document.fromTemplateAt position node model.seeds
+                    Document.fromTemplateAt position node model.seeds indexer 
             in
             ( newSeeds, Just newNode, model.document.present )
 

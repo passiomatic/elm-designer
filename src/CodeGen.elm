@@ -1,4 +1,4 @@
-module CodeGen exposing (backgroundModule, emit)
+module CodeGen exposing (emit)
 
 {-| Generate Elm code for a given tree node.
 -}
@@ -252,8 +252,8 @@ emitFontLinks tree =
 emitNode : Theme -> Node -> List EmittedNode -> EmittedNode
 emitNode theme node children =
     case node.type_ of
-        -- TODO use emitDocument instead
         DocumentNode ->
+            --emitDocument node children |> EmittedDeclaration
             emitPage node children |> EmittedDeclaration
 
         PageNode ->
@@ -300,7 +300,7 @@ emitNode theme node children =
 
 
 
--- emitDocument : Node -> List EmittedNode -> Expression
+-- emitDocument : Node -> List EmittedNode -> Declaration
 -- emitDocument node children =
 --     let
 --         emitter (EmittedNode _ child) =

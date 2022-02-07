@@ -67,6 +67,7 @@ module Document exposing
     , fromTemplate
     , fromTemplateAt
     , generateId
+    , getNextIndexFor
     , insertNode
     , insertNodeAfter
     , insertNodeBefore
@@ -372,26 +373,33 @@ generateId seeds =
     UUID.step seeds
 
 
-fromTemplateAt : { x : Float, y : Float } -> Tree Node -> Seeds -> ( Seeds, Tree Node )
-fromTemplateAt position template seeds =
+fromTemplateAt : { x : Float, y : Float } -> Tree Node -> Seeds -> (NodeType -> Int) -> ( Seeds, Tree Node )
+fromTemplateAt position template seeds indexer =
     T.mapAccumulate
         (\seeds_ template_ ->
             let
                 ( uuid, newSeeds ) =
                     generateId seeds_
 
+                newName =
+                    template_.name ++ " " ++ (indexer template_.type_ |> String.fromInt)
+
                 newNode =
                     case template_.type_ of
-                        -- @@FIXME: is case/of needed?
+                        -- Always lay out pages absolutely within the workspace
                         PageNode ->
                             { template_
                                 | id = uuid
+                                , name = newName
                                 , offsetX = position.x
                                 , offsetY = position.y
                             }
 
                         _ ->
-                            { template_ | id = uuid }
+                            { template_
+                                | id = uuid
+                                , name = newName
+                            }
             in
             ( newSeeds, newNode )
         )
@@ -399,21 +407,24 @@ fromTemplateAt position template seeds =
         template
 
 
-fromTemplate : Tree Node -> Seeds -> ( Seeds, Tree Node )
-fromTemplate template seeds =
-    fromTemplateAt { x = 0, y = 0 } template seeds
+fromTemplate : Tree Node -> Seeds -> (NodeType -> Int) -> ( Seeds, Tree Node )
+fromTemplate template seeds indexer =
+    fromTemplateAt { x = 0, y = 0 } template seeds indexer
 
 
 {-| A startup document with a blank page on it.
 -}
-defaultDocument : Seeds -> Int -> ( Seeds, Tree Node )
-defaultDocument seeds index =
+defaultDocument : Seeds -> ( Seeds, Tree Node )
+defaultDocument seeds =
     let
+        indexer _ =
+            1
+
         template =
             T.tree
                 { baseTemplate
                     | type_ = DocumentNode
-                    , name = "Document " ++ String.fromInt index
+                    , name = "Document"
                     , width = Layout.fill
                     , height = Layout.fill
                 }
@@ -421,7 +432,7 @@ defaultDocument seeds index =
                   emptyPage Theme.defaultTheme
                 ]
     in
-    fromTemplateAt { x = workspaceWidth / 2, y = workspaceHeight / 2 } template seeds
+    fromTemplateAt { x = workspaceWidth / 2, y = workspaceHeight / 2 } template seeds indexer
 
 
 emptyPage : Theme -> Tree Node
@@ -450,6 +461,10 @@ emptyPage theme =
 createImageNode : String -> Seeds -> ( Seeds, Tree Node )
 createImageNode url seeds =
     let
+        -- TODO Generate correct imdex for images too
+        indexer _ =
+            1
+
         template =
             T.singleton
                 { baseTemplate
@@ -457,7 +472,7 @@ createImageNode url seeds =
                     , name = "Image"
                 }
     in
-    fromTemplate template seeds
+    fromTemplate template seeds indexer
 
 
 {-| An empty placeholder image type.
@@ -541,6 +556,20 @@ viewports =
 
 
 -- NODE QUERY
+
+
+getNextIndexFor : NodeType -> Zipper Node -> Int
+getNextIndexFor type_ zipper =
+    T.foldl
+        (\node accum ->
+            if type_ == node.type_ then
+                accum + 1
+
+            else
+                accum
+        )
+        1
+        (Zipper.tree zipper)
 
 
 {-| Find the node with the given id and if successuful move zipper focus to it.
