@@ -27,6 +27,9 @@ package-mac: clean build-no-maps icon
 package-linux: clean build-no-maps icon
 	npm run package:linux
 
+build-fonts:
+	curl https://google-webfonts-helper.herokuapp.com/api/fonts > dist/google-fonts.json
+
 icon: 
 	mkdir dist/electron.iconset
 	sips -z 16 16 assets/icon.png --out dist/electron.iconset/icon_16x16.png
