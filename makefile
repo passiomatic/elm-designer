@@ -28,7 +28,7 @@ package-linux: clean build-no-maps icon
 	npm run package:linux
 
 build-fonts:
-	curl https://google-webfonts-helper.herokuapp.com/api/fonts > dist/google-fonts.json
+	curl https://google-webfonts-helper.herokuapp.com/api/fonts > static/google-fonts.json
 
 icon: 
 	mkdir dist/electron.iconset
