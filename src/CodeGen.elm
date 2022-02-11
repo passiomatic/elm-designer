@@ -23,7 +23,7 @@ import Tree as T exposing (Tree)
 
 type EmittedNode
     = EmittedNode Position Expression
-    | EmittedDeclaration Declaration
+    | EmittedDeclarations (List Declaration)
 
 
 debugModule =
@@ -63,7 +63,7 @@ regionModule =
 
 
 emit : Theme -> Viewport -> Tree Node -> String
-emit theme viewport tree =
+emit theme _ tree =
     let
         module_ =
             G.normalModule [ "Main" ] [ G.funExpose "main" ]
@@ -89,8 +89,11 @@ emit theme viewport tree =
                 , ( "TextChanged", [ G.stringAnn ] )
                 ]
 
+        views =
+            emitView theme tree
+
         decls =
-            emitView theme viewport tree
+            views
                 ++ [ msgs
                    , emitUpdate
                    , G.valDecl
@@ -124,38 +127,17 @@ emit theme viewport tree =
         |> Pretty.pretty 80
 
 
-emitView : Theme -> Viewport -> Tree Node -> List Declaration
-emitView theme viewport tree =
+emitView : Theme -> Tree Node -> List Declaration
+emitView theme tree =
     let
         root =
             T.restructure identity (emitNode theme) tree
     in
     case root of
-        EmittedDeclaration decl ->
-            [ decl ]
+        EmittedDeclarations decls ->
+            decls
 
         EmittedNode _ expr ->
-            -- let
-            --     emitMaxWidth =
-            --         case viewport of
-            --             DeviceModel name ->
-            --                 let
-            --                     ( w, _, _ ) =
-            --                         Document.findDeviceInfo name
-            --                 in
-            --                 [ G.apply
-            --                     [ G.fqFun elementModule "width"
-            --                     , G.parens
-            --                         (G.pipe (G.fqFun elementModule "fill")
-            --                             [ G.apply [ G.fqFun elementModule "maximum", G.int w ]
-            --                             ]
-            --                         )
-            --                     ]
-            --                 ]
-
-            --             _ ->
-            --                 []
-            -- in
             [ G.funDecl
                 Nothing
                 Nothing
@@ -165,7 +147,6 @@ emitView theme viewport tree =
                 (G.apply
                     [ G.fqFun elementModule "layout"
                     , G.list []
-                        --emitMaxWidth
                     , G.parens expr
                     ]
                 )
@@ -253,11 +234,10 @@ emitNode : Theme -> Node -> List EmittedNode -> EmittedNode
 emitNode theme node children =
     case node.type_ of
         DocumentNode ->
-            --emitDocument node children |> EmittedDeclaration
-            emitPage node children |> EmittedDeclaration
+            emitDocument node children |> EmittedDeclarations
 
         PageNode ->
-            emitPage node children |> EmittedDeclaration
+            emitPageDeclaration node children |> EmittedDeclarations
 
         ParagraphNode data ->
             emitParagraph node data |> EmittedNode node.position
@@ -299,29 +279,90 @@ emitNode theme node children =
             emitOption node data |> EmittedNode node.position
 
 
+{-| Emit a list of page views for the document.
 
--- emitDocument : Node -> List EmittedNode -> Declaration
--- emitDocument node children =
---     let
---         emitter (EmittedNode _ child) =
---             emitLink "#some-name" child.name
---     in
---     G.apply
---         [ G.fqFun elementModule "column"
---         , G.list []
---         , G.list  (List.map emitter children)
---         ]
+    views model =
+        [ page1View model
+        , page2View model
+        ...
+        , pageNView model
+        ]
 
+    page1View model =
+        ... Elm UI code ...
 
-emitPage : Node -> List EmittedNode -> Declaration
-emitPage node children =
+    page2View model =
+        ... Elm UI code ...
+
+    pageNView model =
+        ... Elm UI code ...
+
+-}
+emitDocument : Node -> List EmittedNode -> List Declaration
+emitDocument node children =
+    -- let
+    --     emitter (EmittedNode _ child) =
+    --         emitLink "#some-name" child.name
+    -- in
     G.funDecl
         Nothing
         Nothing
+        "views"
+        [ G.varPattern "model"
+        ]
+        (G.list
+            (List.foldl
+                (\child accum ->
+                    case child of
+                        -- Ignore everything else
+                        EmittedDeclarations decls ->
+                            accum
+
+                        -- Call the page view function
+                        EmittedNode _ expr ->
+                            expr :: accum
+                )
+                []
+                children
+            )
+        )
+        :: List.foldl
+            (\child accum ->
+                case child of
+                    -- Append page declaration function
+                    EmittedDeclarations decls ->
+                        decls ++ accum
+
+                    -- Ignore everything else
+                    EmittedNode _ expr ->
+                        accum
+            )
+            []
+            children
+
+
+{-| Emit a top level view function declaration for the given page.
+
+    page1View model =
+        ... Elm UI code ...
+
+-}
+emitPageDeclaration : Node -> List EmittedNode -> List Declaration
+emitPageDeclaration node children =
+    [ G.funDecl
+        Nothing
+        Nothing
+        -- TODO Turn page name into a valid Elm identifier
         (String.toLower node.name ++ "View")
         [ G.varPattern "model"
         ]
-        (emitColumn node children)
+        (emitPage node children)
+    ]
+
+
+emitPage : Node -> List EmittedNode -> Expression
+emitPage node children =
+    emitColumn node children
 
 
 emitColumn : Node -> List EmittedNode -> Expression
@@ -632,18 +673,20 @@ emitShadow value attrs =
         attrs
 
     else
-        let 
-            record = G.record
-                [ ( "offset", G.tuple [ G.float value.offsetX, G.float value.offsetY ] )
-                , ( "size", G.float value.size )
-                , ( "blur", G.float value.blur )
-                , ( "color", emitColor value.color )
-                ]
+        let
+            record =
+                G.record
+                    [ ( "offset", G.tuple [ G.float value.offsetX, G.float value.offsetY ] )
+                    , ( "size", G.float value.size )
+                    , ( "blur", G.float value.blur )
+                    , ( "color", emitColor value.color )
+                    ]
         in
         G.apply
             [ case value.type_ of
                 Inner ->
                     G.fqFun borderModule "innerShadow"
+
                 Outer ->
                     G.fqFun borderModule "shadow"
             , record
@@ -1270,7 +1313,7 @@ addChild node attrs siblings =
                     -- Do not reverse children list
                     ( attrs, siblings ++ [ child ] )
 
-        EmittedDeclaration _ ->
+        EmittedDeclarations _ ->
             ( attrs, siblings )
 
 
