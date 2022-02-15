@@ -23,7 +23,7 @@ toItemGroups context =
         -- Context menu items for outlive view
         OutlinePopup nodeId ->
             [ [ ( ContextMenu.item "Remove" |> ContextMenu.shortcut "Del", RemoveNodeClicked nodeId )
-              --, ( ContextMenu.item "Duplicate", DuplicateNodeClicked nodeId )
+              , ( ContextMenu.item "Duplicate", DuplicateNodeClicked nodeId )
               ]
             , [ ( ContextMenu.item "Show in Workspace", NodeSelected True nodeId )
               ]

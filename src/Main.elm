@@ -268,6 +268,18 @@ update msg model =
         InsertImageClicked ->
             ( { model | dropDownState = Hidden }, Select.files acceptedTypes FileSelected )
 
+        DuplicateNodeClicked nodeId ->
+            let
+                maybeZipper =
+                    Document.selectNodeWith nodeId model.document.present
+            in
+            case maybeZipper of
+                Just zipper ->
+                    duplicateNode model zipper
+
+                Nothing ->
+                    ( model, Cmd.none )
+
         RemoveNodeClicked nodeId ->
             let
                 maybeZipper =
@@ -520,7 +532,7 @@ update msg model =
                     , saveState = Changed model.currentTime
                     , seeds = newSeeds
                   }
-                -- TODO We should fire this even when D&D fails, however JS will take care of this
+                  -- TODO We should fire this even when D&D fails, however JS will take care of this
                 , Ports.endDrag ()
                 )
 
@@ -865,6 +877,24 @@ removeNode model zipper =
     ( { model
         | document = UndoList.new (Document.removeNode zipper) model.document
         , saveState = Changed model.currentTime
+      }
+    , Cmd.none
+    )
+
+
+duplicateNode : Model -> Zipper Node -> ( Model, Cmd Msg )
+duplicateNode model zipper =
+    let
+        ( newSeeds, newTree) =
+            Document.duplicateNode zipper model.seeds
+
+        newZipper = 
+            Document.insertNode newTree zipper
+    in
+    ( { model
+        | document = UndoList.new newZipper model.document
+        , saveState = Changed model.currentTime
+        , seeds = newSeeds
       }
     , Cmd.none
     )

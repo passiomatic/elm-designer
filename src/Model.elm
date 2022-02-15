@@ -84,6 +84,7 @@ type Msg
     | WrapRowItemsChanged Bool
     | ClipboardCopyClicked
     | RemoveNodeClicked NodeId
+    | DuplicateNodeClicked NodeId
     | InsertNodeClicked (Tree Node)
     | InsertImageClicked
     | DropDownChanged WidgetState
