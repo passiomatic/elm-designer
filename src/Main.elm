@@ -9,7 +9,6 @@ import ContextMenu exposing (ContextMenu)
 import Dict exposing (Dict)
 import Document exposing (DragId(..), DropId(..), Node, Viewport(..), nodeId)
 import DragDropHelper
-import Element exposing (Orientation(..))
 import Env
 import File exposing (File)
 import File.Select as Select
@@ -27,7 +26,6 @@ import Style.Font as Font exposing (..)
 import Style.Layout as Layout exposing (..)
 import Style.Shadow as Shadow exposing (Shadow, ShadowType(..))
 import Style.Theme as Theme exposing (Theme)
-import Svg.Attributes exposing (orientation)
 import Task
 import Time
 import Time.Extra as Time exposing (Interval(..))
