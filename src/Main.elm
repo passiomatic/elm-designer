@@ -568,10 +568,19 @@ update msg model =
                     removeNode model model.document.present
 
                 -- ############
-                -- Close any dropdown
+                -- Close any dropdown and context menu
                 -- ############
                 ( False, "Escape", NotEdited ) ->
-                    ( { model | dropDownState = Hidden }, Cmd.none )
+                    let
+                        ( contextMenu, _ ) =
+                            ContextMenu.init
+                    in
+                    ( { model
+                        | dropDownState = Hidden
+                        , contextMenu = contextMenu
+                      }
+                    , Cmd.none
+                    )
 
                 -- ############
                 -- Stop field and inline editing
@@ -885,10 +894,10 @@ removeNode model zipper =
 duplicateNode : Model -> Zipper Node -> ( Model, Cmd Msg )
 duplicateNode model zipper =
     let
-        ( newSeeds, newTree) =
+        ( newSeeds, newTree ) =
             Document.duplicateNode zipper model.seeds
 
-        newZipper = 
+        newZipper =
             Document.insertNode newTree zipper
     in
     ( { model
