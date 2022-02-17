@@ -1,6 +1,5 @@
 module Document exposing
     ( Document
-    , DragEvent
     , DragId(..)
     , DropId(..)
     , HeadingData
@@ -193,12 +192,6 @@ type DragId
     = Move Node
     | Drag Node
     | Insert (Tree Node)
-
-
-type alias DragEvent =
-    { offsetX : Int
-    , offsetY : Int
-    }
 
 
 type DropId
