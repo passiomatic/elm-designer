@@ -41,6 +41,13 @@ or if your prefer to turn off the Elm debugger type:
 
 Then the build process will create a `Env.imgbbApiKey` value.
 
+## Credits
+
+Elm Designer contains patched versions of the following packages:
+
+* [Elm Bootstrap][eb] is copyright (c) 2017, Magnus Rundberget  
+* [Html5 Drag-Drop][hdd] is copyright (c) 2018, Martin Norbäck Olivers 
+  
 [2]: https://parceljs.org
 [d]: https://github.com/passiomatic/elm-designer/releases/tag/v0.3.0
 [issue1]: https://github.com/passiomatic/elm-designer/issues/1 
@@ -49,3 +56,5 @@ Then the build process will create a `Env.imgbbApiKey` value.
 [api]: https://api.imgbb.com
 [imgbb]: https://imgbb.com
 [guide]: ./Guide.md
+[eb]: https://github.com/rundis/elm-bootstrap
+[hdd]: https://github.com/norpan/elm-html5-drag-drop

@@ -3,14 +3,6 @@ BSD 3-Clause License
 Copyright (c) 2020-present, Andrea Peltrin
 All rights reserved.
 
-Elm Designer contains patched versions of the following Elm packages:
-
-* Elm Bootstrap is copyright (c) 2017, Magnus Rundberget  
-  https://github.com/rundis/elm-bootstrap
-
-* Html5 Drag-Drop is copyright (c) 2018, Martin Norbäck Olivers 
-  https://github.com/norpan/elm-html5-drag-drop
-
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions are met:
 
