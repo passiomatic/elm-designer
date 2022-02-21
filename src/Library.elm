@@ -280,7 +280,7 @@ textField theme =
                     TextFieldNode
                         { text = "Label"
                         , position = LabelAbove
-                        , color = Inherit
+                        , color = Inherited
                         }
                 , width = Layout.fill
                 , background = Background.solid theme.backgroundColor
@@ -307,7 +307,7 @@ textFieldMultiline theme =
                     TextFieldMultilineNode
                         { text = "Label"
                         , position = LabelAbove
-                        , color = Inherit
+                        , color = Inherited
                         }
                 , width = Layout.fill
                 , background = Background.solid theme.backgroundColor
@@ -370,7 +370,7 @@ checkbox theme =
                     CheckboxNode
                         { text = "Checkbox Label"
                         , position = LabelRight
-                        , color = Inherit
+                        , color = Inherited
                         }
             }
     }
@@ -391,7 +391,7 @@ radio theme =
                     RadioNode
                         { text = "Radio Selection"
                         , position = LabelAbove
-                        , color = Inherit
+                        , color = Inherited
                         }
             }
             [ T.singleton

@@ -162,11 +162,11 @@ localCodec codec =
                 Local value ->
                     local value
 
-                Inherit ->
+                Inherited ->
                     inherit
         )
         |> Codec.variant1 "Local" Local codec
-        |> Codec.variant0 "Inherit" Inherit
+        |> Codec.variant0 "Inherited" Inherited
         |> Codec.buildCustom
 
 

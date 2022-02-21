@@ -727,7 +727,7 @@ applyFontFamily value attrs =
             in
             Font.family family_ :: attrs
 
-        Inherit ->
+        Inherited ->
             attrs
 
 
@@ -737,7 +737,7 @@ applyFontColor value attrs =
         Local color ->
             Font.color color :: attrs
 
-        Inherit ->
+        Inherited ->
             attrs
 
 
@@ -747,7 +747,7 @@ applyFontSize value attrs =
         Local size ->
             Font.size size :: attrs
 
-        Inherit ->
+        Inherited ->
             attrs
 
 

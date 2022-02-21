@@ -232,7 +232,7 @@ emitFontLinks tree =
                             -- Ignore native fonts
                             accum
 
-                Inherit ->
+                Inherited ->
                     -- Ignore inherited fonts
                     accum
         )
@@ -830,7 +830,7 @@ emitFontFamily value attrs =
                         ]
                         :: attrs
 
-        Inherit ->
+        Inherited ->
             attrs
 
 
@@ -845,7 +845,7 @@ emitFontColor value attrs =
                 ]
                 :: attrs
 
-        Inherit ->
+        Inherited ->
             attrs
 
 
@@ -1070,7 +1070,7 @@ emitFontSize value attrs =
         Local size ->
             G.apply [ G.fqFun fontModule "size", G.int size ] :: attrs
 
-        Inherit ->
+        Inherited ->
             attrs
 
 

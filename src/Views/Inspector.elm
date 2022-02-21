@@ -337,7 +337,7 @@ labelColorView { color } model zipper =
                 Local value ->
                     value
 
-                Inherit ->
+                Inherited ->
                     Document.resolveInheritedFontColor theme.textColor zipper
     in
     colorView model (Just resolvedFontColor) LabelColorField LabelColorChanged
@@ -2151,7 +2151,7 @@ fontView model zipper =
                         Local value ->
                             ( False, String.fromInt value )
 
-                        Inherit ->
+                        Inherited ->
                             ( True
                             , Document.resolveInheritedFontSize theme.textSize zipper
                                 |> String.fromInt
@@ -2165,7 +2165,7 @@ fontView model zipper =
                 Local value ->
                     value
 
-                Inherit ->
+                Inherited ->
                     Document.resolveInheritedFontColor theme.textColor zipper
     in
     H.div []
@@ -2294,14 +2294,14 @@ fontFamilyView fontFamily resolvedFontFamily inherit =
                 Local _ ->
                     if inherit then
                         ( "inherit"
-                        , H.option [ fontFamilyValue Inherit ]
+                        , H.option [ fontFamilyValue Inherited ]
                             [ H.text "Inherit" ]
                         )
 
                     else
                         ( "", none )
 
-                Inherit ->
+                Inherited ->
                     -- Generate a unique enough key to avoid VDOM quirks
                     ( "inherited-" ++ resolvedFontFamily.name
                     , H.option [ A.disabled True, A.selected True ]
@@ -2312,7 +2312,7 @@ fontFamilyView fontFamily resolvedFontFamily inherit =
         [ onFontFamilySelect FontFamilyChanged
         , A.classList
             [ ( "form-select form-select-sm", True )
-            , ( "text-muted fst-italic", fontFamily == Inherit )
+            , ( "text-muted fst-italic", fontFamily == Inherited )
             ]
         ]
         (inheritOption

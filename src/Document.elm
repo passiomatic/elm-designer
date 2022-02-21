@@ -218,9 +218,9 @@ baseTemplate =
     , scale = 1.0
     , padding = Layout.padding 0
     , spacing = Layout.spacing 0
-    , fontFamily = Inherit
-    , fontColor = Inherit
-    , fontSize = Inherit
+    , fontFamily = Inherited
+    , fontColor = Inherited
+    , fontSize = Inherited
     , fontWeight = Regular
     , letterSpacing = 0
     , wordSpacing = 0
@@ -615,7 +615,7 @@ resolveInheritedValue getter maybeZipper =
                 Local value ->
                     Just value
 
-                Inherit ->
+                Inherited ->
                     resolveInheritedValue getter (Zipper.parent zipper)
 
         Nothing ->
@@ -1136,7 +1136,7 @@ applyFontSize value zipper =
                     Local (clamp Font.minFontSizeAllowed 999 v)
 
                 Nothing ->
-                    Inherit
+                    Inherited
     in
     Zipper.mapLabel (Font.setSize value_) zipper
 
