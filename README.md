@@ -4,7 +4,7 @@
 
 ## Current status
 
-The application is in early stages of development and supports a subset of [Elm UI][elmui].
+The application is in early stages of development and [supports a subset][support] of [Elm UI][elmui].
 
 Previously Elm Designer was an Electron app, you can still download older versions on the [Releases page][r].
 
@@ -58,3 +58,4 @@ Elm Designer contains patched versions of the following packages:
 [guide]: https://github.com/passiomatic/elm-designer/wiki/One-minute-guide
 [eb]: https://github.com/rundis/elm-bootstrap
 [hdd]: https://github.com/norpan/elm-html5-drag-drop
+[support]: https://github.com/passiomatic/elm-designer/wiki/Elm-UI-support-status
