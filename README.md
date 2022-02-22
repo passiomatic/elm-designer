@@ -55,6 +55,6 @@ Elm Designer contains patched versions of the following packages:
 [r]: https://github.com/passiomatic/elm-designer/releases
 [api]: https://api.imgbb.com
 [imgbb]: https://imgbb.com
-[guide]: ./Guide.md
+[guide]: https://github.com/passiomatic/elm-designer/wiki/One-minute-guide
 [eb]: https://github.com/rundis/elm-bootstrap
 [hdd]: https://github.com/norpan/elm-html5-drag-drop
