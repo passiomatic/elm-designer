@@ -714,7 +714,7 @@ canInsertNextTo node type_ =
         ( PageNode, PageNode ) ->
             True
 
-        ( _, PageNode ) ->
+        ( PageNode, _ ) ->
             False
 
         -- Other scenarios
