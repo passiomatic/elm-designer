@@ -400,24 +400,34 @@ rightPaneView model =
 codeView : Model -> List (Html Msg)
 codeView model =
     let
-        node =
+        tree =
             Zipper.tree model.document.present
     in
-    [ H.section [ A.class "section bp-3 d-flex flex-column h-100" ]
-        [ H.div [ A.class "mb-2 fw-500" ]
-            [ H.text ("Generated code for " ++ (T.label node |> .name))
-            ]
-        , H.div [ A.class "scroll-y flex-fill bg-white bp-1 border" ]
-            [ H.pre [ A.class "preformatted" ]
-                [ H.text (CodeGen.emit Theme.defaultTheme model.viewport node)
+    case (T.label tree).type_ of    
+        DocumentNode ->
+            [ H.section [ A.class "section bp-3 d-flex flex-column align-items-center justify-content-center h-100" ]
+                [ H.div [ A.class "text-muted" ]
+                    [ H.text "Select a page or another element."
+                    ]
                 ]
             ]
-        , H.div [ A.class "mt-2 d-grid" ]
-            [ H.button [ E.onClick ClipboardCopyClicked, A.type_ "button", A.class "btn btn-primary" ]
-                [ H.text "Copy Elm code" ]
+
+        _ ->
+            [ H.section [ A.class "section bp-3 d-flex flex-column h-100" ]
+                [ H.div [ A.class "mb-2 fw-500" ]
+                    [ H.text ("Generated code for " ++ (T.label tree |> .name))
+                    ]
+                , H.div [ A.class "scroll-y flex-fill bg-white bp-1 border" ]
+                    [ H.pre [ A.class "preformatted" ]
+                        [ H.text (CodeGen.emit Theme.defaultTheme model.viewport tree)
+                        ]
+                    ]
+                , H.div [ A.class "mt-2 d-grid" ]
+                    [ H.button [ E.onClick ClipboardCopyClicked, A.type_ "button", A.class "btn btn-primary" ]
+                        [ H.text "Copy Elm code" ]
+                    ]
+                ]
             ]
-        ]
-    ]
 
 
 leftPaneView : Model -> Html Msg

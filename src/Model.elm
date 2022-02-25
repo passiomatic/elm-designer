@@ -293,7 +293,7 @@ initialModel { width, height, seed1, seed2, seed3, seed4, platform } =
                 (Random.initialSeed seed4)
 
         ( newSeeds, newDocument ) =
-            Document.defaultDocument seeds 1
+            Document.defaultDocument seeds
 
         ( contextMenu, cmd ) =
             ContextMenu.init

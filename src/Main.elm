@@ -248,8 +248,12 @@ update msg model =
 
         InsertNodeClicked template ->
             let
-                ( newSeeds, newNode ) =
-                    Document.fromTemplate template model.seeds
+                ( newSeeds, newNode ) = 
+                    let
+                        indexer type_ = 
+                            Document.getNextIndexFor type_ model.document.present
+                    in
+                    Document.fromTemplate template model.seeds indexer
 
                 newDocument =
                     Document.insertNode newNode model.document.present
