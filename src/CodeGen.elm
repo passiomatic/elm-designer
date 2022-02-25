@@ -23,7 +23,6 @@ import Tree as T exposing (Tree)
 
 type EmittedNode
     = EmittedNode Position Expression
-    | EmittedDeclarations (List Declaration)
 
 
 debugModule =
@@ -89,32 +88,29 @@ emit theme _ tree =
                 , ( "TextChanged", [ G.stringAnn ] )
                 ]
 
-        views =
-            emitView theme tree
-
         decls =
-            views
-                ++ [ msgs
-                   , emitUpdate
-                   , G.valDecl
-                        Nothing
-                        Nothing
-                        "init"
-                        G.unit
-                   , G.valDecl
-                        Nothing
-                        Nothing
-                        "main"
-                        (G.apply
-                            [ G.fqFun browserModule "sandbox"
-                            , G.record
-                                [ ( "init", G.val "init" )
-                                , ( "view", G.val "view" )
-                                , ( "update", G.val "update" )
-                                ]
-                            ]
-                        )
-                   ]
+            [ emitView theme tree
+            , msgs
+            , emitUpdate
+            , G.valDecl
+                Nothing
+                Nothing
+                "init"
+                G.unit
+            , G.valDecl
+                Nothing
+                Nothing
+                "main"
+                (G.apply
+                    [ G.fqFun browserModule "sandbox"
+                    , G.record
+                        [ ( "init", G.val "init" )
+                        , ( "view", G.val "view" )
+                        , ( "update", G.val "update" )
+                        ]
+                    ]
+                )
+            ]
 
         comments =
             [ emitFontComment tree
@@ -127,18 +123,15 @@ emit theme _ tree =
         |> Pretty.pretty 80
 
 
-emitView : Theme -> Tree Node -> List Declaration
+emitView : Theme -> Tree Node -> Declaration
 emitView theme tree =
     let
         root =
             T.restructure identity (emitNode theme) tree
     in
     case root of
-        EmittedDeclarations decls ->
-            decls
-
         EmittedNode _ expr ->
-            [ G.funDecl
+            G.funDecl
                 Nothing
                 Nothing
                 "view"
@@ -150,7 +143,6 @@ emitView theme tree =
                     , G.parens expr
                     ]
                 )
-            ]
 
 
 emitUpdate =
@@ -232,132 +224,56 @@ emitFontLinks tree =
 
 emitNode : Theme -> Node -> List EmittedNode -> EmittedNode
 emitNode theme node children =
-    case node.type_ of
+    (case node.type_ of
+        -- Fall back to emitPage just to make it compile for now.
+        --   We need to emit one module per page and allow to export 
+        --   the enterire document as a zip file.
         DocumentNode ->
-            emitDocument node children |> EmittedDeclarations
+            emitPage node children
 
         PageNode ->
-            emitPageDeclaration node children |> EmittedDeclarations
+            emitPage node children
 
         ParagraphNode data ->
-            emitParagraph node data |> EmittedNode node.position
+            emitParagraph node data
 
         TextNode data ->
-            emitText node data |> EmittedNode node.position
+            emitText node data
 
         ImageNode image ->
-            emitImage node image |> EmittedNode node.position
+            emitImage node image
 
         HeadingNode data ->
-            emitHeading node data |> EmittedNode node.position
+            emitHeading node data
 
         ColumnNode ->
-            emitColumn node children |> EmittedNode node.position
+            emitColumn node children
 
         TextColumnNode ->
-            emitTextColumn node children |> EmittedNode node.position
+            emitTextColumn node children
 
         RowNode data ->
-            emitRow node data children |> EmittedNode node.position
+            emitRow node data children
 
         ButtonNode data ->
-            emitButton node data |> EmittedNode node.position
+            emitButton node data
 
         CheckboxNode data ->
-            emitCheckbox theme node data |> EmittedNode node.position
+            emitCheckbox theme node data
 
         TextFieldNode data ->
-            emitTextField theme node data |> EmittedNode node.position
+            emitTextField theme node data
 
         TextFieldMultilineNode data ->
-            emitTextFieldMultiline theme node data |> EmittedNode node.position
+            emitTextFieldMultiline theme node data
 
         RadioNode data ->
-            emitRadio theme node data children |> EmittedNode node.position
+            emitRadio theme node data children
 
         OptionNode data ->
-            emitOption node data |> EmittedNode node.position
-
-
-{-| Emit a list of page views for the document.
-
-    views model =
-        [ page1View model
-        , page2View model
-        ...
-        , pageNView model
-        ]
-
-    page1View model =
-        ... Elm UI code ...
-
-    page2View model =
-        ... Elm UI code ...
-
-    pageNView model =
-        ... Elm UI code ...
-
--}
-emitDocument : Node -> List EmittedNode -> List Declaration
-emitDocument node children =
-    -- let
-    --     emitter (EmittedNode _ child) =
-    --         emitLink "#some-name" child.name
-    -- in
-    G.funDecl
-        Nothing
-        Nothing
-        "views"
-        [ G.varPattern "model"
-        ]
-        (G.list
-            (List.foldl
-                (\child accum ->
-                    case child of
-                        -- Ignore everything else
-                        EmittedDeclarations decls ->
-                            accum
-
-                        -- Call the page view function
-                        EmittedNode _ expr ->
-                            expr :: accum
-                )
-                []
-                children
-            )
-        )
-        :: List.foldl
-            (\child accum ->
-                case child of
-                    -- Append page declaration function
-                    EmittedDeclarations decls ->
-                        decls ++ accum
-
-                    -- Ignore everything else
-                    EmittedNode _ expr ->
-                        accum
-            )
-            []
-            children
-
-
-{-| Emit a top level view function declaration for the given page.
-
-    page1View model =
-        ... Elm UI code ...
-
--}
-emitPageDeclaration : Node -> List EmittedNode -> List Declaration
-emitPageDeclaration node children =
-    [ G.funDecl
-        Nothing
-        Nothing
-        -- TODO Turn page name into a valid Elm identifier
-        (String.toLower node.name ++ "View")
-        [ G.varPattern "model"
-        ]
-        (emitPage node children)
-    ]
+            emitOption node data
+    )
+        |> EmittedNode node.position
 
 
 emitPage : Node -> List EmittedNode -> Expression
@@ -1312,9 +1228,6 @@ addChild node attrs siblings =
                 Normal ->
                     -- Do not reverse children list
                     ( attrs, siblings ++ [ child ] )
-
-        EmittedDeclarations _ ->
-            ( attrs, siblings )
 
 
 clipIf pred attrs =
