@@ -18,23 +18,23 @@ import Html.Keyed as Keyed
 import Icons
 import Model exposing (..)
 import Palette
-import SelectList exposing (SelectList)
 import Style.Background as Background exposing (Background)
 import Style.Border as Border exposing (BorderStyle(..))
 import Style.Font as Font exposing (..)
 import Style.Input as Input exposing (..)
 import Style.Layout as Layout exposing (..)
+import Style.Shadow as Shadow
 import Style.Theme as Theme
 import Tree as T exposing (Tree)
 import Tree.Zipper as Zipper exposing (Zipper)
-import Views.Common exposing (fieldId, none)
+import Views.Common as Common exposing (none, widgetId)
 
 
 view : Model -> List (Html Msg)
 view model =
     let
         zipper =
-            SelectList.selected model.pages.present
+            model.document.present
     in
     [ H.form [ E.onSubmit FieldEditingConfirmed ]
         -- This makes onSubmit to work when hitting enter
@@ -56,15 +56,17 @@ resolveStyleViews model zipper =
     in
     title
         :: (case node.type_ of
+                DocumentNode ->
+                    []
+
                 PageNode ->
                     [ sectionView "Layout"
-                        [ spacingYView model node
+                        [ pageLengthView model node
                         , paddingView model node
                         ]
                     , sectionView "Text"
                         [ fontView model zipper
                         ]
-                    , bordersView model node
                     , backgroundView model node
                     ]
 
@@ -136,6 +138,7 @@ resolveStyleViews model zipper =
                     [ sectionView "Label"
                         [ labelTextView label model node
                         , labelPositionView label model node
+                        , labelColorView label model zipper
                         , spacingYView model node
                         ]
                     , sectionView "Layout"
@@ -158,6 +161,7 @@ resolveStyleViews model zipper =
                     [ sectionView "Label"
                         [ labelTextView label model node
                         , labelPositionView label model node
+                        , labelColorView label model zipper
                         , spacingYView model node
                         ]
                     , sectionView "Layout"
@@ -308,7 +312,7 @@ labelTextView { text } model { type_ } =
             [ H.text "Text" ]
         , H.div [ A.class "col-9" ]
             [ H.input
-                [ A.id (fieldId LabelField)
+                [ A.id (widgetId LabelField)
                 , A.type_ "text"
                 , A.value label_
                 , A.placeholder ""
@@ -322,6 +326,23 @@ labelTextView { text } model { type_ } =
         ]
 
 
+labelColorView : { a | color : Local Color } -> Model -> Zipper Node -> Html Msg
+labelColorView { color } model zipper =
+    let
+        theme =
+            Theme.defaultTheme
+
+        resolvedFontColor =
+            case color of
+                Local value ->
+                    value
+
+                Inherited ->
+                    Document.resolveInheritedFontColor theme.textColor zipper
+    in
+    colorView model (Just resolvedFontColor) LabelColorField LabelColorChanged
+
+
 labelPositionView : { a | position : LabelPosition } -> Model -> Node -> Html Msg
 labelPositionView { position } model { type_ } =
     let
@@ -333,7 +354,7 @@ labelPositionView { position } model { type_ } =
             [ H.text "Position" ]
         , H.div [ A.class "col-9" ]
             [ Keyed.node "select"
-                [ onLabelPositionSelect LabelPositionChanged, A.class "custom-select custom-select-sm" ]
+                [ onLabelPositionSelect LabelPositionChanged, A.class "form-select form-select-sm" ]
                 (List.map
                     (\position_ ->
                         let
@@ -381,7 +402,7 @@ imageView image model _ =
         , H.div [ A.class "" ]
             [ H.div [ A.class "" ]
                 [ H.input
-                    [ A.id (fieldId ImageSrcField)
+                    [ A.id (widgetId ImageSrcField)
                     , A.type_ "text"
                     , A.value imageSrc
                     , A.placeholder "https://domain.com/sample.jpg"
@@ -391,7 +412,7 @@ imageView image model _ =
                     , E.onInput FieldChanged
                     ]
                     []
-                , H.label [ A.for (fieldId ImageSrcField), A.class "small m-0" ]
+                , H.label [ A.for (widgetId ImageSrcField), A.class "small m-0" ]
                     [ H.text "Image address" ]
                 ]
             ]
@@ -524,7 +545,7 @@ paddingView model { padding } =
             [ H.div [ A.class "d-flex justify-content-center mb-1" ]
                 [ H.div [ A.class "w-25" ]
                     [ H.input
-                        [ A.id (fieldId PaddingTopField)
+                        [ A.id (widgetId PaddingTopField)
                         , A.type_ "number"
                         , A.min "0"
                         , A.value paddingTop
@@ -539,7 +560,7 @@ paddingView model { padding } =
             , H.div [ A.class "d-flex align-items-center mb-1" ]
                 [ H.div [ A.class "w-25" ]
                     [ H.input
-                        [ A.id (fieldId PaddingLeftField)
+                        [ A.id (widgetId PaddingLeftField)
                         , A.type_ "number"
                         , A.min "0"
                         , A.value paddingLeft
@@ -554,14 +575,15 @@ paddingView model { padding } =
                     [ A.class "w-50 text-center"
                     ]
                     [ H.button
-                        [ A.classList
+                        ([ A.classList
                             [ ( "btn btn-link", True )
                             , ( "text-dark", not padding.locked )
                             ]
-                        , E.onClick (PaddingLockChanged (not padding.locked))
-                        , A.title "Use a single padding for all directions"
-                        , A.type_ "button"
-                        ]
+                         , E.onClick (PaddingLockChanged (not padding.locked))
+                         , A.type_ "button"
+                         ]
+                            |> Common.addTooltipDown "Use a single padding for all directions"
+                        )
                         [ if padding.locked then
                             Icons.lock
 
@@ -571,7 +593,7 @@ paddingView model { padding } =
                     ]
                 , H.div [ A.class "w-25" ]
                     [ H.input
-                        [ A.id (fieldId PaddingRightField)
+                        [ A.id (widgetId PaddingRightField)
                         , A.type_ "number"
                         , A.min "0"
                         , A.value paddingRight
@@ -586,7 +608,7 @@ paddingView model { padding } =
             , H.div [ A.class "d-flex justify-content-center" ]
                 [ H.div [ A.class "w-25" ]
                     [ H.input
-                        [ A.id (fieldId PaddingBottomField)
+                        [ A.id (widgetId PaddingBottomField)
                         , A.type_ "number"
                         , A.min "0"
                         , A.value paddingBottom
@@ -674,45 +696,43 @@ spacingYView model { spacing } =
         ]
 
 
-addDropdown fieldId_ state items parent =
+addDropdown widgetId_ state items parent =
     let
         visible =
             case state of
                 Visible id ->
-                    id == fieldId_
+                    id == widgetId_
 
                 Hidden ->
                     False
     in
-    -- FIXME: https://getbootstrap.com/docs/5.0/forms/input-group/
     H.div [ A.class "input-group" ]
         [ parent
         , H.div
             [ A.classList
                 [ ( "dropdown-menu", True )
-                , ( fieldId fieldId_ ++ "-dropdown", True )
+                , ( widgetId widgetId_ ++ "-dropdown", True )
                 , ( "show", visible )
                 ]
             ]
-            items        
+            items
         , H.button
-            [ --A.attribute "aria-expanded" "false"
-              A.attribute "aria-haspopup" "true"
-            , A.class "btn btn-light btn-sm dropdown-toggle"
+            [ A.attribute "aria-haspopup" "true"
+            , A.class "btn btn-outline-secondary btn-sm dropdown-toggle"
             , E.onClick
                 (DropDownChanged
                     (if visible then
                         Hidden
 
                      else
-                        Visible fieldId_
+                        Visible widgetId_
                     )
                 )
 
             --, A.attribute "data-toggle" "dropdown"
             , A.type_ "button"
             ]
-            [ H.text "" ]
+            [ H.span [ A.class "visually-hidden" ] [ H.text "Pick a font size" ] ]
         ]
 
 
@@ -758,11 +778,11 @@ shadowView model { shadow } =
             [ H.div [ A.class "col-12" ]
                 [ H.div [ A.class "d-flex" ]
                     [ H.div [ A.class "w-25 ms-auto me-1" ]
-                        [ H.label [ A.class "col-form-label-sm m-0 p-0", A.for (fieldId ShadowOffsetXField) ]
+                        [ H.label [ A.class "col-form-label-sm m-0 p-0", A.for (widgetId ShadowOffsetXField) ]
                             [ H.text "Offset X"
                             ]
                         , H.input
-                            [ A.id (fieldId ShadowOffsetXField)
+                            [ A.id (widgetId ShadowOffsetXField)
                             , A.type_ "number"
                             , A.value offsetX
                             , A.class "form-control form-control-sm text-center"
@@ -773,11 +793,11 @@ shadowView model { shadow } =
                             []
                         ]
                     , H.div [ A.class "w-25 me-1" ]
-                        [ H.label [ A.class "col-form-label-sm m-0 p-0", A.for (fieldId ShadowOffsetXField) ]
+                        [ H.label [ A.class "col-form-label-sm m-0 p-0", A.for (widgetId ShadowOffsetXField) ]
                             [ H.text "Offset Y"
                             ]
                         , H.input
-                            [ A.id (fieldId ShadowOffsetYField)
+                            [ A.id (widgetId ShadowOffsetYField)
                             , A.type_ "number"
                             , A.value offsetY
                             , A.class "form-control form-control-sm text-center"
@@ -788,11 +808,11 @@ shadowView model { shadow } =
                             []
                         ]
                     , H.div [ A.class "w-25 me-1" ]
-                        [ H.label [ A.class "col-form-label-sm m-0 p-0", A.for (fieldId ShadowOffsetXField) ]
+                        [ H.label [ A.class "col-form-label-sm m-0 p-0", A.for (widgetId ShadowOffsetXField) ]
                             [ H.text "Size"
                             ]
                         , H.input
-                            [ A.id (fieldId ShadowSizeField)
+                            [ A.id (widgetId ShadowSizeField)
                             , A.type_ "number"
                             , A.min "0"
                             , A.value size
@@ -804,11 +824,11 @@ shadowView model { shadow } =
                             []
                         ]
                     , H.div [ A.class "w-25" ]
-                        [ H.label [ A.class "col-form-label-sm m-0 p-0", A.for (fieldId ShadowOffsetXField) ]
+                        [ H.label [ A.class "col-form-label-sm m-0 p-0", A.for (widgetId ShadowOffsetXField) ]
                             [ H.text "Blur"
                             ]
                         , H.input
-                            [ A.id (fieldId ShadowBlurField)
+                            [ A.id (widgetId ShadowBlurField)
                             , A.type_ "number"
                             , A.min "0"
                             , A.value blur
@@ -819,6 +839,32 @@ shadowView model { shadow } =
                             ]
                             []
                         ]
+                    ]
+                ]
+            ]
+        , H.div [ A.class "row align-items-center mb-2" ]
+            [ H.label [ A.class "col-3 col-form-label-sm m-0 text-nowrap" ]
+                [ H.text "Type" ]
+            , H.div [ A.class "col-9 d-flex" ]
+                [ H.div [ A.class "btn-group w-100 mb-2", A.attribute "role" "group" ]
+                    [ H.button
+                        [ A.classList
+                            [ ( "btn btn-secondary btn-sm", True )
+                            , ( "active", Shadow.isInner shadow.type_ )
+                            ]
+                        , E.onClick (ShadowTypeChanged Shadow.Inner)
+                        , A.type_ "button"
+                        ]
+                        [ H.text "Inner" ]
+                    , H.button
+                        [ A.classList
+                            [ ( "btn btn-secondary btn-sm", True )
+                            , ( "active", Shadow.isOuter shadow.type_ )
+                            ]
+                        , E.onClick (ShadowTypeChanged Shadow.Outer)
+                        , A.type_ "button"
+                        ]
+                        [ H.text "Outer" ]
                     ]
                 ]
             ]
@@ -905,11 +951,9 @@ bordersView model { borderColor, borderWidth, borderStyle, borderCorner } =
                 [ H.div [ A.class "d-flex justify-content-between mb-1" ]
                     [ H.div [ A.class "w-25 me-1" ]
                         [ H.div [ A.class "input-group input-group-sm" ]
-                            [  
-                                H.span [ A.class "input-group-text bpx-1" ] [ H.text Entity.ulcorner ]
-                                 
+                            [ H.span [ A.class "input-group-text bpx-1" ] [ H.text Entity.ulcorner ]
                             , H.input
-                                [ A.id (fieldId BorderTopLeftCornerField)
+                                [ A.id (widgetId BorderTopLeftCornerField)
                                 , A.type_ "number"
                                 , A.min "0"
                                 , A.value topLeftCorner
@@ -923,7 +967,7 @@ bordersView model { borderColor, borderWidth, borderStyle, borderCorner } =
                         ]
                     , H.div [ A.class "w-25 me-1" ]
                         [ H.input
-                            [ A.id (fieldId BorderTopWidthField)
+                            [ A.id (widgetId BorderTopWidthField)
                             , A.type_ "number"
                             , A.min "0"
                             , A.value topWidth
@@ -937,7 +981,7 @@ bordersView model { borderColor, borderWidth, borderStyle, borderCorner } =
                     , H.div [ A.class "w-25" ]
                         [ H.div [ A.class "input-group input-group-sm" ]
                             [ H.input
-                                [ A.id (fieldId BorderTopRightCornerField)
+                                [ A.id (widgetId BorderTopRightCornerField)
                                 , A.type_ "number"
                                 , A.min "0"
                                 , A.value topRightCorner
@@ -954,7 +998,7 @@ bordersView model { borderColor, borderWidth, borderStyle, borderCorner } =
                 , H.div [ A.class "d-flex justify-content-between align-items-center mb-1" ]
                     [ H.div [ A.class "w-25" ]
                         [ H.input
-                            [ A.id (fieldId BorderLeftWidthField)
+                            [ A.id (widgetId BorderLeftWidthField)
                             , A.type_ "number"
                             , A.min "0"
                             , A.value leftWidth
@@ -967,14 +1011,15 @@ bordersView model { borderColor, borderWidth, borderStyle, borderCorner } =
                         ]
                     , H.div [ A.class "w-50 text-center" ]
                         [ H.button
-                            [ A.classList
+                            ([ A.classList
                                 [ ( "btn btn-link", True )
                                 , ( "text-dark", not borderWidth.locked )
                                 ]
-                            , E.onClick (BorderLockChanged (not borderWidth.locked))
-                            , A.title "Use a single border for all directions"
-                            , A.type_ "button"
-                            ]
+                             , E.onClick (BorderLockChanged (not borderWidth.locked))
+                             , A.type_ "button"
+                             ]
+                                |> Common.addTooltipDown "Use a single border for all directions"
+                            )
                             [ if borderWidth.locked then
                                 Icons.lock
 
@@ -984,7 +1029,7 @@ bordersView model { borderColor, borderWidth, borderStyle, borderCorner } =
                         ]
                     , H.div [ A.class "w-25" ]
                         [ H.input
-                            [ A.id (fieldId BorderRightWidthField)
+                            [ A.id (widgetId BorderRightWidthField)
                             , A.type_ "number"
                             , A.min "0"
                             , A.value rightWidth
@@ -1001,11 +1046,9 @@ bordersView model { borderColor, borderWidth, borderStyle, borderCorner } =
                 , H.div [ A.class "d-flex justify-content-between" ]
                     [ H.div [ A.class "w-25 me-1" ]
                         [ H.div [ A.class "input-group input-group-sm" ]
-                            [ 
-                                  H.span [ A.class "input-group-text bpx-1" ] [ H.text Entity.llcorner ]
-                                 
+                            [ H.span [ A.class "input-group-text bpx-1" ] [ H.text Entity.llcorner ]
                             , H.input
-                                [ A.id (fieldId BorderBottomLeftCornerField)
+                                [ A.id (widgetId BorderBottomLeftCornerField)
                                 , A.type_ "number"
                                 , A.min "0"
                                 , A.value bottomLeftCorner
@@ -1021,7 +1064,7 @@ bordersView model { borderColor, borderWidth, borderStyle, borderCorner } =
                         ]
                     , H.div [ A.class "w-25 me-1" ]
                         [ H.input
-                            [ A.id (fieldId BorderBottomWidthField)
+                            [ A.id (widgetId BorderBottomWidthField)
                             , A.type_ "number"
                             , A.min "0"
                             , A.value bottomWidth
@@ -1037,7 +1080,7 @@ bordersView model { borderColor, borderWidth, borderStyle, borderCorner } =
                     , H.div [ A.class "w-25" ]
                         [ H.div [ A.class "input-group input-group-sm" ]
                             [ H.input
-                                [ A.id (fieldId BorderBottomRightCornerField)
+                                [ A.id (widgetId BorderBottomRightCornerField)
                                 , A.type_ "number"
                                 , A.min "0"
                                 , A.value bottomRightCorner
@@ -1069,7 +1112,7 @@ borderStyleView model borderStyle =
             [ H.div [ A.class "btn-group w-100", A.attribute "role" "group" ]
                 [ H.button
                     [ A.classList
-                        [ ( "btn btn-outline-secondary btn-sm", True )
+                        [ ( "btn btn-secondary btn-sm", True )
                         , ( "active", Border.isSolid borderStyle )
                         ]
                     , E.onClick (BorderStyleChanged Solid)
@@ -1078,7 +1121,7 @@ borderStyleView model borderStyle =
                     [ H.text "Solid" ]
                 , H.button
                     [ A.classList
-                        [ ( "btn btn-outline-secondary btn-sm", True )
+                        [ ( "btn btn-secondary btn-sm", True )
                         , ( "active", Border.isDashed borderStyle )
                         ]
                     , E.onClick (BorderStyleChanged Dashed)
@@ -1087,7 +1130,7 @@ borderStyleView model borderStyle =
                     [ H.text "Dashed" ]
                 , H.button
                     [ A.classList
-                        [ ( "btn btn-outline-secondary btn-sm", True )
+                        [ ( "btn btn-secondary btn-sm", True )
                         , ( "active", Border.isDotted borderStyle )
                         ]
                     , E.onClick (BorderStyleChanged Dotted)
@@ -1099,7 +1142,7 @@ borderStyleView model borderStyle =
         ]
 
 
-colorView : Model -> Maybe Color -> Field -> (String -> Msg) -> Html Msg
+colorView : Model -> Maybe Color -> Widget -> (String -> Msg) -> Html Msg
 colorView model color field msg =
     H.div [ A.class "row align-items-center mb-2" ]
         [ H.label [ A.class "col-3 col-form-label-sm m-0" ]
@@ -1129,7 +1172,7 @@ colorPickerView _ value msg =
         []
 
 
-colorHexView : Model -> Maybe Color -> Field -> Html Msg
+colorHexView : Model -> Maybe Color -> Widget -> Html Msg
 colorHexView model color field =
     let
         color_ =
@@ -1147,11 +1190,9 @@ colorHexView model color field =
                         |> Maybe.withDefault ""
     in
     H.div [ A.class "input-group input-group-sm" ]
-        [  
-             H.span [ A.class "input-group-text bpx-1" ] [ H.text "#" ]
-             
+        [ H.span [ A.class "input-group-text bpx-1" ] [ H.text "#" ]
         , H.input
-            [ A.id (fieldId field)
+            [ A.id (widgetId field)
             , A.type_ "text"
             , A.value color_
             , E.onFocus (FieldEditingStarted field color_)
@@ -1167,7 +1208,7 @@ colorHexView model color field =
 -- colorAlphaView : Model -> String -> Color -> Html Msg
 -- colorAlphaView _ name color =
 --     H.div [ A.class "w-33" ]
---         [ H.label [ A.for (fieldId BorderColorField), A.class "small m-0" ]
+--         [ H.label [ A.for (widgetId BorderColorField), A.class "small m-0" ]
 --             [ H.text "Opacity" ]
 --         , H.div [ A.class "input-group input-group-sm" ]
 --             [ H.input
@@ -1178,7 +1219,7 @@ colorHexView model color field =
 --                 --, A.title "Color opacity"
 --                 ]
 --                 []
---               , H.span [ A.class "input-group-text bpx-1" ] [ H.text "%" ]  
+--               , H.span [ A.class "input-group-text bpx-1" ] [ H.text "%" ]
 --             ]
 --         -- , H.label [ A.for name, A.class "small m-0" ]
 --         --     [ H.text "Opacity" ]
@@ -1193,7 +1234,7 @@ backgroundView model { background } =
         , H.div [ A.class "btn-group w-100 mb-2", A.attribute "role" "group" ]
             [ H.button
                 [ A.classList
-                    [ ( "btn btn-outline-secondary btn-sm", True )
+                    [ ( "btn btn-secondary btn-sm", True )
                     , ( "active", Background.isNone background )
                     ]
                 , E.onClick (BackgroundChanged Background.None)
@@ -1202,7 +1243,7 @@ backgroundView model { background } =
                 [ H.text "None" ]
             , H.button
                 [ A.classList
-                    [ ( "btn btn-outline-secondary btn-sm", True )
+                    [ ( "btn btn-secondary btn-sm", True )
                     , ( "active", Background.isSolid background )
                     ]
                 , E.onClick (BackgroundChanged (Background.Solid Palette.white))
@@ -1211,7 +1252,7 @@ backgroundView model { background } =
                 [ H.text "Color" ]
             , H.button
                 [ A.classList
-                    [ ( "btn btn-outline-secondary btn-sm", True )
+                    [ ( "btn btn-secondary btn-sm", True )
                     , ( "active", Background.isImage background )
                     ]
                 , E.onClick (BackgroundChanged (Background.Image ""))
@@ -1231,11 +1272,11 @@ backgroundView model { background } =
                                 value
                 in
                 H.div [ A.class "row align-items-center mb-2" ]
-                    [ H.label [ A.for (fieldId BackgroundImageField), A.class "col-3 col-form-label-sm m-0 text-nowrap" ]
+                    [ H.label [ A.for (widgetId BackgroundImageField), A.class "col-3 col-form-label-sm m-0 text-nowrap" ]
                         [ H.text "Image URL" ]
                     , H.div [ A.class "col-9" ]
                         [ H.input
-                            [ A.id (fieldId BackgroundImageField)
+                            [ A.id (widgetId BackgroundImageField)
                             , A.type_ "text"
                             , A.value value_
                             , A.placeholder ""
@@ -1339,6 +1380,57 @@ lengthView model node =
         ]
 
 
+pageLengthView : Model -> Node -> Html Msg
+pageLengthView model node =
+    H.div [ A.class "mb-3" ]
+        [ presetSizeView model node
+        , pageWidthView model node
+        , pageHeightView model node
+        ]
+
+
+presetSizeView : Model -> Node -> Html Msg
+presetSizeView model node =
+    H.div [ A.class "row align-items-center mb-2" ]
+        [ H.label [ A.class "col-3 col-form-label-sm m-0" ]
+            [ H.text "Preset" ]
+        , H.div [ A.class "col-9" ]
+            [ H.select [ E.onInput PresetSizeChanged, A.class "form-select form-select-sm" ]
+                (H.option [] [ H.text "Custom" ]
+                    :: Dict.values
+                        (Dict.map
+                            (\name ( width, height, orientation ) ->
+                                let
+                                    label =
+                                        name
+                                            ++ Entity.ensp
+                                            ++ String.fromInt width
+                                            ++ Entity.times
+                                            ++ String.fromInt height
+                                            ++ "px"
+                                            ++ Entity.ensp
+                                            ++ orientationLabel orientation
+                                in
+                                H.option [ A.selected (node.width == Px width && node.heightMin == Just height), A.value name ]
+                                    [ H.text label ]
+                            )
+                            Document.deviceInfo
+                        )
+                )
+            ]
+        ]
+
+
+orientationLabel : Orientation -> String
+orientationLabel value =
+    case value of
+        Portrait ->
+            "Portrait"
+
+        Landscape ->
+            "Landscape"
+
+
 wrapRowOptionView : Bool -> Html Msg
 wrapRowOptionView wrapped =
     H.div [ A.class "form-check form-switch" ]
@@ -1386,7 +1478,7 @@ widthView model { width, widthMin, widthMax } =
             [ H.div [ A.class "btn-group w-100 mb-1", A.attribute "role" "group" ]
                 [ H.button
                     [ A.classList
-                        [ ( "btn btn-outline-secondary btn-sm", True )
+                        [ ( "btn btn-secondary btn-sm", True )
                         , ( "active", isContent width )
                         ]
                     , E.onClick (WidthChanged Layout.fit)
@@ -1397,7 +1489,7 @@ widthView model { width, widthMin, widthMax } =
                     Fill value ->
                         H.button
                             [ A.classList
-                                [ ( "btn btn-outline-secondary btn-sm", True )
+                                [ ( "btn btn-secondary btn-sm", True )
                                 , ( "active", True )
                                 ]
                             , E.onClick (WidthChanged (Layout.portion value))
@@ -1408,7 +1500,7 @@ widthView model { width, widthMin, widthMax } =
                     _ ->
                         H.button
                             [ A.classList
-                                [ ( "btn btn-outline-secondary btn-sm", True )
+                                [ ( "btn btn-secondary btn-sm", True )
                                 ]
                             , E.onClick (WidthChanged Layout.fill)
                             , A.type_ "button"
@@ -1418,7 +1510,7 @@ widthView model { width, widthMin, widthMax } =
                     Px value ->
                         H.button
                             [ A.classList
-                                [ ( "btn btn-outline-secondary btn-sm", True )
+                                [ ( "btn btn-secondary btn-sm", True )
                                 , ( "active", isPxOrUnspecified width )
                                 ]
                             , E.onClick (WidthChanged (Layout.px value))
@@ -1429,7 +1521,7 @@ widthView model { width, widthMin, widthMax } =
                     _ ->
                         H.button
                             [ A.classList
-                                [ ( "btn btn-outline-secondary btn-sm", True )
+                                [ ( "btn btn-secondary btn-sm", True )
                                 , ( "active", isPxOrUnspecified width )
                                 ]
                             , E.onClick (WidthChanged Layout.unspecified)
@@ -1493,6 +1585,71 @@ widthView model { width, widthMin, widthMax } =
         ]
 
 
+pageWidthView : Model -> Node -> Html Msg
+pageWidthView model { width, widthMin, widthMax } =
+    let
+        min =
+            case model.inspector of
+                EditingField WidthMinField new ->
+                    new
+
+                _ ->
+                    Maybe.map String.fromInt widthMin
+                        |> Maybe.withDefault ""
+
+        -- max =
+        --     case model.inspector of
+        --         EditingField WidthMaxField new ->
+        --             new
+        --         _ ->
+        --             Maybe.map String.fromInt widthMax
+        --                 |> Maybe.withDefault ""
+    in
+    H.div [ A.class "row align-items-center mb-3" ]
+        [ H.label [ A.class "col-3 col-form-label-sm m-0" ]
+            [ H.text "Width" ]
+        , H.div [ A.class "col-9" ]
+            [ H.div [ A.class "d-flex justify-content-end", A.style "gap" ".25rem" ]
+                (case width of
+                    Px value ->
+                        let
+                            value_ =
+                                case model.inspector of
+                                    EditingField WidthPxField new ->
+                                        new
+
+                                    _ ->
+                                        String.fromInt value
+                        in
+                        [ numericFieldView WidthPxField "Exact" value_
+                        , numericFieldView WidthMinField "Min." min
+
+                        --, numericFieldView WidthMaxField "Max." max
+                        ]
+
+                    Unspecified ->
+                        let
+                            value_ =
+                                case model.inspector of
+                                    EditingField WidthPxField new ->
+                                        new
+
+                                    _ ->
+                                        ""
+                        in
+                        [ numericFieldView WidthPxField "Exact" value_
+                        , numericFieldView WidthMinField "Min." min
+
+                        --, numericFieldView WidthMaxField "Max." max
+                        ]
+
+                    _ ->
+                        []
+                )
+            ]
+        ]
+
+
 heightView : Model -> Node -> Html Msg
 heightView model { height, heightMin, heightMax } =
     let
@@ -1522,7 +1679,7 @@ heightView model { height, heightMin, heightMax } =
                 [ H.div [ A.class "btn-group w-100 mb-1", A.attribute "role" "group" ]
                     [ H.button
                         [ A.classList
-                            [ ( "btn btn-outline-secondary btn-sm", True )
+                            [ ( "btn btn-secondary btn-sm", True )
                             , ( "active", isContent height )
                             ]
                         , E.onClick (HeightChanged Layout.fit)
@@ -1533,7 +1690,7 @@ heightView model { height, heightMin, heightMax } =
                         Fill value ->
                             H.button
                                 [ A.classList
-                                    [ ( "btn btn-outline-secondary btn-sm", True )
+                                    [ ( "btn btn-secondary btn-sm", True )
                                     , ( "active", True )
                                     ]
                                 , E.onClick (HeightChanged (Layout.portion value))
@@ -1544,7 +1701,7 @@ heightView model { height, heightMin, heightMax } =
                         _ ->
                             H.button
                                 [ A.classList
-                                    [ ( "btn btn-outline-secondary btn-sm", True )
+                                    [ ( "btn btn-secondary btn-sm", True )
                                     ]
                                 , E.onClick (HeightChanged Layout.fill)
                                 , A.type_ "button"
@@ -1554,7 +1711,7 @@ heightView model { height, heightMin, heightMax } =
                         Px value ->
                             H.button
                                 [ A.classList
-                                    [ ( "btn btn-outline-secondary btn-sm", True )
+                                    [ ( "btn btn-secondary btn-sm", True )
                                     , ( "active", isPxOrUnspecified height )
                                     ]
                                 , E.onClick (HeightChanged (Layout.px value))
@@ -1565,7 +1722,7 @@ heightView model { height, heightMin, heightMax } =
                         _ ->
                             H.button
                                 [ A.classList
-                                    [ ( "btn btn-outline-secondary btn-sm", True )
+                                    [ ( "btn btn-secondary btn-sm", True )
                                     , ( "active", isPxOrUnspecified height )
                                     ]
                                 , E.onClick (HeightChanged Layout.unspecified)
@@ -1630,6 +1787,73 @@ heightView model { height, heightMin, heightMax } =
         ]
 
 
+pageHeightView : Model -> Node -> Html Msg
+pageHeightView model { height, heightMin, heightMax } =
+    let
+        min =
+            case model.inspector of
+                EditingField HeightMinField new ->
+                    new
+
+                _ ->
+                    Maybe.map String.fromInt heightMin
+                        |> Maybe.withDefault ""
+
+        -- max =
+        --     case model.inspector of
+        --         EditingField HeightMaxField new ->
+        --             new
+        --         _ ->
+        --             Maybe.map String.fromInt heightMax
+        --                 |> Maybe.withDefault ""
+    in
+    H.div []
+        [ H.div [ A.class "row align-items-center  mb-3" ]
+            [ H.label [ A.class "col-3 col-form-label-sm m-0" ]
+                [ H.text "Height" ]
+            , H.div [ A.class "col-9" ]
+                [ H.div [ A.class "d-flex justify-content-end", A.style "gap" ".25rem" ]
+                    (case height of
+                        Px value ->
+                            let
+                                value_ =
+                                    case model.inspector of
+                                        EditingField HeightPxField new ->
+                                            new
+
+                                        _ ->
+                                            String.fromInt value
+                            in
+                            [ numericFieldView HeightPxField "Exact" value_
+                            , numericFieldView HeightMinField "Min." min
+
+                            --, numericFieldView HeightMaxField "Max." max
+                            ]
+
+                        Unspecified ->
+                            let
+                                value_ =
+                                    case model.inspector of
+                                        EditingField HeightPxField new ->
+                                            new
+
+                                        _ ->
+                                            ""
+                            in
+                            [ numericFieldView HeightPxField "Exact" value_
+                            , numericFieldView HeightMinField "Min." min
+
+                            --, numericFieldView HeightMaxField "Max." max
+                            ]
+
+                        _ ->
+                            []
+                    )
+                ]
+            ]
+        ]
+
+
 isContent value =
     case value of
         Content ->
@@ -1652,23 +1876,23 @@ isPxOrUnspecified value =
 
 
 alignmentView : Model -> Node -> Html Msg
-alignmentView model ({ transformation } as node) =
+alignmentView model ({ offsetX, offsetY } as node) =
     let
-        offsetX =
+        offsetX_ =
             case model.inspector of
                 EditingField OffsetXField new ->
                     new
 
                 _ ->
-                    String.fromFloat transformation.offsetX
+                    String.fromFloat offsetX
 
-        offsetY =
+        offsetY_ =
             case model.inspector of
                 EditingField OffsetYField new ->
                     new
 
                 _ ->
-                    String.fromFloat transformation.offsetY
+                    String.fromFloat offsetY
     in
     H.div [ A.class "row align-items-center mb-3" ]
         [ H.label [ A.class "col-3 col-form-label-sm" ]
@@ -1676,28 +1900,34 @@ alignmentView model ({ transformation } as node) =
         , H.div [ A.class "col-9" ]
             [ H.div [ A.class "d-flex align-items-center mb-1" ]
                 [ alignmentView_ model node
-                , H.div [ A.class "w-33 ms-1" ]
+                , H.div
+                    ([ A.class "w-33 ms-1"
+                     ]
+                        |> Common.addTooltipLeft "Move right/left"
+                    )
                     [ H.input
-                        [ A.id (fieldId OffsetXField)
+                        [ A.id (widgetId OffsetXField)
                         , A.class "form-control form-control-sm text-center mx-auto"
                         , A.type_ "number"
-                        , A.value offsetX
-                        , A.title "Move right/left"
-                        , E.onFocus (FieldEditingStarted OffsetXField offsetX)
+                        , A.value offsetX_
+                        , E.onFocus (FieldEditingStarted OffsetXField offsetX_)
                         , E.onBlur FieldEditingFinished
                         , E.onInput FieldChanged
                         ]
                         []
                     ]
                 ]
-            , H.div [ A.class "me-1" ]
+            , H.div
+                ([ A.class "me-1"
+                 ]
+                    |> Common.addTooltipDown "Move down/up"
+                )
                 [ H.input
-                    [ A.id (fieldId OffsetYField)
+                    [ A.id (widgetId OffsetYField)
                     , A.class "form-control form-control-sm text-center mx-auto w-33"
                     , A.type_ "number"
-                    , A.value offsetY
-                    , A.title "Move down/up"
-                    , E.onFocus (FieldEditingStarted OffsetYField offsetY)
+                    , A.value offsetY_
+                    , E.onFocus (FieldEditingStarted OffsetYField offsetY_)
                     , E.onBlur FieldEditingFinished
                     , E.onInput FieldChanged
                     ]
@@ -1780,7 +2010,6 @@ alignmentView_ _ { alignmentX, alignmentY } =
                     , ( "align-on", alignmentY == Start || alignmentY == Center )
                     ]
                 , E.onClick (AlignmentYChanged nextAlignTop)
-                , A.title "Align top"
                 ]
                 [ Icons.pipe ]
             ]
@@ -1792,7 +2021,6 @@ alignmentView_ _ { alignmentX, alignmentY } =
                     , ( "align-on", alignmentX == Start || alignmentX == Center )
                     ]
                 , E.onClick (AlignmentXChanged nextAlignLeft)
-                , A.title "Align left"
                 ]
                 [ Icons.pipe ]
             , H.button
@@ -1810,7 +2038,6 @@ alignmentView_ _ { alignmentX, alignmentY } =
                     , ( "align-on", alignmentX == End || alignmentX == Center )
                     ]
                 , E.onClick (AlignmentXChanged nextAlignRight)
-                , A.title "Align right"
                 ]
                 [ Icons.pipe ]
             ]
@@ -1823,7 +2050,6 @@ alignmentView_ _ { alignmentX, alignmentY } =
                     , ( "align-on", alignmentY == End || alignmentY == Center )
                     ]
                 , E.onClick (AlignmentYChanged nextAlignBottom)
-                , A.title "Align bottom"
                 ]
                 [ Icons.pipe ]
             ]
@@ -1868,7 +2094,7 @@ textAlignmentView _ value =
         , H.div [ A.class "col-9 btn-group", A.attribute "role" "group" ]
             [ H.button
                 [ A.classList
-                    [ ( "btn btn-outline-secondary btn-sm w-25", True )
+                    [ ( "btn btn-secondary btn-sm w-25", True )
                     , ( "active", value == TextStart )
                     ]
                 , E.onClick (TextAlignChanged TextStart)
@@ -1877,7 +2103,7 @@ textAlignmentView _ value =
                 [ Icons.alignLeft ]
             , H.button
                 [ A.classList
-                    [ ( "btn btn-outline-secondary btn-sm w-25", True )
+                    [ ( "btn btn-secondary btn-sm w-25", True )
                     , ( "active", value == TextCenter )
                     ]
                 , E.onClick (TextAlignChanged TextCenter)
@@ -1886,7 +2112,7 @@ textAlignmentView _ value =
                 [ Icons.alignCenter ]
             , H.button
                 [ A.classList
-                    [ ( "btn btn-outline-secondary btn-sm w-25", True )
+                    [ ( "btn btn-secondary btn-sm w-25", True )
                     , ( "active", value == TextEnd )
                     ]
                 , E.onClick (TextAlignChanged TextEnd)
@@ -1895,7 +2121,7 @@ textAlignmentView _ value =
                 [ Icons.alignRight ]
             , H.button
                 [ A.classList
-                    [ ( "btn btn-outline-secondary btn-sm w-25", True )
+                    [ ( "btn btn-secondary btn-sm w-25", True )
                     , ( "active", value == TextJustify )
                     ]
                 , E.onClick (TextAlignChanged TextJustify)
@@ -1925,7 +2151,7 @@ fontView model zipper =
                         Local value ->
                             ( False, String.fromInt value )
 
-                        Inherit ->
+                        Inherited ->
                             ( True
                             , Document.resolveInheritedFontSize theme.textSize zipper
                                 |> String.fromInt
@@ -1939,7 +2165,7 @@ fontView model zipper =
                 Local value ->
                     value
 
-                Inherit ->
+                Inherited ->
                     Document.resolveInheritedFontColor theme.textColor zipper
     in
     H.div []
@@ -1949,7 +2175,7 @@ fontView model zipper =
         , H.div [ A.class "d-flex" ]
             [ H.div [ A.class "mb-2 me-1 w-25" ]
                 [ H.input
-                    [ A.id (fieldId FontSizeField)
+                    [ A.id (widgetId FontSizeField)
                     , A.classList
                         [ ( "form-control form-control-sm text-center", True )
                         , ( "text-muted fst-italic", inherited )
@@ -2068,14 +2294,14 @@ fontFamilyView fontFamily resolvedFontFamily inherit =
                 Local _ ->
                     if inherit then
                         ( "inherit"
-                        , H.option [ fontFamilyValue Inherit ]
+                        , H.option [ fontFamilyValue Inherited ]
                             [ H.text "Inherit" ]
                         )
 
                     else
                         ( "", none )
 
-                Inherit ->
+                Inherited ->
                     -- Generate a unique enough key to avoid VDOM quirks
                     ( "inherited-" ++ resolvedFontFamily.name
                     , H.option [ A.disabled True, A.selected True ]
@@ -2086,7 +2312,7 @@ fontFamilyView fontFamily resolvedFontFamily inherit =
         [ onFontFamilySelect FontFamilyChanged
         , A.classList
             [ ( "form-select form-select-sm", True )
-            , ( "text-muted fst-italic", fontFamily == Inherit )
+            , ( "text-muted fst-italic", fontFamily == Inherited )
             ]
         ]
         (inheritOption
@@ -2161,14 +2387,14 @@ emptyView _ _ =
     H.div [] []
 
 
-numericFieldView : Field -> String -> String -> Html Msg
+numericFieldView : Widget -> String -> String -> Html Msg
 numericFieldView field label value =
     H.div [ A.class "w-33" ]
-        [ H.label [ A.class "col-form-label-sm m-0 p-0", A.for (fieldId field) ]
+        [ H.label [ A.class "col-form-label-sm m-0 p-0", A.for (widgetId field) ]
             [ H.text label
             ]
         , H.input
-            [ A.id (fieldId field)
+            [ A.id (widgetId field)
             , A.class "form-control form-control-sm text-center"
             , A.type_ "number"
 

@@ -1,4 +1,4 @@
-// Page tree
+// Outlive view
 
 .tree {
   margin: 0;
@@ -14,7 +14,7 @@
 
 .tree .tree {
   // Indent second+ level 
-  margin-left: 0.75rem;
+  margin-left: 0.55rem;
   border-left: 1px solid $gray-500;
 }
 
@@ -41,6 +41,7 @@
 }
 
 // Can't drop item here 
+.dragging--element .tree__label:not(.tree__item--can-drop),
 .dragging--element .tree__label--leaf {
   color: rgba($body-color, 0.5) !important;
 }

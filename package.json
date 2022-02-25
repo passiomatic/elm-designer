@@ -1,54 +1,27 @@
 {
   "name": "elm-designer",
   "productName": "Elm Designer",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "A code generator for Elm UI",
-  "author": "Andrea Peltrin <designer@passiomatic.com>",
   "repository": "https://github.com/passiomatic/elm-designer",
   "devDependencies": {
-    "cssnano": "4.1.10",
-    "electron": "11.1.1",
-    "electron-builder": "22.9.1",
-    "electron-notarize": "1.0.0",
-    "elm-hot": "1.1.5",
-    "node-elm-compiler": "5.0.5",
-    "sass": "1.26.10"
+    "@babel/core": "^7.16.12",
+    "@babel/preset-env": "^7.16.11",
+    "elm-constants": "^1.0.0",
+    "elm-hot": "^1.1.6",
+    "node-elm-compiler": "^5.0.6",
+    "sass": "^1.43.4"
   },
   "dependencies": {
-    "mime-types": "2.1.28",
-    "parcel-bundler": "1.12.4"
-  },
-  "main": "./dist/main.js",
-  "build": {
-    "appId": "com.passiomatic.ElmDesigner",
-    "buildVersion": "0.3.0 build A",
-    "directories": {
-      "output": "build"
-    },
-    "icon": "./dist/app.icns",
-    "mac": {
-      "category": "public.app-category.developer-tools",
-      "hardenedRuntime": true,
-      "gatekeeperAssess": false,
-      "entitlements": "./entitlements.plist",
-      "entitlementsInherit": "./entitlements.plist"
-    },
-    "win": {
-      "target": "msi"
-    },
-    "linux": {
-      "category": "Development",
-      "executableName": "elm-designer",
-      "target": [
-        "AppImage",
-        "deb"
-      ]
-    },
-    "afterSign": "./notarize.js"
+    "balloon-css": "^1.2.0",
+    "parcel-bundler": "1.12.3"
   },
   "scripts": {
-    "electron": "electron --inspect=5858 ./dist/main.js",
-    "package:mac": "electron-builder -m",
-    "package:linux": "electron-builder -l"
+    "dev": "parcel src/index.html",
+    "constants": "elm-constants",
+    "build": "parcel build src/index.html --public-url ./ --out-file index.html",
+    "build-no-maps": "parcel build src/index.html --no-source-maps --public-url ./ --out-file index.html",
+    "dev-no-debug": "NODE_ENV=production parcel src/index.html",
+    "clean": "rm -fR dist"
   }
 }

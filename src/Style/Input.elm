@@ -1,8 +1,16 @@
-module Style.Input exposing (LabelPosition(..), labelPositionName, setLabelPosition)
+module Style.Input exposing
+    ( LabelPosition(..)
+    , labelPositionName
+    , setLabelColor
+    , setLabelPosition
+    )
+
+import Element exposing (Color)
+import Style.Font exposing (Local)
+
 
 {-| Label properties.
 -}
-
 type LabelPosition
     = LabelAbove
     | LabelBelow
@@ -32,3 +40,8 @@ labelPositionName position =
 setLabelPosition : LabelPosition -> { a | position : LabelPosition } -> { a | position : LabelPosition }
 setLabelPosition value record =
     { record | position = value }
+
+
+setLabelColor : Local Color -> { a | color : Local Color } -> { a | color : Local Color }
+setLabelColor value record =
+    { record | color = value }

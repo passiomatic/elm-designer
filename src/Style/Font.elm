@@ -33,7 +33,7 @@ minFontSizeAllowed =
 -}
 type Local a
     = Local a
-    | Inherit
+    | Inherited
 
 
 type FontType

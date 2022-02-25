@@ -1,3 +1,21 @@
+# Version 0.4.0 • 2021-??-??
+
+Elm Designer is now a web app. No more Electron binaries to download. Yay!
+
+## New features and tweaks
+
+* New multi-page, scrollable workspace
+* Reworked outline view and context menu
+* Add label color for text fields
+* Add inner/outer show type toggler (thanks @axelbdt!)
+
+## Bugs fixed 
+
+* Image doens't collapse anymore when inserted into a row
+* "Insert" menu now allows only valid parent-child combinations
+
+--- 
+
 # Version 0.3.0 • 2021-07-11
 
 ⚠️ **Document format is changed from previous version so you won't be able to load your existing designs.**

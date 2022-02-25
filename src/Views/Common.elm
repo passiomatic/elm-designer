@@ -1,10 +1,50 @@
-module Views.Common exposing (canDropInto, canDropSibling, fieldId, isDragging, none)
+module Views.Common exposing
+    ( addTooltipDown
+    , addTooltipLeft
+    , addTooltipRight
+    , addTooltipUp
+    , canDropInto
+    , canDropNextTo
+    , isDragging
+    , none
+    , widgetId
+    )
 
 import Document exposing (DragId(..))
-import Html as H exposing (Html)
+import Html as H exposing (Attribute, Html)
+import Html.Attributes as A
 import Html5.DragDrop as DragDrop
-import Model exposing (Field(..))
+import Model exposing (Msg, Widget(..))
 import Tree as T exposing (Tree)
+
+
+addTooltipUp =
+    addTooltip "up"
+
+
+addTooltipDown =
+    addTooltip "down"
+
+
+addTooltipLeft =
+    addTooltip "left"
+
+
+addTooltipRight =
+    addTooltip "right"
+
+
+addTooltip : String -> String -> List (Attribute Msg) -> List (Attribute Msg)
+addTooltip position text attrs =
+    if String.isEmpty text then
+        -- Do not create empty tooltip
+        attrs
+
+    else
+        A.attribute "aria-label" text
+            --:: A.attribute "data-balloon-length" "medium"
+            :: A.attribute "data-balloon-pos" position
+            :: attrs
 
 
 isDragging dragDrop =
@@ -16,31 +56,37 @@ canDropInto container dragDrop =
         Just dragId ->
             case dragId of
                 Move node ->
-                    Document.canDropInto container node
+                    Document.canInsertInto container node.type_
+
+                Drag node ->
+                    Document.canInsertInto container node.type_
 
                 Insert template ->
-                    Document.canDropInto container (T.label template)
+                    Document.canInsertInto container (T.label template).type_
 
         Nothing ->
             False
 
 
-canDropSibling sibling dragDrop =
+canDropNextTo sibling dragDrop =
     case DragDrop.getDragId dragDrop of
         Just dragId ->
             case dragId of
                 Move node ->
-                    Document.canDropSibling sibling node
+                    Document.canInsertNextTo sibling node.type_
+
+                Drag node ->
+                    Document.canInsertNextTo sibling node.type_
 
                 Insert template ->
-                    Document.canDropSibling sibling (T.label template)
+                    Document.canInsertNextTo sibling (T.label template).type_
 
         Nothing ->
             False
 
 
-fieldId : Field -> String
-fieldId field =
+widgetId : Widget -> String
+widgetId field =
     case field of
         FontSizeField ->
             "font-size"
@@ -111,6 +157,9 @@ fieldId field =
         LabelField ->
             "label"
 
+        LabelColorField ->
+            "label-color"
+
         OffsetXField ->
             "offset-x"
 
@@ -155,6 +204,9 @@ fieldId field =
 
         ShadowBlurField ->
             "shadow-blur"
+
+        InsertDropdown ->
+            "insert"
 
 
 none =

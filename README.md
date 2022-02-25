@@ -4,58 +4,58 @@
 
 ## Current status
 
-The application is in early stages of development and supports a subset of [Elm UI][elmui].
+The application is in early stages of development and [supports a subset][support] of [Elm UI][elmui].
 
-Version 0.3 main features are:
+Previously Elm Designer was an Electron app, you can still download older versions on the [Releases page][r].
 
-* Undo/redo for destructive operations
-* Support for relative positioned children (above, in front, etc.)
-* Support for element shadow
-* Label position for form fields (above, below, left, right and hidden)
-* Border style selector: solid, dashed and dotted
+## New to Elm Designer? 
 
-## Download 
-
-Elm Designer is distributed as an Electron app. Right now there are [macOS and Linux binaries][d] to download and you can run Elm Designer sources on Windows via CLI.
+The [one minute gude][guide] is waiting for you.
 
 ## About images
 
-Images added to the page are automatically uploaded to [Null Pointer](https://0x0.st) service. According to Null Pointer terms of service uploaded images remain available up to one year (exact expiration depends on file size). 
+Images added to the page are automatically uploaded to [Imgbb][imgbb] servers and will remain available for 180 days.  
 
-By uploading images and referencing them by URL sidesteps a number of issues like: huge serialized JSON files, hit `localStorage` quota limits, and dealing with clumsy generated code.
+## Limitations
 
-## Known issues
-
+- UI is still pretty crude since the app is in an exploratory phase and I'm trying out different ideas.
 - Color picker is quite limited at the moment since Elm Designer is using HTML 5 `input type=color`. Specifically you can't reset a color or specify `inherit`. See [#1][issue1]
-- "Insert" menu allows to create non-renderable nodes. See [#20][issue20]
 
 ## Build Elm Designer from sources
 
-If you need to edit the source files the `makefile` on the repository root contains a bunch on tasks which automate the most common operations.
+Elm Designer uses [Parcel][2] to compile Elm and SASS source. To install all the needed dependencies type:
 
-### Install Parcel
+    npm ci 
 
-Elm Designer uses [Parcel][2] to compile Elm and SASS source files. Please read up [these instructions][3] to install Parcel 1.12.4 before building Elm Designer from sources.
+To run it locally in dev mode type:
 
-### Run with Electron
+    make dev
 
-You can run [Electron][4] as a command-line app and then point it to the `main.js` entry point.
+or if your prefer to turn off the Elm debugger type:
 
-So, first install Electron and all its dependencies locally:
+    make dev-no-debug
 
-    npm ci
+**Note**: you will need a valid [Imgbb API][api] key to be able to upload images. API access is free and requires only to sign up to the service. Once you get the API key set the `IMGBB_API_KEY` environment variable or create a `.env` file in the repo root containing such key:
 
-Then run:
+    IMGBB_API_KEY=your-API-key
 
-    make run
+Then the build process will create a `Env.imgbbApiKey` value.
 
-This will build the app assets with Parcel in production mode, copy the files into the `electron-app` folder in the repo, and finally run Electron itself.
+## Credits
 
+Elm Designer contains patched versions of the following packages:
+
+* [Elm Bootstrap][eb] is copyright (c) 2017, Magnus Rundberget  
+* [Html5 Drag-Drop][hdd] is copyright (c) 2018, Martin Norbäck Olivers 
+  
 [2]: https://parceljs.org
-[3]: https://parceljs.org/getting_started.html
-[4]: https://www.electronjs.org
 [d]: https://github.com/passiomatic/elm-designer/releases/tag/v0.3.0
 [issue1]: https://github.com/passiomatic/elm-designer/issues/1 
-[issue2]: https://github.com/passiomatic/elm-designer/issues/2 
-[issue20]: https://github.com/passiomatic/elm-designer/issues/20
 [elmui]: https://github.com/mdgriffith/elm-ui
+[r]: https://github.com/passiomatic/elm-designer/releases
+[api]: https://api.imgbb.com
+[imgbb]: https://imgbb.com
+[guide]: https://github.com/passiomatic/elm-designer/wiki/One-minute-guide
+[eb]: https://github.com/rundis/elm-bootstrap
+[hdd]: https://github.com/norpan/elm-html5-drag-drop
+[support]: https://github.com/passiomatic/elm-designer/wiki/Elm-UI-support-status

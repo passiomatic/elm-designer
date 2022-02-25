@@ -3,7 +3,6 @@
 // ----------------------
 
 .element {
-  //transition: background-color .2s ease-out;
 }
 
 .element__connect {
@@ -23,24 +22,27 @@
   //display: none;
 }
 
- 
-// .element__connect.vis,
-// .element__nudge.vis {
-//   display: block;
-// }
- 
-
 // ----------------------
-// Selected (design mode only)
+// Selected
 
-.page--design .element--selected {
+.element--selected {
   outline: 3px solid $primary;
+}
+
+.element--Document.element--selected {
+  outline: none;
+}
+
+.element--Page {
+  border: 2px solid $border-color !important;
+  cursor: move;
+  cursor: grab; // Safari
 }
 
 // ----------------------
 // Drag & drop
 
-.page--design .element--dropped:after {
+.element--dropped:after {
   content: "";
   position: absolute;
   top: 0;
@@ -52,7 +54,7 @@
   pointer-events: none;
 }
 
-.page--design .dragging--file:after {
+.dragging--file:after {
   content: "";
   position: absolute;
   top: 0;
@@ -80,7 +82,7 @@
   text-align: inherit;
 }
 
-// Disallow image dragging while in design mode
-.page--design .element > img {
+// Disallow image dragging
+.element--Image img {
   -webkit-user-drag: none;
 }
