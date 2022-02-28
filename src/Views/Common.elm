@@ -73,7 +73,8 @@ canDropNextTo sibling dragDrop =
         Just dragId ->
             case dragId of
                 Move node ->
-                    Document.canInsertNextTo sibling node.type_
+                    -- Do not allow to drop an element sibling to itself
+                    (Document.nodeId sibling.id /= Document.nodeId node.id) && Document.canInsertNextTo sibling node.type_
 
                 Drag node ->
                     Document.canInsertNextTo sibling node.type_
