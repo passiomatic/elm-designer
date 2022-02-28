@@ -1,4 +1,4 @@
-# Version 0.4.0 • 2021-??-??
+# Version 0.4.0 • 2022-02-28
 
 Elm Designer is now a web app. No more Electron binaries to download. Yay!
 
