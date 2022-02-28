@@ -10,7 +10,7 @@ Previously Elm Designer was an Electron app, you can still download older versio
 
 ## New to Elm Designer? 
 
-The [one minute gude][guide] is waiting for you.
+The [one minute guide][guide] is waiting for you.
 
 ## About images
 
