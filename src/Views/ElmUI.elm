@@ -824,7 +824,7 @@ applyBackground value attrs =
 
         Background.None ->
             -- Always set a value to override Elm UI defaults
-             Background.color Palette.transparent :: attrs
+            Background.color Palette.transparent :: attrs
 
 
 forceBackgroundColor value attrs =
@@ -947,29 +947,6 @@ wrapImageElement ctx node selected renderer =
         )
         (renderer attrs)
 
-wrapImageElement : Context -> Node -> Bool -> (List (E.Attribute Msg) -> Element Msg) -> Element Msg
-wrapImageElement ctx node selected renderer =
-    let
-        attrs =
-            []
-            |> applyWidth node.width node.widthMin node.widthMax
-            |> applyHeight node.height node.heightMin node.heightMax
-            |> applyStyles node
-    in
-    E.el
-        ([ elementClasses ctx node selected
-         , elementId node
-         , onClick (NodeSelected node.id)
-         ]
-            |> makeDroppableIf (Common.canDropInto node ctx.dragDrop) (AppendTo node.id)
-            |> applyWidth node.width node.widthMin node.widthMax
-            |> applyHeight node.height node.heightMin node.heightMax
-            |> applyAlignX node.alignmentX
-            |> applyAlignY node.alignmentY
-            |> applyTransformation node.transformation
-        )
-        (renderer attrs)
-
 
 labelPosition position attrs text =
     case position of
@@ -1021,8 +998,8 @@ elementClasses ctx node selected =
     let
         dropId =
             AppendTo node.id
-        
-        type_ = 
+
+        type_ =
             String.replace " " "-" (nodeType node.type_)
     in
     E.htmlAttribute
