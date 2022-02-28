@@ -869,6 +869,26 @@ shadowView model { shadow } =
                 ]
             ]
         , colorView model (Just shadow.color) ShadowColorField ShadowColorChanged
+        , H.div [ A.class "btn-group w-100 mb-2", A.attribute "role" "group" ]
+            [ H.button
+                [ A.classList
+                    [ ( "btn btn-outline-secondary btn-sm", True )
+                    , ( "active", Shadow.isInner shadow.type_ )
+                    ]
+                , E.onClick (ShadowTypeChanged Shadow.Inner)
+                , A.type_ "button"
+                ]
+                [ H.text "Inner" ]
+            , H.button
+                [ A.classList
+                    [ ( "btn btn-outline-secondary btn-sm", True )
+                    , ( "active", Shadow.isOuter shadow.type_ )
+                    ]
+                , E.onClick (ShadowTypeChanged Shadow.Outer)
+                , A.type_ "button"
+                ]
+                [ H.text "Outer" ]
+            ]
         ]
 
 

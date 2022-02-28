@@ -1327,3 +1327,4 @@ applyShadowColor value zipper =
 applyShadowType : ShadowType -> Zipper Node -> Zipper Node
 applyShadowType value zipper =
     Zipper.mapLabel (\node -> Shadow.setShadow (Shadow.setType value node.shadow) node) zipper
+

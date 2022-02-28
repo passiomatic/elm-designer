@@ -226,7 +226,7 @@ emitNode : Theme -> Node -> List EmittedNode -> EmittedNode
 emitNode theme node children =
     (case node.type_ of
         -- Fall back to emitPage just to make it compile for now.
-        --   We need to emit one module per page and allow to export 
+        --   We need to emit one module per page and allow to export
         --   the enterire document as a zip file.
         DocumentNode ->
             emitPage node children
