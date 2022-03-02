@@ -1,4 +1,4 @@
-// Page tree
+// Outlive view
 
 .tree {
   margin: 0;
@@ -14,7 +14,7 @@
 
 .tree .tree {
   // Indent second+ level 
-  margin-left: 0.75rem;
+  margin-left: 0.55rem;
   border-left: 1px solid $gray-500;
 }
 
@@ -41,6 +41,7 @@
 }
 
 // Can't drop item here 
+.dragging--element .tree__label:not(.tree__item--can-drop),
 .dragging--element .tree__label--leaf {
   color: rgba($body-color, 0.5) !important;
 }
@@ -58,7 +59,7 @@
   right: 0;
   left: 0;
   z-index: 2;
-  // Allow to click the full .tree__label area while not dargging
+  // Allow to click the full .tree__label area while not dragging
   pointer-events: none;
 }
 
@@ -81,12 +82,12 @@
   display: none;
 }
 
-.tree li:first-child .tree__drop-hint--before {
-  // First children only, since we user the after drop hint for the rest
+.tree li:first-child > .tree__drop-hint--before {
+  // Show on first children only, since we use the "after" drop hint for the rest
   display: block;
 }
 
-// Drop hint line
+// Hint line
 
 .tree__drop-hint::before {
   content: " ";
@@ -105,7 +106,7 @@
   border-bottom-color: $primary;
 }
 
-// Drop hint dot
+// Hint dot
 
 .tree__drop-hint::after {
   content: " ";

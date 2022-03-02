@@ -2,12 +2,15 @@ module Style.Shadow exposing
     ( Shadow
     , ShadowType(..)
     , none
+    , isInner
+    , isOuter
     , setBlur
     , setColor
     , setOffsetX
     , setOffsetY
     , setShadow
     , setSize
+    , setType
     )
 
 {-| Shadow properties.
@@ -34,6 +37,24 @@ type alias Shadow =
 
 none =
     Shadow 0 0 0 0 Palette.black Outer
+
+
+isInner value =
+    case value of
+        Inner ->
+            True
+
+        _ ->
+            False
+
+
+isOuter value =
+    case value of
+        Outer ->
+            True
+
+        _ ->
+            False
 
 
 setShadow : Shadow -> { a | shadow : Shadow } -> { a | shadow : Shadow }
@@ -64,3 +85,8 @@ setSize value record =
 setColor : Color -> Shadow -> Shadow
 setColor value record =
     { record | color = value }
+
+
+setType : ShadowType -> Shadow -> Shadow
+setType value record =
+    { record | type_ = value }

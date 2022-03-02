@@ -4,6 +4,7 @@ module Style.Background exposing
     , isNone
     , isSolid
     , setBackground
+    , solid
     )
 
 {-| Background appearance properties.
@@ -16,6 +17,11 @@ type Background
     = Solid Color
     | Image String
     | None
+
+
+solid : Color -> Background
+solid color =
+    Solid color
 
 
 setBackground : Background -> { a | background : Background } -> { a | background : Background }

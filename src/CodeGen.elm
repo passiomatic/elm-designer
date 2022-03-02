@@ -1,12 +1,13 @@
-module CodeGen exposing (backgroundModule, emit)
+module CodeGen exposing (emit)
 
 {-| Generate Elm code for a given tree node.
 -}
 
 import Document exposing (..)
 import Element exposing (Color)
-import Elm.CodeGen as G exposing (Expression)
+import Elm.CodeGen as G exposing (Declaration, Expression)
 import Elm.Pretty
+import Palette
 import Pretty
 import Set exposing (Set)
 import String exposing (trim)
@@ -14,7 +15,7 @@ import Style.Background as Background exposing (Background)
 import Style.Border as Border exposing (BorderCorner, BorderStyle(..), BorderWidth)
 import Style.Font as Font exposing (..)
 import Style.Input as Input exposing (LabelPosition(..))
-import Style.Layout as Layout exposing (Alignment(..), Length(..), Padding, Position(..), Spacing(..), Transformation)
+import Style.Layout as Layout exposing (Alignment(..), Length(..), Padding, Position(..), Spacing(..))
 import Style.Shadow as Shadow exposing (Shadow, ShadowType(..))
 import Style.Theme as Theme exposing (Theme)
 import Tree as T exposing (Tree)
@@ -61,7 +62,7 @@ regionModule =
 
 
 emit : Theme -> Viewport -> Tree Node -> String
-emit theme viewport tree =
+emit theme _ tree =
     let
         module_ =
             G.normalModule [ "Main" ] [ G.funExpose "main" ]
@@ -88,7 +89,7 @@ emit theme viewport tree =
                 ]
 
         decls =
-            [ emitView theme viewport tree
+            [ emitView theme tree
             , msgs
             , emitUpdate
             , G.valDecl
@@ -122,45 +123,26 @@ emit theme viewport tree =
         |> Pretty.pretty 80
 
 
-emitView theme viewport tree =
+emitView : Theme -> Tree Node -> Declaration
+emitView theme tree =
     let
-        emitMaxWidth =
-            case viewport of
-                DeviceModel name ->
-                    let
-                        ( w, _, _ ) =
-                            Document.findDeviceInfo name
-                    in
-                    [ G.apply
-                        [ G.fqFun elementModule "width"
-                        , G.parens
-                            (G.pipe (G.fqFun elementModule "fill")
-                                [ G.apply [ G.fqFun elementModule "maximum", G.int w ]
-                                ]
-                            )
-                        ]
-                    ]
-
-                _ ->
-                    []
+        root =
+            T.restructure identity (emitNode theme) tree
     in
-    G.funDecl
-        Nothing
-        Nothing
-        "view"
-        [ G.varPattern "model"
-        ]
-        (G.apply
-            [ G.fqFun elementModule "layout"
-            , G.list
-                emitMaxWidth
-            , G.parens (root (T.restructure identity (emitNode theme) tree))
-            ]
-        )
-
-
-root (EmittedNode _ node) =
-    node
+    case root of
+        EmittedNode _ expr ->
+            G.funDecl
+                Nothing
+                Nothing
+                "view"
+                [ G.varPattern "model"
+                ]
+                (G.apply
+                    [ G.fqFun elementModule "layout"
+                    , G.list []
+                    , G.parens expr
+                    ]
+                )
 
 
 emitUpdate =
@@ -231,7 +213,7 @@ emitFontLinks tree =
                             -- Ignore native fonts
                             accum
 
-                Inherit ->
+                Inherited ->
                     -- Ignore inherited fonts
                     accum
         )
@@ -243,6 +225,12 @@ emitFontLinks tree =
 emitNode : Theme -> Node -> List EmittedNode -> EmittedNode
 emitNode theme node children =
     (case node.type_ of
+        -- Fall back to emitPage just to make it compile for now.
+        --   We need to emit one module per page and allow to export 
+        --   the enterire document as a zip file.
+        DocumentNode ->
+            emitPage node children
+
         PageNode ->
             emitPage node children
 
@@ -290,18 +278,7 @@ emitNode theme node children =
 
 emitPage : Node -> List EmittedNode -> Expression
 emitPage node children =
-    let
-        emitter attrs children_ =
-            G.apply
-                [ G.fqFun elementModule "column"
-                , G.list
-                    (attrs
-                        |> emitStyles node
-                    )
-                , G.list children_
-                ]
-    in
-    addChildrenFor emitter children
+    emitColumn node children
 
 
 emitColumn : Node -> List EmittedNode -> Expression
@@ -462,8 +439,9 @@ emitTextField theme node label =
               , G.apply
                     [ emitLabelPosition label.position
                     , G.list
-                        [ G.apply [ G.fqFun fontModule "color", G.parens (emitColor theme.labelColor) ]
-                        ]
+                        ([]
+                            |> emitFontColor label.color
+                        )
                     , G.parens (G.apply [ G.fqFun elementModule "text", G.string label.text ])
                     ]
               )
@@ -488,8 +466,9 @@ emitTextFieldMultiline theme node label =
               , G.apply
                     [ emitLabelPosition label.position
                     , G.list
-                        [ G.apply [ G.fqFun fontModule "color", G.parens (emitColor theme.labelColor) ]
-                        ]
+                        ([]
+                            |> emitFontColor label.color
+                        )
                     , G.parens (G.apply [ G.fqFun elementModule "text", G.string label.text ])
                     ]
               )
@@ -596,8 +575,11 @@ emitStyles node attrs =
         |> emitTextAlign node.textAlignment
         |> emitAlignX node.alignmentX
         |> emitAlignY node.alignmentY
-        |> emitTransformation node.transformation
-        |> emitBackground node.background
+        |> emitOffsetX node
+        |> emitOffsetY node
+        |> emitRotation node.rotation
+        |> emitScale node.scale
+        |> emitBackground node
         |> emitShadow node.shadow
 
 
@@ -607,49 +589,61 @@ emitShadow value attrs =
         attrs
 
     else
+        let
+            record =
+                G.record
+                    [ ( "offset", G.tuple [ G.float value.offsetX, G.float value.offsetY ] )
+                    , ( "size", G.float value.size )
+                    , ( "blur", G.float value.blur )
+                    , ( "color", emitColor value.color )
+                    ]
+        in
         G.apply
-            [ G.fqFun borderModule "shadow"
-            , G.record
-                [ ( "offset", G.tuple [ G.float value.offsetX, G.float value.offsetY ] )
-                , ( "size", G.float value.size )
-                , ( "blur", G.float value.blur )
-                , ( "color", emitColor value.color )
-                ]
+            [ case value.type_ of
+                Inner ->
+                    G.fqFun borderModule "innerShadow"
+
+                Outer ->
+                    G.fqFun borderModule "shadow"
+            , record
             ]
             :: attrs
 
 
-emitTransformation : Transformation -> List Expression -> List Expression
-emitTransformation value attrs =
-    attrs
-        |> emitOffsetX value.offsetX
-        |> emitOffsetY value.offsetY
-        |> emitRotation value.rotation
-        |> emitScale value.scale
+emitOffsetX : Node -> List Expression -> List Expression
+emitOffsetX node attrs =
+    case node.type_ of
+        PageNode ->
+            -- Offsets are used to render page on workspace, do no emit
+            attrs
+
+        _ ->
+            if node.offsetX < 0 then
+                G.apply [ G.fqFun elementModule "moveLeft", G.float (abs node.offsetX) ] :: attrs
+
+            else if node.offsetX > 0 then
+                G.apply [ G.fqFun elementModule "moveRight", G.float node.offsetX ] :: attrs
+
+            else
+                attrs
 
 
-emitOffsetX : Float -> List Expression -> List Expression
-emitOffsetX value attrs =
-    if value < 0 then
-        G.apply [ G.fqFun elementModule "moveLeft", G.float (abs value) ] :: attrs
+emitOffsetY : Node -> List Expression -> List Expression
+emitOffsetY node attrs =
+    case node.type_ of
+        PageNode ->
+            -- Offsets are used to render page on workspace, do no emit
+            attrs
 
-    else if value > 0 then
-        G.apply [ G.fqFun elementModule "moveRight", G.float value ] :: attrs
+        _ ->
+            if node.offsetY < 0 then
+                G.apply [ G.fqFun elementModule "moveUp", G.float (abs node.offsetY) ] :: attrs
 
-    else
-        attrs
+            else if node.offsetY > 0 then
+                G.apply [ G.fqFun elementModule "moveDown", G.float node.offsetY ] :: attrs
 
-
-emitOffsetY : Float -> List Expression -> List Expression
-emitOffsetY value attrs =
-    if value < 0 then
-        G.apply [ G.fqFun elementModule "moveUp", G.float (abs value) ] :: attrs
-
-    else if value > 0 then
-        G.apply [ G.fqFun elementModule "moveDown", G.float value ] :: attrs
-
-    else
-        attrs
+            else
+                attrs
 
 
 emitRotation : Float -> List Expression -> List Expression
@@ -810,7 +804,7 @@ emitFontFamily value attrs =
                         ]
                         :: attrs
 
-        Inherit ->
+        Inherited ->
             attrs
 
 
@@ -825,7 +819,7 @@ emitFontColor value attrs =
                 ]
                 :: attrs
 
-        Inherit ->
+        Inherited ->
             attrs
 
 
@@ -1050,7 +1044,7 @@ emitFontSize value attrs =
         Local size ->
             G.apply [ G.fqFun fontModule "size", G.int size ] :: attrs
 
-        Inherit ->
+        Inherited ->
             attrs
 
 
@@ -1089,22 +1083,34 @@ emitTextAlign value attrs =
             G.apply [ G.fqFun fontModule "justify" ] :: attrs
 
 
-emitBackground : Background -> List Expression -> List Expression
-emitBackground value attrs =
-    case value of
+emitBackground : Node -> List Expression -> List Expression
+emitBackground node attrs =
+    case node.background of
         Background.Image value_ ->
             G.apply [ G.fqFun backgroundModule "image", G.string value_ ] :: attrs
 
         Background.Solid value_ ->
-            G.apply
-                [ G.fqFun backgroundModule "color"
-                , G.parens
-                    (emitColor value_)
-                ]
-                :: attrs
+            emitBackgroundColor value_ :: attrs
 
         Background.None ->
-            attrs
+            case node.type_ of
+                -- Override Elm UI defauls for text fields
+                TextFieldNode _ ->
+                    emitBackgroundColor Palette.transparent :: attrs
+
+                TextFieldMultilineNode _ ->
+                    emitBackgroundColor Palette.transparent :: attrs
+
+                _ ->
+                    attrs
+
+
+emitBackgroundColor color =
+    G.apply
+        [ G.fqFun backgroundModule "color"
+        , G.parens
+            (emitColor color)
+        ]
 
 
 emitLabelPosition : LabelPosition -> Expression
@@ -1132,6 +1138,17 @@ emitLabelPosition position =
 -- HELPERS
 
 
+emitLink url label =
+    G.apply
+        [ G.fqFun elementModule "link"
+        , G.list []
+        , G.record
+            [ ( "url", G.string url )
+            , ( "label", G.apply [ G.fqFun elementModule "text", G.string label ] )
+            ]
+        ]
+
+
 addChildrenFor emitter children =
     let
         ( newAttrs, newChildren ) =
@@ -1150,65 +1167,67 @@ addChild :
     -> List Expression
     -> List Expression
     -> ( List Expression, List Expression )
-addChild (EmittedNode position child) attrs siblings =
-    case position of
-        Above ->
-            ( G.apply
-                [ G.fqFun elementModule "above"
-                , G.parens child
-                ]
-                :: attrs
-            , siblings
-            )
+addChild node attrs siblings =
+    case node of
+        EmittedNode position child ->
+            case position of
+                Above ->
+                    ( G.apply
+                        [ G.fqFun elementModule "above"
+                        , G.parens child
+                        ]
+                        :: attrs
+                    , siblings
+                    )
 
-        Below ->
-            ( G.apply
-                [ G.fqFun elementModule "below"
-                , G.parens child
-                ]
-                :: attrs
-            , siblings
-            )
+                Below ->
+                    ( G.apply
+                        [ G.fqFun elementModule "below"
+                        , G.parens child
+                        ]
+                        :: attrs
+                    , siblings
+                    )
 
-        OnStart ->
-            ( G.apply
-                [ G.fqFun elementModule "onLeft"
-                , G.parens child
-                ]
-                :: attrs
-            , siblings
-            )
+                OnStart ->
+                    ( G.apply
+                        [ G.fqFun elementModule "onLeft"
+                        , G.parens child
+                        ]
+                        :: attrs
+                    , siblings
+                    )
 
-        OnEnd ->
-            ( G.apply
-                [ G.fqFun elementModule "onRight"
-                , G.parens child
-                ]
-                :: attrs
-            , siblings
-            )
+                OnEnd ->
+                    ( G.apply
+                        [ G.fqFun elementModule "onRight"
+                        , G.parens child
+                        ]
+                        :: attrs
+                    , siblings
+                    )
 
-        InFront ->
-            ( G.apply
-                [ G.fqFun elementModule "inFront"
-                , G.parens child
-                ]
-                :: attrs
-            , siblings
-            )
+                InFront ->
+                    ( G.apply
+                        [ G.fqFun elementModule "inFront"
+                        , G.parens child
+                        ]
+                        :: attrs
+                    , siblings
+                    )
 
-        BehindContent ->
-            ( G.apply
-                [ G.fqFun elementModule "behindContent"
-                , G.parens child
-                ]
-                :: attrs
-            , siblings
-            )
+                BehindContent ->
+                    ( G.apply
+                        [ G.fqFun elementModule "behindContent"
+                        , G.parens child
+                        ]
+                        :: attrs
+                    , siblings
+                    )
 
-        Normal ->
-            -- Do not reverse children list
-            ( attrs, siblings ++ [ child ] )
+                Normal ->
+                    -- Do not reverse children list
+                    ( attrs, siblings ++ [ child ] )
 
 
 clipIf pred attrs =

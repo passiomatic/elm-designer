@@ -1,16 +1,22 @@
 all: dev
 
-build: clean
+constants: 
+	npm run constants
+	
+build: clean constants 
 	npm run build
 
-build-no-maps: clean
+build-no-maps: clean constants
 	npm run build-no-maps
 
-dev-no-debug:
+dev-no-debug: constants
 	npm run dev-no-debug
 
-dev:
+dev: constants
 	npm run dev
+
+run: 
+	python3 server/manage.py runserver
 
 clean: 
 	npm run clean

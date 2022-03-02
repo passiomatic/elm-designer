@@ -8,7 +8,6 @@
 .pane--left {
   width: 21em;
   min-width: 21em;
-  height: calc(100vh - #{$header-height});
 }
 
 .pane--right {
@@ -16,38 +15,38 @@
   min-width: 21em;
 }
 
-// Page list
-
-.page-item {
-  padding: 0.25rem 0.25rem;
-  border-radius: 3px;
-  @extend .unselectable;
-  @include font-size($input-font-size-sm);
-}
-
-.page-item:hover {
-  background: $gray-200;
-}
-
 // Library
 
-.template {
+.library {
+  gap: 0.25rem;
+}
+
+.library__item {
   @extend .rounded;
   transition: box-shadow 0.2s ease-out;
   cursor: move;
-  cursor: grab; // Safari  
+  cursor: grab; // Safari
   border: 1px solid $border-color;
-  width: 49%;  
-  margin-right: 1%;
-  max-width: 8rem;
+  @include font-size($input-font-size-sm);
+  background: #fff;
+  color: $body-color;
+  transition: box-shadow 0.1s ease-out;
+
+  &:hover {
+    @extend .shadow-sm;
+  }
+}
+
+// Ghost image fro D&D operation
+
+.library__item-ghost {
+  @extend .rounded;
+  border: 1px solid $border-color;
   @include font-size($input-font-size-sm);
   // Force styles to apply to dragged nodes as well
   background: #fff !important;
-  color: $body-color !important; 
-}
-
-.template:hover {
-  @extend .shadow-soft;  
+  color: $body-color !important;
+  white-space: nowrap;
 }
 
 // Inspector
