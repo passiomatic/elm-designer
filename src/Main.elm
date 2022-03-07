@@ -465,6 +465,10 @@ update msg model =
         FontFamilyChanged family ->
             applyChange model Document.applyFontFamily family
 
+        SetBorderClicked value ->
+            -- Used to create a new border from scratch without editing a numeric field
+            applyChange model Document.applyBorder value
+
         BorderStyleChanged value ->
             applyChange model Document.applyBorderStyle value
 
@@ -476,6 +480,9 @@ update msg model =
 
         BorderColorChanged value ->
             applyChange model Document.applyBorderColor value
+
+        SetShadowClicked value -> 
+            applyChange model Document.applyShadow value
 
         ShadowColorChanged value ->
             applyChange model Document.applyShadowColor value
@@ -810,6 +817,7 @@ updateField model =
         -- ###########
         -- Borders
         -- ###########
+
         EditingField BorderColorField newValue ->
             applyChange model Document.applyBorderColor newValue
 
@@ -841,16 +849,16 @@ updateField model =
         -- Shadow
         -- ###########
         EditingField ShadowOffsetXField newValue ->
-            applyChange model (Document.applyShadow Shadow.setOffsetX) newValue
+            applyChange model (Document.applyShadowFromString Shadow.setOffsetX) newValue
 
         EditingField ShadowOffsetYField newValue ->
-            applyChange model (Document.applyShadow Shadow.setOffsetY) newValue
+            applyChange model (Document.applyShadowFromString Shadow.setOffsetY) newValue
 
         EditingField ShadowSizeField newValue ->
-            applyChange model (Document.applyShadow Shadow.setSize) newValue
+            applyChange model (Document.applyShadowFromString Shadow.setSize) newValue
 
         EditingField ShadowBlurField newValue ->
-            applyChange model (Document.applyShadow Shadow.setBlur) newValue
+            applyChange model (Document.applyShadowFromString Shadow.setBlur) newValue
 
         EditingField ShadowColorField newValue ->
             applyChange model Document.applyShadowColor newValue

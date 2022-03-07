@@ -19,6 +19,7 @@ module Document exposing
     , applyBackground
     , applyBackgroundColor
     , applyBackgroundImage
+    , applyBorder
     , applyBorderColor
     , applyBorderCorner
     , applyBorderLock
@@ -42,6 +43,7 @@ module Document exposing
     , applyPosition
     , applyShadow
     , applyShadowColor
+    , applyShadowFromString
     , applyShadowType
     , applySpacing
     , applyText
@@ -376,11 +378,11 @@ fromTemplateAt position template seeds indexer =
                 ( uuid, newSeeds ) =
                     generateId seeds_
 
-                nextIndex = 
-                    indexer template_.type_ 
+                nextIndex =
+                    indexer template_.type_
 
                 newName =
-                    template_.name ++ " " ++ (String.fromInt nextIndex)
+                    template_.name ++ " " ++ String.fromInt nextIndex
 
                 newNode =
                     case template_.type_ of
@@ -388,7 +390,7 @@ fromTemplateAt position template seeds indexer =
                         PageNode ->
                             { template_
                                 | id = uuid
-                                , index = nextIndex 
+                                , index = nextIndex
                                 , name = newName
                                 , offsetX = position.x
                                 , offsetY = position.y
@@ -397,7 +399,7 @@ fromTemplateAt position template seeds indexer =
                         _ ->
                             { template_
                                 | id = uuid
-                                , index = nextIndex 
+                                , index = nextIndex
                                 , name = newName
                             }
             in
@@ -1262,6 +1264,12 @@ applyBorderColor value zipper =
     Zipper.mapLabel (Border.setColor value_) zipper
 
 
+applyBorder : BorderWidth -> Zipper Node -> Zipper Node
+applyBorder width zipper =
+    -- @@TODO Merge width and corner into a single record to handle this better
+    Zipper.mapLabel (Border.setWidth width >> Border.setCorner (Border.corner 0)) zipper
+
+
 applyBorderWidth : (Int -> BorderWidth -> BorderWidth) -> String -> Zipper Node -> Zipper Node
 applyBorderWidth setter value zipper =
     let
@@ -1303,16 +1311,21 @@ applyFontWeight value zipper =
     Zipper.mapLabel (Font.setWeight value) zipper
 
 
-applyShadow : (Float -> Shadow -> Shadow) -> String -> Zipper Node -> Zipper Node
-applyShadow setter value zipper =
+applyShadowFromString : (Float -> Shadow -> Shadow) -> String -> Zipper Node -> Zipper Node
+applyShadowFromString setter value zipper =
     let
         value_ =
             String.toFloat value
-                -- TODO handle negative and positive offset values whule clamping 0-positive blur and size
+                -- TODO handle negative and positive offset values whle clamping 0-positive blur and size
                 --|> Maybe.map (clamp 0 999)
                 |> Maybe.withDefault 0
     in
     Zipper.mapLabel (\node -> Shadow.setShadow (setter value_ node.shadow) node) zipper
+
+
+applyShadow : Shadow -> Zipper Node -> Zipper Node
+applyShadow value zipper =
+    Zipper.mapLabel (\node -> Shadow.setShadow value node) zipper
 
 
 applyShadowColor : String -> Zipper Node -> Zipper Node

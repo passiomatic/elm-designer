@@ -1,9 +1,11 @@
 module Style.Shadow exposing
     ( Shadow
     , ShadowType(..)
-    , none
+    , default
+    , hasSize
     , isInner
     , isOuter
+    , none
     , setBlur
     , setColor
     , setOffsetX
@@ -37,6 +39,15 @@ type alias Shadow =
 
 none =
     Shadow 0 0 0 0 Palette.black Outer
+
+
+default =
+    Shadow 0 5 0 15 Palette.darkGray Outer
+
+
+hasSize : Shadow -> Bool
+hasSize value =
+    value.blur /= 0 || value.size /= 0
 
 
 isInner value =

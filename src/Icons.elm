@@ -13,6 +13,8 @@ module Icons exposing
     , chevronDown
     , chevronRight
     , coloredSquare
+    , cornerUpLeft
+    , cornerUpRight
     , edit
     , file
     , image
@@ -25,15 +27,15 @@ module Icons exposing
     , play
     , plusCircle
     , plusCircleSmall
+    , plusSmall
     , smartphone
     , square
     , stop
     , tablet
+    , trashSmall
     , type_
     , unlock
     , xCircle
-    , cornerUpLeft
-    , cornerUpRight
     )
 
 import Css
@@ -55,15 +57,18 @@ mediumSize =
 largeSize =
     18
 
-cornerUpLeft = 
+
+cornerUpLeft =
     I.cornerUpLeft
         |> I.withSize smallSize
-        |> I.toHtml []    
+        |> I.toHtml []
 
-cornerUpRight = 
+
+cornerUpRight =
     I.cornerUpRight
         |> I.withSize smallSize
-        |> I.toHtml []   
+        |> I.toHtml []
+
 
 file : Html msg
 file =
@@ -169,6 +174,13 @@ xCircle =
         |> I.toHtml []
 
 
+plusSmall : Html msg
+plusSmall =
+    I.plus
+        |> I.withSize smallSize
+        |> I.toHtml []
+
+
 plusCircle : Html msg
 plusCircle =
     I.plusCircle
@@ -187,6 +199,13 @@ minusCircle : Html msg
 minusCircle =
     I.minusCircle
         |> I.withSize largeSize
+        |> I.toHtml []
+
+
+trashSmall : Html msg
+trashSmall =
+    I.trash
+        |> I.withSize smallSize
         |> I.toHtml []
 
 

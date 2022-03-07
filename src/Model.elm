@@ -31,7 +31,7 @@ import Random
 import Result exposing (Result(..))
 import Set exposing (Set)
 import Style.Background as Background exposing (Background)
-import Style.Border exposing (BorderStyle)
+import Style.Border exposing (BorderStyle, BorderWidth, BorderCorner)
 import Style.Font as Font exposing (..)
 import Style.Input as Input exposing (LabelPosition(..))
 import Style.Layout as Layout exposing (..)
@@ -69,9 +69,11 @@ type Msg
     | BackgroundColorChanged String
     | BackgroundChanged Background
     | BorderColorChanged String
+    | SetBorderClicked BorderWidth
     | BorderStyleChanged BorderStyle
     | ShadowColorChanged String
     | ShadowTypeChanged ShadowType
+    | SetShadowClicked Shadow
     | LabelPositionChanged LabelPosition
     | LabelColorChanged String
     | FieldEditingStarted Widget String
