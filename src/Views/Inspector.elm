@@ -61,6 +61,7 @@ resolveStyleViews model zipper =
                 PageNode ->
                     [ sectionView "Layout"
                         [ pageLengthView model node
+                        , spacingYView model node
                         , paddingView model node
                         ]
                     , sectionView "Text"
@@ -121,8 +122,7 @@ resolveStyleViews model zipper =
                         [ alignmentView model node
                         , positionView model node
                         , lengthView model node
-                        , spacingXView model node
-                        , spacingYView model node
+                        , spacingView model node
                         , paddingView model node
                         ]
                     , sectionView "Text"
@@ -623,6 +623,51 @@ paddingView model { padding } =
         ]
 
 
+{-| Horizontal and vertical spacing.
+-}
+spacingView : Model -> Node -> Html Msg
+spacingView model { spacing } =
+    let
+        x =
+            case spacing of
+                Spacing ( x_, _ ) ->
+                    case model.inspector of
+                        EditingField SpacingXField new ->
+                            new
+
+                        _ ->
+                            String.fromInt x_
+
+                SpaceEvenly ->
+                    "Evenly"
+
+        y =
+            case spacing of
+                Spacing ( _, y_ ) ->
+                    case model.inspector of
+                        EditingField SpacingYField new ->
+                            new
+
+                        _ ->
+                            String.fromInt y_
+
+                SpaceEvenly ->
+                    "Evenly"
+    in
+    H.div [ A.class "row align-items-center mb-3" ]
+        [ H.label [ A.class "col-3 col-form-label-sm m-0" ]
+            [ H.text "Spacing" ]
+        , H.div [ A.class "col-9" ]
+            [ H.div [ A.class "d-flex justify-content-end", A.style "gap" ".25rem" ]
+                [ numericFieldView SpacingXField "X" x
+                , numericFieldView SpacingYField "Y" y
+                ]
+            ]
+        ]
+
+
+{-| Horizontal spacing.
+-}
 spacingXView : Model -> Node -> Html Msg
 spacingXView model { spacing } =
     let
@@ -639,26 +684,18 @@ spacingXView model { spacing } =
                 SpaceEvenly ->
                     "Evenly"
     in
-    H.div [ A.class "row align-items-center mb-2" ]
-        [ H.label [ A.class "col-3 col-form-label-sm m-0 text-nowrap" ]
-            [ H.text "Spacing X" ]
+    H.div [ A.class "row align-items-center mb-3" ]
+        [ H.label [ A.class "col-3 col-form-label-sm m-0" ]
+            [ H.text "Spacing" ]
         , H.div [ A.class "col-9" ]
-            [ H.input
-                [ A.class "form-control form-control-sm"
-                , A.type_ "number"
-                , A.min "0"
-                , A.value x
-
-                --, A.title "Space between row items"
-                , E.onFocus (FieldEditingStarted SpacingXField x)
-                , E.onBlur FieldEditingFinished
-                , E.onInput FieldChanged
-                ]
-                []
+            [ H.div [ A.class "d-flex justify-content-end" ]
+                [ numericFieldView SpacingXField "X" x ]
             ]
         ]
 
 
+{-| Vertical spacing.
+-}
 spacingYView : Model -> Node -> Html Msg
 spacingYView model { spacing } =
     let
@@ -675,23 +712,13 @@ spacingYView model { spacing } =
                 SpaceEvenly ->
                     "Evenly"
     in
-    H.div [ A.class "row align-items-center mb-2" ]
-        [ H.label [ A.class "col-3 col-form-label-sm m-0 text-nowrap" ]
-            [ H.text "Spacing Y" ]
+    H.div [ A.class "row align-items-center mb-3" ]
+        [ H.label [ A.class "col-3 col-form-label-sm m-0" ]
+            [ H.text "Spacing" ]
         , H.div [ A.class "col-9" ]
-            [ H.input
-                [ A.class "form-control form-control-sm"
-                , A.type_ "number"
-                , A.min "0"
-                , A.value y
-
-                --, A.title "Space between column items"
-                , E.onFocus (FieldEditingStarted SpacingYField y)
-                , E.onBlur FieldEditingFinished
-                , E.onInput FieldChanged
-                ]
-                []
-            ]
+            [ H.div [ A.class "d-flex justify-content-end" ]
+                [ numericFieldView SpacingYField "Y" y ]
+            ]            
         ]
 
 
@@ -2449,8 +2476,7 @@ numericFieldView field label value =
             [ A.id (widgetId field)
             , A.class "form-control form-control-sm text-center"
             , A.type_ "number"
-
-            --, A.min "0"
+            , A.min "0"
             , A.value value
             , E.onFocus (FieldEditingStarted field value)
             , E.onBlur FieldEditingFinished
