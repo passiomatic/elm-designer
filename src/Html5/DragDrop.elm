@@ -91,6 +91,8 @@ type alias DroppablePosition =
     }
 
 
+{-| The pointer position inside a draggable.
+-}
 type alias DraggablePosition =
     { offsetX : Int
     , offsetY : Int
@@ -195,12 +197,20 @@ updateCommon sticky msg model =
             ( DraggedOver dragId dropId 0 pos Nothing, Nothing )
 
         ( DragEnter dropId, DraggedOver dragId _ _ draggablePos droppablePos, _ ) ->
+            let
+                _ =
+                    Debug.log "DragEnter" dropId
+            in          
             ( DraggedOver dragId dropId 0 draggablePos droppablePos, Nothing )
 
         -- Only handle DragLeave if it is for the current dropId.
         -- DragLeave and DragEnter sometimes come in the wrong order
         -- when two droppables are next to each other.
         ( DragLeave dropId_, DraggedOver dragId dropId _ draggablePos _, False ) ->
+            let
+                _ =
+                    Debug.log "DragLeave" dropId_
+            in        
             if dropId_ == dropId then
                 ( Dragging dragId draggablePos, Nothing )
 
@@ -224,14 +234,18 @@ updateCommon sticky msg model =
         ( Drop dropId pos, Dragging dragId draggablePos, _ ) ->
             let
                 pos_ =
-                    getFinalPosition draggablePos pos
+                    Debug.log "getFinalPosition (Dragging)" (getFinalPosition draggablePos pos)
             in
             ( NotDragging, Just ( dragId, dropId, pos_ ) )
 
-        ( Drop dropId pos, DraggedOver dragId _ _ draggablePos _, _ ) ->
+        ( Drop dropId pos, DraggedOver dragId _ _ draggablePos maybePos, _ ) ->
             let
+
+                _ =
+                    Debug.log "pos (Drop _ pos)" pos   
+
                 pos_ =
-                    getFinalPosition draggablePos pos
+                    Debug.log "getFinalPosition (DraggedOver)" (getFinalPosition draggablePos pos)
             in
             ( NotDragging, Just ( dragId, dropId, pos_ ) )
 
@@ -244,7 +258,6 @@ getFinalPosition draggablePos pos =
         | x = pos.x - draggablePos.offsetX
         , y = pos.y - draggablePos.offsetY
     }
-
 
 {-| Attributes to make a node draggable.
 
@@ -300,6 +313,8 @@ positionDecoder =
         (Json.at [ "offsetY" ] Json.float |> Json.map round)
 
 
+{-| Decode pointer offset within the draggable element.
+-}
 draggablePositionDecoder : Json.Decoder DraggablePosition
 draggablePositionDecoder =
     Json.map2 DraggablePosition
