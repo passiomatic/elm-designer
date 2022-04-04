@@ -239,18 +239,24 @@ update msg model =
             , cmd
             )
 
-        PresetSizeChanged name ->
-            let
-                ( width, height, _ ) =
-                    Document.findDeviceInfo name
-            in
-            applyChange model Document.apply (\node -> { node | width = Layout.px width, heightMin = Just height })
+        PresetSizeChanged viewport ->
+            case viewport of
+                Device _ w h _ ->
+                    applyChange model Document.apply (\node -> { node | width = Layout.px w, heightMin = Just h })
+
+                Custom w h _ ->
+                    applyChange model Document.apply (\node -> { node | width = Layout.px w, heightMin = Just h })
+
+                Fluid ->
+                    -- TODO handle corner case
+                    --( model, Cmd.none )
+                    Debug.todo "PresetSizeChanged Fluid should not happen"
 
         InsertNodeClicked template ->
             let
-                ( newSeeds, newNode ) = 
+                ( newSeeds, newNode ) =
                     let
-                        indexer type_ = 
+                        indexer type_ =
                             Document.getNextIndexFor type_ model.document.present
                     in
                     Document.fromTemplate template model.seeds indexer
@@ -481,7 +487,7 @@ update msg model =
         BorderColorChanged value ->
             applyChange model Document.applyBorderColor value
 
-        SetShadowClicked value -> 
+        SetShadowClicked value ->
             applyChange model Document.applyShadow value
 
         ShadowColorChanged value ->
@@ -817,7 +823,6 @@ updateField model =
         -- ###########
         -- Borders
         -- ###########
-
         EditingField BorderColorField newValue ->
             applyChange model Document.applyBorderColor newValue
 
