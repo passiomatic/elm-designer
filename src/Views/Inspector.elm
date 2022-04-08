@@ -718,7 +718,7 @@ spacingYView model { spacing } =
         , H.div [ A.class "col-9" ]
             [ H.div [ A.class "d-flex justify-content-end" ]
                 [ numericFieldView SpacingYField "Y" y ]
-            ]            
+            ]
         ]
 
 
@@ -1474,30 +1474,43 @@ presetSizeView model node =
         [ H.label [ A.class "col-3 col-form-label-sm m-0" ]
             [ H.text "Preset" ]
         , H.div [ A.class "col-9" ]
-            [ H.select [ E.onInput PresetSizeChanged, A.class "form-select form-select-sm" ]
+            [ H.select [ onViewportSelect PresetSizeChanged, A.class "form-select form-select-sm" ]
                 (H.option [] [ H.text "Custom" ]
-                    :: Dict.values
-                        (Dict.map
-                            (\name ( width, height, orientation ) ->
-                                let
-                                    label =
-                                        name
-                                            ++ Entity.ensp
-                                            ++ String.fromInt width
-                                            ++ Entity.times
-                                            ++ String.fromInt height
-                                            ++ "px"
-                                            ++ Entity.ensp
-                                            ++ orientationLabel orientation
-                                in
-                                H.option [ A.selected (node.width == Px width && node.heightMin == Just height), A.value name ]
-                                    [ H.text label ]
-                            )
-                            Document.deviceInfo
+                    :: List.map
+                        (\viewport ->
+                            case viewport of
+                                Device name width height orientation ->
+                                    let
+                                        label =
+                                            name
+                                                ++ Entity.ensp
+                                                ++ String.fromInt width
+                                                ++ Entity.times
+                                                ++ String.fromInt height
+                                                ++ "px"
+                                                --++ Entity.ensp
+                                                --++ orientationLabel orientation
+                                    in
+                                    H.option [ A.selected (node.width == Px width && node.heightMin == Just height), viewportValue viewport ]
+                                        [ H.text label ]
+
+                                _ ->
+                                    -- Should not happen
+                                    none
                         )
+                        Document.devices
                 )
             ]
         ]
+
+
+viewportValue : Viewport -> Attribute msg
+viewportValue value =
+    A.value (Codecs.encodeViewport value)
+
+
+onViewportSelect msg =
+    E.on "input" (Codecs.viewportDecoder msg)
 
 
 orientationLabel : Orientation -> String
