@@ -1488,8 +1488,8 @@ presetSizeView model node =
                                                 ++ Entity.times
                                                 ++ String.fromInt height
                                                 ++ "px"
-                                                ++ Entity.ensp
-                                                ++ orientationLabel orientation
+                                                --++ Entity.ensp
+                                                --++ orientationLabel orientation
                                     in
                                     H.option [ A.selected (node.width == Px width && node.heightMin == Just height), viewportValue viewport ]
                                         [ H.text label ]
