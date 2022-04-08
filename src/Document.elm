@@ -524,10 +524,10 @@ devices =
     , Device "iPhone 12" 390 844 Portrait
     , Device "iPhone 12 Pro" 390 844 Portrait
     , Device "iPhone 12 Pro Max" 428 926 Portrait
-    , Device "iPad mini 7.9\" " 768 1024 Portrait
+    , Device "iPad mini 7.9\"" 768 1024 Portrait
     , Device "iPad 10.2\"" 810 1080 Portrait
     , Device "iPad Air 10.5\"" 834 1112 Portrait
-    , Device "iPad Air 10.9\" " 840 1180 Portrait
+    , Device "iPad Air 10.9\"" 840 1180 Portrait
     , Device "iPad Pro 11\"" 834 1194 Portrait
     , Device "iPad Pro 12.9\"" 1024 136 Portrait
     , Device "Apple TV" 1920 1080 Landscape

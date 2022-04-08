@@ -1495,7 +1495,8 @@ presetSizeView model node =
                                         [ H.text label ]
 
                                 _ ->
-                                    Debug.todo "presetSizeView /= Device"
+                                    -- Should not happen
+                                    none
                         )
                         Document.devices
                 )

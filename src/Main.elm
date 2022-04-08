@@ -248,9 +248,7 @@ update msg model =
                     applyChange model Document.apply (\node -> { node | width = Layout.px w, heightMin = Just h })
 
                 Fluid ->
-                    -- TODO handle corner case
-                    --( model, Cmd.none )
-                    Debug.todo "PresetSizeChanged Fluid should not happen"
+                    ( model, Cmd.none )
 
         InsertNodeClicked template ->
             let
