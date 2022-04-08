@@ -1,16 +1,19 @@
 {
   "name": "elm-designer",
   "productName": "Elm Designer",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "A code generator for Elm UI",
   "repository": "https://github.com/passiomatic/elm-designer",
   "devDependencies": {
+    "@babel/core": "^7.16.12",
+    "@babel/preset-env": "^7.16.11",
     "elm-constants": "^1.0.0",
     "elm-hot": "^1.1.6",
     "node-elm-compiler": "^5.0.6",
     "sass": "^1.43.4"
   },
   "dependencies": {
+    "balloon-css": "^1.2.0",
     "parcel-bundler": "1.12.3"
   },
   "scripts": {

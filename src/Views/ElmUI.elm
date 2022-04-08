@@ -202,7 +202,7 @@ renderDocument ctx node selected children =
             ]
                 |> applyWidth node.width node.widthMin node.widthMax
                 |> applyHeight node.height node.heightMin node.heightMax
-                |> makeDroppableIf (Common.canDropInto node ctx.dragDrop) (AppendTo node.id)
+                |> makeNodeDroppableIf (Common.canDropInto node ctx.dragDrop) (AppendTo node.id)
     in
     -- Document doesn't need to be wrapped. Also, pass E.column as a placeholder,
     --    we'll position all children pages "InFront" anyway
@@ -210,7 +210,7 @@ renderDocument ctx node selected children =
         |> RenderedElement Normal
 
 
-{-| Render page as Elm UI column to layout elements vertically one after another, just like a regular HTML page.
+{-| Render page as Elm UI column to stack elements vertically one after another, just like a regular HTML page.
 -}
 renderPage : Context -> Node -> Bool -> List RenderedNode -> RenderedNode
 renderPage ctx node selected children =
@@ -219,7 +219,7 @@ renderPage ctx node selected children =
             let
                 newAttrs =
                     attrs
-                        |> makeDraggable (Move node)
+                        |> makeDraggable (Drag node)
                         |> makeFileDroppableIf (not <| Common.isDragging ctx.dragDrop) node.id
             in
             if List.isEmpty children then
@@ -345,13 +345,16 @@ renderTextField ctx node selected label =
                     -- Deactivate field while in design mode
                     E.htmlAttribute (A.readonly (ctx.mode == DesignMode))
                         :: attrs
+
+                labelAttrs =
+                    applyFontColor label.color []
             in
             Input.text
                 newAttrs
                 { onChange = \_ -> NoOp
                 , text = ""
                 , placeholder = Nothing
-                , label = labelPosition label.position [ Font.color ctx.theme.labelColor ] label.text
+                , label = labelPosition label.position labelAttrs label.text
                 }
     in
     wrapElement ctx node selected renderer
@@ -367,6 +370,9 @@ renderTextFieldMultiline ctx node selected label =
                     -- Deactivate field while in design mode
                     E.htmlAttribute (A.readonly (ctx.mode == DesignMode))
                         :: attrs
+
+                labelAttrs =
+                    applyFontColor label.color []
             in
             Input.multiline
                 newAttrs
@@ -374,8 +380,7 @@ renderTextFieldMultiline ctx node selected label =
                 , text = ""
                 , placeholder = Nothing
                 , spellcheck = False
-                , label =
-                    labelPosition label.position [ Font.color ctx.theme.labelColor ] label.text
+                , label = labelPosition label.position labelAttrs label.text
                 }
     in
     wrapElement ctx node selected renderer
@@ -722,7 +727,7 @@ applyFontFamily value attrs =
             in
             Font.family family_ :: attrs
 
-        Inherit ->
+        Inherited ->
             attrs
 
 
@@ -732,7 +737,7 @@ applyFontColor value attrs =
         Local color ->
             Font.color color :: attrs
 
-        Inherit ->
+        Inherited ->
             attrs
 
 
@@ -742,7 +747,7 @@ applyFontSize value attrs =
         Local size ->
             Font.size size :: attrs
 
-        Inherit ->
+        Inherited ->
             attrs
 
 
@@ -818,7 +823,8 @@ applyBackground value attrs =
             Background.color value_ :: attrs
 
         Background.None ->
-            attrs
+            -- Always set a value to override Elm UI defaults
+            Background.color Palette.transparent :: attrs
 
 
 forceBackgroundColor value attrs =
@@ -902,7 +908,7 @@ wrapElement ctx node selected renderer =
          --  , E.onRight (E.el [E.alignTop, E.moveLeft 14 ] (E.html <| H.div [ A.class "element__nudge" ] []))
          --  , E.onLeft (E.el [E.alignTop, E.moveRight 14 ] (E.html <| H.div [ A.class "element__nudge" ] []))
          ]
-            |> makeDroppableIf (Common.canDropInto node ctx.dragDrop) (AppendTo node.id)
+            |> makeNodeDroppableIf (Common.canDropInto node ctx.dragDrop) (AppendTo node.id)
             |> applyWidth node.width node.widthMin node.widthMax
             |> applyHeight node.height node.heightMin node.heightMax
             |> applyAlignX node.alignmentX
@@ -914,21 +920,22 @@ wrapElement ctx node selected renderer =
         )
         (renderer attrs)
 
+
 wrapImageElement : Context -> Node -> Bool -> (List (E.Attribute Msg) -> Element Msg) -> Element Msg
 wrapImageElement ctx node selected renderer =
     let
         attrs =
             []
-            |> applyWidth node.width node.widthMin node.widthMax
-            |> applyHeight node.height node.heightMin node.heightMax
-            |> applyStyles node
+                |> applyWidth node.width node.widthMin node.widthMax
+                |> applyHeight node.height node.heightMin node.heightMax
+                |> applyStyles node
     in
     E.el
         ([ elementClasses ctx node selected
          , elementId node
          , onClick (NodeSelected False node.id)
          ]
-            |> makeDroppableIf (Common.canDropInto node ctx.dragDrop) (AppendTo node.id)
+            |> makeNodeDroppableIf (Common.canDropInto node ctx.dragDrop) (AppendTo node.id)
             |> applyWidth node.width node.widthMin node.widthMax
             |> applyHeight node.height node.heightMin node.heightMax
             |> applyAlignX node.alignmentX
@@ -983,22 +990,6 @@ options children =
         children
 
 
-
--- elements : List RenderedNode -> List (Element Msg)
--- elements children =
---     List.foldr
---         (\node accum ->
---             case node of
---                 RenderedElement _ el ->
---                     el :: accum
---                 _ ->
---                     -- Ignore everything else
---                     accum
---         )
---         []
---         children
-
-
 elementId node =
     E.htmlAttribute (A.id (Document.nodeId node.id))
 
@@ -1007,13 +998,16 @@ elementClasses ctx node selected =
     let
         dropId =
             AppendTo node.id
+
+        type_ =
+            String.replace " " "-" (nodeType node.type_)
     in
     E.htmlAttribute
         (A.classList
             [ ( "element", True )
             , ( "element--dropped", isDroppingInto dropId ctx.dragDrop )
             , ( "element--selected", selected )
-            , ( "element--" ++ nodeType node.type_, True )
+            , ( "element--" ++ type_, True )
             , ( "dragging--file", isDroppingFileInto node.id ctx.fileDrop )
             ]
         )
@@ -1038,12 +1032,20 @@ textEditor attrs text =
         }
 
 
+isDroppingInto : DropId -> DragDrop.Model DragId DropId -> Bool
 isDroppingInto dropId dragDrop =
-    case DragDrop.getDropId dragDrop of
-        Just dropId_ ->
+    case ( DragDrop.getDropId dragDrop, DragDrop.getDragId dragDrop ) of
+        ( Just dropId_, Just (Move _) ) ->
             dropId_ == dropId
 
-        Nothing ->
+        ( Just dropId_, Just (Insert _) ) ->
+            dropId_ == dropId
+
+        ( Just _, _ ) ->
+            -- We are dragging stuff in the workspace, no need to hilight anything
+            False
+
+        ( Nothing, _ ) ->
             False
 
 
@@ -1083,7 +1085,7 @@ onDoubleClick msg =
     E.htmlAttribute (Html.Events.stopPropagationOn "dblclick" (Decode.succeed ( msg, True )))
 
 
-makeDroppableIf pred dropId attrs =
+makeNodeDroppableIf pred dropId attrs =
     if pred then
         attrs
             ++ (DragDrop.droppable DragDropMsg dropId

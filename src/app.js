@@ -1,22 +1,16 @@
-import { Elm } from "./Main.elm"
+import { Elm } from "./Main.elm";
 
-var w = Math.max(
-  document.documentElement.clientWidth,
-  window.innerWidth || 0
-);
-var h = Math.max(
-  document.documentElement.clientHeight,
-  window.innerHeight || 0
-);
+var w = Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
+var h = Math.max(document.documentElement.clientHeight, window.innerHeight || 0);
 
-var seeds = new Uint32Array(4)
-window.crypto.getRandomValues(seeds)
+var seeds = new Uint32Array(4);
+window.crypto.getRandomValues(seeds);
 
 // Open app in preview mode? 
 var mode = location.search.includes("preview") ? "preview" : "design";
 
 var app = Elm.Main.init({
-  flags: {      
+  flags: {
     width: w,
     height: h,
     seed1: seeds[0],
@@ -30,17 +24,17 @@ var app = Elm.Main.init({
 });
 
 // -------------------------------
-// Simple localStorage support 
+// Simple localStorage support
 // -------------------------------
 
-var storageKey = "lastDocument"
+var storageKey = "lastDocument";
 
 app.ports.saveDocument.subscribe(function (value) {
-  localStorage.setItem(storageKey, value)
+  localStorage.setItem(storageKey, value);
 });
 
 app.ports.loadDocument.subscribe(function () {
-  let value = localStorage.getItem(storageKey)
+  let value = localStorage.getItem(storageKey);
   // Sanity check for first run
   if (value) {
     app.ports.onDocumentLoad.send(value);
@@ -58,17 +52,19 @@ window.addEventListener('storage', function() {
 });
 
 // -------------------------------
-// Copy to clipboard 
+// Copy to clipboard
 // -------------------------------
 
 app.ports.copyToClipboard.subscribe(function (value) {
   if (!navigator.clipboard) {
-    return
+    return;
   }
-  navigator.clipboard.writeText(value).then(function () {
-  }, function (err) {
-    console.error('Could not copy text to clipboard: ', err)
-  })
+  navigator.clipboard.writeText(value).then(
+    function () {},
+    function (err) {
+      console.error("Could not copy text to clipboard: ", err);
+    }
+  );
 });
 
 // -------------------------------
@@ -76,15 +72,14 @@ app.ports.copyToClipboard.subscribe(function (value) {
 // -------------------------------
 
 app.ports.selectText.subscribe(function (id) {
-  // We need to wait for Elm to render the <textarea> 
+  // We need to wait for Elm to render the <textarea>
   //   so we can find it in the DOM
   window.requestAnimationFrame((timespamp) => {
-    let el = document.getElementById(id)
+    let el = document.getElementById(id);
     if (el) {
-      el.select()
+      el.select();
     }
-  }
-  );
+  });
 });
 
 // Set a drag image, see:
@@ -92,23 +87,42 @@ app.ports.selectText.subscribe(function (id) {
 // * https://kryogenix.org/code/browser/custom-drag-image.html
 // * https://transitory.technology/set-drag-image/
 //
-app.ports.setDragImage.subscribe(function (event) {  
-  // FF compat.
-  event.dataTransfer.setData('text', '');
+app.ports.setDragImage.subscribe(function (payload) {
+  // FF compatibility
+  payload.event.dataTransfer.setData("text", "");
+  var clientRect = payload.event.target.getBoundingClientRect();
 
-  var node = event.target.cloneNode(true);
+  var node = null;
+  if (payload.dragging) {
+    // Dragging elements on workspace
+    node = payload.event.target.cloneNode(false);
+    // Safari has issues with big ghost drag images, so set explictly final dimensions
+    node.style.width = clientRect.width + "px";
+    node.style.height = clientRect.height + "px";
+    node.classList.add("ghost-image");
+  } else {
+    // Dragging from Library/outline
+    node = payload.event.target.cloneNode(true);
+    node.classList.add("ghost-image");
+    node.classList.add("library__item-ghost");
+  }
+  node.title = "";
+  node.style.position = "absolute";
+  node.style.right = "9999px"; // Put offscreen
+  document.body.appendChild(node);
 
-  // Add a "template" class for nodes already in the page
-  node.classList.add("template")
-  node.title=""
-  node.style.position = "absolute"
-  node.style.top = "-9999px"  
-  document.body.appendChild(node)
+  // console.log("event.clientX "+ payload.event.clientX)
+  // console.log("event.clientY "+ payload.event.clientY)
+  var offsetX = payload.event.clientX - clientRect.left;
+  var offsetY = payload.event.clientY - clientRect.top;
+  payload.event.dataTransfer.setDragImage(node, offsetX, offsetY);
+});
 
-  var clientRect = event.target.getBoundingClientRect()
-  var offsetX = event.clientX - clientRect.left
-  var offsetY = event.clientY - clientRect.top
-  event.dataTransfer.setDragImage(node, offsetX, offsetY)
+app.ports.endDrag.subscribe(function () {
+  // Cleanup
+  document.querySelectorAll(".ghost-image").forEach((el) => {
+    el.remove(); 
+  });
 });
 
 // app.ports.setDragCursor.subscribe(function (event, cursor) {
@@ -120,13 +134,13 @@ app.ports.setDragImage.subscribe(function (event) {
 // -------------------------------
 
 app.ports.setFontLinks.subscribe(function (links) {
-  let head = document.getElementsByTagName("head")[0]
+  let head = document.getElementsByTagName("head")[0];
   links.forEach((value) => {
-    var el = document.createElement("link")
-    el.setAttribute("href", value)
-    el.setAttribute("rel", "stylesheet")
-    head.appendChild(el)
-  })
+    var el = document.createElement("link");
+    el.setAttribute("href", value);
+    el.setAttribute("rel", "stylesheet");
+    head.appendChild(el);
+  });
 });
 
 
@@ -156,10 +170,9 @@ app.ports.openPreview.subscribe(function (value) {
 app.ports.showNotification.subscribe(function (options) {
   if (!("Notification" in window)) {
     console.warn("This browser does not support desktop notification");
-  }
-  else if (Notification.permission === "granted") {
+  } else if (Notification.permission === "granted") {
     var notification = new Notification(options.title, {
-      body: options.message
+      body: options.message,
     });
   }
   // Never asked
@@ -167,7 +180,7 @@ app.ports.showNotification.subscribe(function (options) {
     Notification.requestPermission().then(function (permission) {
       if (permission === "granted") {
         var notification = new Notification(options.title, {
-          body: options.message
+          body: options.message,
         });
       }
     });

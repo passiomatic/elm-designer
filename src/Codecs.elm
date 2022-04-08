@@ -53,6 +53,7 @@ documentCodec =
         |> Codec.field "schemaVersion" .schemaVersion Codec.int
         |> Codec.field "lastUpdatedOn" .lastUpdatedOn timeCodec
         |> Codec.field "root" .root (treeCodec nodeCodec)
+        |> Codec.field "selectedNodeId" .selectedNodeId nodeIdCodec
         |> Codec.field "viewport" .viewport viewportCodec
         |> Codec.field "collapsedTreeItems" .collapsedTreeItems setCodec
         |> Codec.buildObject
@@ -103,6 +104,7 @@ nodeCodec : Codec Node
 nodeCodec =
     Codec.object Node
         |> Codec.field "id" .id nodeIdCodec
+        |> Codec.field "index" .index Codec.int
         |> Codec.field "name" .name Codec.string
         |> Codec.field "width" .width lengthCodec
         |> Codec.field "widthMin" .widthMin (Codec.maybe Codec.int)
@@ -161,11 +163,11 @@ localCodec codec =
                 Local value ->
                     local value
 
-                Inherit ->
+                Inherited ->
                     inherit
         )
         |> Codec.variant1 "Local" Local codec
-        |> Codec.variant0 "Inherit" Inherit
+        |> Codec.variant0 "Inherited" Inherited
         |> Codec.buildCustom
 
 
@@ -658,6 +660,7 @@ labelCodec =
     Codec.object LabelData
         |> Codec.field "text" .text Codec.string
         |> Codec.field "position" .position labelPositionCodec
+        |> Codec.field "color" .color (localCodec colorCodec)
         |> Codec.buildObject
 
 

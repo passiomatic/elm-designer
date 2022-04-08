@@ -1,5 +1,6 @@
 module Style.Theme exposing
     ( Theme
+    , contrastColor
     , defaultTheme
     , large
     , regular
@@ -8,7 +9,7 @@ module Style.Theme exposing
     , xsmall
     )
 
-import Element exposing (Color)
+import Element as E exposing (Color)
 import Fonts
 import Palette
 import Style.Border as Border exposing (..)
@@ -91,3 +92,17 @@ large theme =
 
 xlarge theme =
     theme.textSize * 3
+
+
+{-| See <https://24ways.org/2010/calculating-color-contrast/>
+-}
+contrastColor color dark light =
+    let
+        { red, green, blue, alpha } =
+            E.toRgb color
+    in
+    if ((red * 255 * 299) + (green * 255 * 587) + (blue * 255 * 114)) / 1000 > 150 then
+        dark
+
+    else
+        light

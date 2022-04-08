@@ -19,6 +19,7 @@ module Document exposing
     , applyBackground
     , applyBackgroundColor
     , applyBackgroundImage
+    , applyBorder
     , applyBorderColor
     , applyBorderCorner
     , applyBorderLock
@@ -33,6 +34,7 @@ module Document exposing
     , applyHeightMin
     , applyHeightWith
     , applyLabel
+    , applyLabelColor
     , applyLabelPosition
     , applyLetterSpacing
     , applyOffset
@@ -41,6 +43,8 @@ module Document exposing
     , applyPosition
     , applyShadow
     , applyShadowColor
+    , applyShadowFromString
+    , applyShadowType
     , applySpacing
     , applyText
     , applyTextAlign
@@ -51,8 +55,10 @@ module Document exposing
     , applyWordSpacing
     , applyWrapRowItems
     , baseTemplate
-    , canDropInto
-    , canDropSibling
+    , blankImageNode
+    , canInsertInto
+    , canInsertNextTo
+    , createImageNode
     , defaultDeviceInfo
     , defaultDocument
     , deviceInfo
@@ -63,7 +69,7 @@ module Document exposing
     , fromTemplate
     , fromTemplateAt
     , generateId
-    , imageNode
+    , getNextIndexFor
     , insertNode
     , insertNodeAfter
     , insertNodeBefore
@@ -79,7 +85,7 @@ module Document exposing
     , resolveInheritedFontSize
     , schemaVersion
     , selectNodeWith
-    , selectParentOf
+    , selectPageOf
     , viewports
     , workspaceHeight
     , workspaceWidth
@@ -97,7 +103,7 @@ import Style.Border as Border exposing (BorderCorner, BorderStyle(..), BorderWid
 import Style.Font as Font exposing (..)
 import Style.Input as Input exposing (LabelPosition(..))
 import Style.Layout as Layout exposing (..)
-import Style.Shadow as Shadow exposing (Shadow)
+import Style.Shadow as Shadow exposing (Shadow, ShadowType)
 import Style.Theme as Theme exposing (Theme)
 import Time exposing (Posix)
 import Tree as T exposing (Tree)
@@ -115,6 +121,7 @@ type alias Document =
     { schemaVersion : Int
     , lastUpdatedOn : Posix
     , root : Tree Node
+    , selectedNodeId : NodeId
     , viewport : Viewport
     , collapsedTreeItems : Set String
     }
@@ -145,6 +152,7 @@ nodeId value =
 
 type alias Node =
     { id : NodeId
+    , index : Int
     , name : String
     , width : Length
     , widthMin : Maybe Int
@@ -178,8 +186,16 @@ type alias Node =
     }
 
 
+{-| What's being dragged.
+
+    - Move is used to rearrage elements in the outlive view
+    - Drag is used while dragging elements (only pages for now) on the workspace
+    - Insert is used when dragging library elements into the workspace
+
+-}
 type DragId
     = Move Node
+    | Drag Node
     | Insert (Tree Node)
 
 
@@ -195,6 +211,7 @@ baseTemplate : Node
 baseTemplate =
     { name = ""
     , id = UUID.forName "node-element" defaultNamespace
+    , index = 0
     , width = Layout.fit
     , widthMin = Nothing
     , widthMax = Nothing
@@ -207,9 +224,9 @@ baseTemplate =
     , scale = 1.0
     , padding = Layout.padding 0
     , spacing = Layout.spacing 0
-    , fontFamily = Inherit
-    , fontColor = Inherit
-    , fontSize = Inherit
+    , fontFamily = Inherited
+    , fontColor = Inherited
+    , fontSize = Inherited
     , fontWeight = Regular
     , letterSpacing = 0
     , wordSpacing = 0
@@ -245,6 +262,8 @@ type NodeType
     | DocumentNode
 
 
+{-| UI name for node types.
+-}
 nodeType : NodeType -> String
 nodeType value =
     case value of
@@ -328,6 +347,7 @@ type alias HeadingData =
 type alias LabelData =
     { text : String
     , position : LabelPosition
+    , color : Local Color
     }
 
 
@@ -351,26 +371,38 @@ generateId seeds =
     UUID.step seeds
 
 
-fromTemplateAt : { x : Float, y : Float } -> Tree Node -> Seeds -> ( Seeds, Tree Node )
-fromTemplateAt position template seeds =
+fromTemplateAt : { x : Float, y : Float } -> Tree Node -> Seeds -> (NodeType -> Int) -> ( Seeds, Tree Node )
+fromTemplateAt position template seeds indexer =
     T.mapAccumulate
         (\seeds_ template_ ->
             let
                 ( uuid, newSeeds ) =
                     generateId seeds_
 
+                nextIndex =
+                    indexer template_.type_
+
+                newName =
+                    template_.name ++ " " ++ String.fromInt nextIndex
+
                 newNode =
                     case template_.type_ of
-                        -- @@FIXME: is case/of needed?
+                        -- Always lay out pages absolutely within the workspace
                         PageNode ->
                             { template_
                                 | id = uuid
+                                , index = nextIndex
+                                , name = newName
                                 , offsetX = position.x
                                 , offsetY = position.y
                             }
 
                         _ ->
-                            { template_ | id = uuid }
+                            { template_
+                                | id = uuid
+                                , index = nextIndex
+                                , name = newName
+                            }
             in
             ( newSeeds, newNode )
         )
@@ -378,21 +410,24 @@ fromTemplateAt position template seeds =
         template
 
 
-fromTemplate : Tree Node -> Seeds -> ( Seeds, Tree Node )
-fromTemplate template seeds =
-    fromTemplateAt { x = 0, y = 0 } template seeds
+fromTemplate : Tree Node -> Seeds -> (NodeType -> Int) -> ( Seeds, Tree Node )
+fromTemplate template seeds indexer =
+    fromTemplateAt { x = 0, y = 0 } template seeds indexer
 
 
 {-| A startup document with a blank page on it.
 -}
-defaultDocument : Seeds -> Int -> ( Seeds, Tree Node )
-defaultDocument seeds index =
+defaultDocument : Seeds -> ( Seeds, Tree Node )
+defaultDocument seeds =
     let
+        indexer _ =
+            1
+
         template =
             T.tree
                 { baseTemplate
                     | type_ = DocumentNode
-                    , name = "Document " ++ String.fromInt index
+                    , name = "Document"
                     , width = Layout.fill
                     , height = Layout.fill
                 }
@@ -400,17 +435,22 @@ defaultDocument seeds index =
                   emptyPage Theme.defaultTheme
                 ]
     in
-    fromTemplateAt { x = workspaceWidth / 2, y = workspaceHeight / 2 } template seeds
+    fromTemplateAt { x = workspaceWidth / 2, y = workspaceHeight / 2 } template seeds indexer
 
 
 emptyPage : Theme -> Tree Node
 emptyPage theme =
+    let
+        ( width, height, _ ) =
+            defaultDeviceInfo
+    in
     T.singleton
         { baseTemplate
             | type_ = PageNode
             , name = "Page"
-            , width = Layout.px 375
-            , heightMin = Just 667
+            , width = Layout.px width
+            , height = Layout.unspecified
+            , heightMin = Just height
             , fontFamily = Local theme.textFontFamily
             , fontColor = Local theme.textColor
             , fontSize = Local theme.textSize
@@ -421,17 +461,31 @@ emptyPage theme =
 
 {-| Images require the user to drop them _into_ the app workspace so we bypass the pick-from-library process here.
 -}
-imageNode : String -> Seeds -> ( Seeds, Tree Node )
-imageNode url seeds =
+createImageNode : String -> Seeds -> ( Seeds, Tree Node )
+createImageNode url seeds =
     let
+        -- TODO Generate correct imdex for images too
+        indexer _ =
+            1
+
         template =
             T.singleton
                 { baseTemplate
-                    | type_ = ImageNode { src = url, description = "" }
+                    | type_ = imageNode url
                     , name = "Image"
                 }
     in
-    fromTemplate template seeds
+    fromTemplate template seeds indexer
+
+
+{-| An empty placeholder image type.
+-}
+blankImageNode =
+    imageNode ""
+
+
+imageNode url =
+    ImageNode { src = url, description = "" }
 
 
 
@@ -446,19 +500,47 @@ type Viewport
 
 deviceInfo =
     Dict.fromList
-        [ ( "Galaxy S5", ( 360, 640, Portrait ) )
-        , ( "iPhone 5/SE", ( 320, 568, Portrait ) )
-        , ( "iPhone 6/7/8", defaultDeviceInfo )
-        , ( "iPhone 6/7/8 Plus", ( 414, 736, Portrait ) )
-        , ( "iPhone X", ( 375, 812, Portrait ) )
-        , ( "iPad", ( 768, 1024, Portrait ) )
+        [ ( "Android", ( 360, 640, Portrait ) )
+        , ( "Pixel 3", ( 411, 823, Portrait ) )
+        , ( "Pixel 3 XL", ( 411, 846, Portrait ) )
+        , ( "Pixel 4", ( 411, 869, Portrait ) )
+        , ( "Pixel 4 XL", ( 411, 869, Portrait ) )
+        , ( "Galaxy S10", ( 360, 760, Portrait ) )
+        , ( "Galaxy S10+", ( 412, 869, Portrait ) )
+        , ( "Galaxy S10 Lite", ( 412, 914, Portrait ) )
+
+        -- Android tablet
+        , ( "Nexus 7", ( 600, 690, Portrait ) )
+        , ( "Nexus 9", ( 768, 1024, Portrait ) )
+        , ( "Nexus 10", ( 800, 1280, Portrait ) )
+        , ( "Pixel Slate", ( 1333, 888, Portrait ) )
+        , ( "Pixelbook", ( 1200, 800, Portrait ) )
+
+        -- Apple
+        , ( "iPhone SE", ( 320, 568, Portrait ) )
+        , ( "iPhone 8", defaultDeviceInfo )
+        , ( "iPhone 8 Plus", ( 414, 736, Portrait ) )
+        , ( "iPhone 11 Pro", ( 375, 812, Portrait ) )
+        , ( "iPhone 11", ( 414, 896, Portrait ) )
+        , ( "iPhone 11 Pro Max", ( 414, 896, Portrait ) )
+        , ( "iPhone 12", ( 390, 844, Portrait ) )
+        , ( "iPhone 12 Pro", ( 390, 844, Portrait ) )
+        , ( "iPhone 12 Pro Max", ( 428, 926, Portrait ) )
+        , ( "iPad mini 7.9\" ", ( 768, 1024, Portrait ) )
+        , ( "iPad 10.2\"", ( 810, 1080, Portrait ) )
+        , ( "iPad Air 10.5\"", ( 834, 1112, Portrait ) )
+        , ( "iPad Air 10.9\" ", ( 840, 1180, Portrait ) )
+        , ( "iPad Pro 11\"", ( 834, 1194, Portrait ) )
         , ( "iPad Pro 12.9\"", ( 1024, 1366, Portrait ) )
-        , ( "Surface Duo", ( 540, 720, Portrait ) )
-        , ( "MacBook Pro 13\"", ( 1440, 900, Landscape ) )
+        , ( "Apple TV", ( 1920, 1080, Landscape ) )
+
+        -- Desktop
+        , ( "Desktop", ( 1024, 1024, Landscape ) )
+        , ( "Desktop HD", ( 1440, 1024, Landscape ) )
         ]
 
 
-{-| Default is iPhone 6/7/8
+{-| Default is iPhone 8
 -}
 defaultDeviceInfo =
     ( 375, 667, Portrait )
@@ -483,6 +565,18 @@ findSelectedPage : Zipper Node -> Maybe (Zipper Node)
 findSelectedPage zipper =
     -- TODO
     Zipper.findFromRoot (\node -> node.type_ == PageNode) zipper
+getNextIndexFor : NodeType -> Zipper Node -> Int
+getNextIndexFor type_ zipper =
+    T.foldl
+        (\node accum ->
+            if type_ == node.type_ && node.index >= accum then
+                node.index + 1
+
+            else
+                accum
+        )
+        1
+        (Zipper.tree zipper)
 
 
 {-| Find the node with the given id and if successuful move zipper focus to it.
@@ -492,12 +586,38 @@ selectNodeWith id zipper =
     Zipper.findFromRoot (\node -> node.id == id) zipper
 
 
-{-| Find the parent of the node with the given id and if successuful move zipper focus to it.
+
+{- Find the parent of the node with the given id and if successuful move zipper focus to it. -}
+-- selectParentOf : NodeId -> Zipper Node -> Maybe (Zipper Node)
+-- selectParentOf id zipper =
+--     selectNodeWith id zipper
+--         |> Maybe.andThen Zipper.parent
+
+
+{-| Find the page containing the node with the given id.
 -}
-selectParentOf : NodeId -> Zipper Node -> Maybe (Zipper Node)
-selectParentOf id zipper =
+selectPageOf : NodeId -> Zipper Node -> Maybe (Zipper Node)
+selectPageOf id zipper =
     selectNodeWith id zipper
-        |> Maybe.andThen Zipper.parent
+        |> selectPageOf_
+
+
+selectPageOf_ : Maybe (Zipper Node) -> Maybe (Zipper Node)
+selectPageOf_ maybeZipper =
+    Maybe.andThen
+        (\zipper ->
+            let
+                node =
+                    Zipper.label zipper
+            in
+            case node.type_ of
+                PageNode ->
+                    Just zipper
+
+                _ ->
+                    selectPageOf_ (Zipper.parent zipper)
+        )
+        maybeZipper
 
 
 resolveInheritedFontColor : Color -> Zipper Node -> Color
@@ -538,7 +658,7 @@ resolveInheritedValue getter maybeZipper =
                 Local value ->
                     Just value
 
-                Inherit ->
+                Inherited ->
                     resolveInheritedValue getter (Zipper.parent zipper)
 
         Nothing ->
@@ -579,9 +699,9 @@ isContainer node =
             False
 
 
-canDropInto : Node -> { a | type_ : NodeType } -> Bool
-canDropInto container { type_ } =
-    case ( container.type_, type_ ) of
+canInsertInto : Node -> NodeType -> Bool
+canInsertInto node type_ =
+    case ( node.type_, type_ ) of
         ( RadioNode _, OptionNode _ ) ->
             True
 
@@ -616,9 +736,9 @@ canDropInto container { type_ } =
             False
 
 
-canDropSibling : Node -> { a | type_ : NodeType } -> Bool
-canDropSibling sibling { type_ } =
-    case ( sibling.type_, type_ ) of
+canInsertNextTo : Node -> NodeType -> Bool
+canInsertNextTo node type_ =
+    case ( node.type_, type_ ) of
         -- Only drop radio options next to another option
         ( OptionNode _, OptionNode _ ) ->
             True
@@ -629,11 +749,15 @@ canDropSibling sibling { type_ } =
         ( _, OptionNode _ ) ->
             False
 
+        -- You cannot insert anything as document sibling
+        ( DocumentNode, _ ) ->
+            False
+
         -- Only drop pages next to another page
         ( PageNode, PageNode ) ->
             True
 
-        ( _, PageNode ) ->
+        ( PageNode, _ ) ->
             False
 
         -- Other scenarios
@@ -713,13 +837,10 @@ insertNode newTree zipper =
         selectedNode =
             Zipper.label zipper
     in
-    if isContainer selectedNode then
-        -- If the selected node is a container
-        --   append the new one as last children...
+    if canInsertInto selectedNode (T.label newTree).type_ then
         appendNode newTree zipper
 
     else
-        -- ...otherwise insert as sibling
         let
             parentZipper =
                 Zipper.parent zipper
@@ -804,6 +925,56 @@ applyLabel value zipper =
 
                 OptionNode label ->
                     { node | type_ = OptionNode (setText value_ label) }
+
+                _ ->
+                    node
+        )
+        zipper
+
+
+applyLabelPosition : LabelPosition -> Zipper Node -> Zipper Node
+applyLabelPosition value zipper =
+    Zipper.mapLabel
+        (\node ->
+            case node.type_ of
+                TextFieldNode data ->
+                    { node | type_ = TextFieldNode (Input.setLabelPosition value data) }
+
+                TextFieldMultilineNode data ->
+                    { node | type_ = TextFieldMultilineNode (Input.setLabelPosition value data) }
+
+                CheckboxNode data ->
+                    { node | type_ = CheckboxNode (Input.setLabelPosition value data) }
+
+                RadioNode data ->
+                    { node | type_ = RadioNode (Input.setLabelPosition value data) }
+
+                _ ->
+                    node
+        )
+        zipper
+
+
+applyLabelColor : String -> Zipper Node -> Zipper Node
+applyLabelColor value zipper =
+    let
+        value_ =
+            Local (Css.stringToColor value)
+    in
+    Zipper.mapLabel
+        (\node ->
+            case node.type_ of
+                TextFieldNode data ->
+                    { node | type_ = TextFieldNode (Input.setLabelColor value_ data) }
+
+                TextFieldMultilineNode data ->
+                    { node | type_ = TextFieldMultilineNode (Input.setLabelColor value_ data) }
+
+                CheckboxNode data ->
+                    { node | type_ = CheckboxNode (Input.setLabelColor value_ data) }
+
+                RadioNode data ->
+                    { node | type_ = RadioNode (Input.setLabelColor value_ data) }
 
                 _ ->
                     node
@@ -1008,7 +1179,7 @@ applyFontSize value zipper =
                     Local (clamp Font.minFontSizeAllowed 999 v)
 
                 Nothing ->
-                    Inherit
+                    Inherited
     in
     Zipper.mapLabel (Font.setSize value_) zipper
 
@@ -1098,6 +1269,12 @@ applyBorderColor value zipper =
     Zipper.mapLabel (Border.setColor value_) zipper
 
 
+applyBorder : BorderWidth -> Zipper Node -> Zipper Node
+applyBorder width zipper =
+    -- @@TODO Merge width and corner into a single record to handle this better
+    Zipper.mapLabel (Border.setWidth width >> Border.setCorner (Border.corner 0)) zipper
+
+
 applyBorderWidth : (Int -> BorderWidth -> BorderWidth) -> String -> Zipper Node -> Zipper Node
 applyBorderWidth setter value zipper =
     let
@@ -1139,16 +1316,21 @@ applyFontWeight value zipper =
     Zipper.mapLabel (Font.setWeight value) zipper
 
 
-applyShadow : (Float -> Shadow -> Shadow) -> String -> Zipper Node -> Zipper Node
-applyShadow setter value zipper =
+applyShadowFromString : (Float -> Shadow -> Shadow) -> String -> Zipper Node -> Zipper Node
+applyShadowFromString setter value zipper =
     let
         value_ =
             String.toFloat value
-                -- TODO handle negative and positive offset values whule clamping 0-positive blur and size
+                -- TODO handle negative and positive offset values whle clamping 0-positive blur and size
                 --|> Maybe.map (clamp 0 999)
                 |> Maybe.withDefault 0
     in
     Zipper.mapLabel (\node -> Shadow.setShadow (setter value_ node.shadow) node) zipper
+
+
+applyShadow : Shadow -> Zipper Node -> Zipper Node
+applyShadow value zipper =
+    Zipper.mapLabel (\node -> Shadow.setShadow value node) zipper
 
 
 applyShadowColor : String -> Zipper Node -> Zipper Node
@@ -1160,24 +1342,6 @@ applyShadowColor value zipper =
     Zipper.mapLabel (\node -> Shadow.setShadow (Shadow.setColor value_ node.shadow) node) zipper
 
 
-applyLabelPosition : LabelPosition -> Zipper Node -> Zipper Node
-applyLabelPosition value zipper =
-    Zipper.mapLabel
-        (\node ->
-            case node.type_ of
-                TextFieldNode data ->
-                    { node | type_ = TextFieldNode (Input.setLabelPosition value data) }
-
-                TextFieldMultilineNode data ->
-                    { node | type_ = TextFieldNode (Input.setLabelPosition value data) }
-
-                CheckboxNode data ->
-                    { node | type_ = CheckboxNode (Input.setLabelPosition value data) }
-
-                RadioNode data ->
-                    { node | type_ = RadioNode (Input.setLabelPosition value data) }
-
-                _ ->
-                    node
-        )
-        zipper
+applyShadowType : ShadowType -> Zipper Node -> Zipper Node
+applyShadowType value zipper =
+    Zipper.mapLabel (\node -> Shadow.setShadow (Shadow.setType value node.shadow) node) zipper

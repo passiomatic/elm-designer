@@ -101,9 +101,7 @@ workspaceView model =
                 ]
             , A.style "width" (px Document.workspaceWidth)
             , A.style "height" (px Document.workspaceHeight)
-
-            --, transformAttr
-            --, transformOriginAttr
+            , A.id "workspace"
             ]
             [ documentView model
             ]
@@ -178,22 +176,24 @@ previewButton open =
 
 
 undoRedoView model =
-    H.div [ A.class "me-auto" ]
+    H.div [ A.class "me-auto btn-group" ]
         [ H.button
-            [ A.type_ "button"
-            , A.class "btn btn-light btn-sm"
-            , A.title "Undo last change"
-            , A.disabled (not (UndoList.hasPast model.document))
-            , E.onClick Undo
-            ]
+            ([ A.type_ "button"
+             , A.class "btn btn-secondary btn-sm"
+             , A.disabled (not (UndoList.hasPast model.document))
+             , E.onClick Undo
+             ]
+                |> Common.addTooltipDown "Undo last change"
+            )
             [ Icons.cornerUpLeft ]
         , H.button
-            [ A.type_ "button"
-            , A.class "btn btn-light btn-sm"
-            , A.title "Redo last change"
-            , A.disabled (not (UndoList.hasFuture model.document))
-            , E.onClick Redo
-            ]
+            ([ A.type_ "button"
+             , A.class "btn btn-secondary btn-sm"
+             , A.disabled (not (UndoList.hasFuture model.document))
+             , E.onClick Redo
+             ]
+                |> Common.addTooltipDown "Redo last change"
+            )
             [ Icons.cornerUpRight ]
         ]
 
@@ -215,7 +215,7 @@ insertView model =
         [ A.class "dropdown"
         ]
         [ H.button
-            [ A.class "btn btn-light btn-sm dropdown-toggle"
+            [ A.class "btn btn-secondary btn-sm dropdown-toggle"
             , A.type_ "button"
             , E.onClick
                 (DropDownChanged
@@ -234,9 +234,7 @@ insertView model =
                 , ( "show", visible )
                 ]
             ]
-            (insertPageView selectedNode
-                :: dividerView
-                :: insertImageView selectedNode
+            (insertImageView selectedNode
                 :: dividerView
                 :: List.map
                     (insertItemView selectedNode)
@@ -250,13 +248,12 @@ dividerView =
 
 
 insertImageView : Node -> Html Msg
-insertImageView container =
+insertImageView node =
     H.li []
         [ H.button
             [ A.classList
                 [ ( "dropdown-item", True )
-
-                --, ( "disabled", not (Document.canDropInto container) )
+                , ( "disabled", not (Document.canInsertInto node Document.blankImageNode || Document.canInsertNextTo node Document.blankImageNode) )
                 ]
             , A.type_ "button"
             , E.onClick InsertImageClicked
@@ -265,24 +262,8 @@ insertImageView container =
         ]
 
 
-insertPageView : Node -> Html Msg
-insertPageView container =
-    H.li []
-        [ H.button
-            [ A.classList
-                [ ( "dropdown-item", True )
-
-                --, ( "disabled", not (Document.canDropInto container { type_ = PageNode }) )
-                ]
-            , A.type_ "button"
-            , E.onClick InsertPageClicked
-            ]
-            [ H.text "Page" ]
-        ]
-
-
 insertItemView : Node -> LibraryItem Msg -> Html Msg
-insertItemView container item =
+insertItemView node item =
     let
         template =
             T.label item.root
@@ -291,7 +272,7 @@ insertItemView container item =
         [ H.button
             [ A.classList
                 [ ( "dropdown-item", True )
-                , ( "disabled", not (Document.canDropInto container template) )
+                , ( "disabled", not (Document.canInsertInto node template.type_ || Document.canInsertNextTo node template.type_) )
                 ]
             , A.type_ "button"
             , E.onClick (InsertNodeClicked item.root)
@@ -423,24 +404,34 @@ rightPaneView model =
 codeView : Model -> List (Html Msg)
 codeView model =
     let
-        node =
+        tree =
             Zipper.tree model.document.present
     in
-    [ H.section [ A.class "section bp-3 d-flex flex-column h-100" ]
-        [ H.div [ A.class "mb-2 fw-500" ]
-            [ H.text ("Generated code for " ++ (T.label node |> .name))
-            ]
-        , H.div [ A.class "scroll-y flex-fill bg-white bp-1 border" ]
-            [ H.pre [ A.class "preformatted" ]
-                [ H.text (CodeGen.emit Theme.defaultTheme model.viewport node)
+    case (T.label tree).type_ of    
+        DocumentNode ->
+            [ H.section [ A.class "section bp-3 d-flex flex-column align-items-center justify-content-center h-100" ]
+                [ H.div [ A.class "text-muted" ]
+                    [ H.text "Select a page or another element."
+                    ]
                 ]
             ]
-        , H.div [ A.class "mt-2 d-grid" ]
-            [ H.button [ E.onClick ClipboardCopyClicked, A.type_ "button", A.class "btn btn-primary" ]
-                [ H.text "Copy Elm code" ]
+
+        _ ->
+            [ H.section [ A.class "section bp-3 d-flex flex-column h-100" ]
+                [ H.div [ A.class "mb-2 fw-500" ]
+                    [ H.text ("Generated code for " ++ (T.label tree |> .name))
+                    ]
+                , H.div [ A.class "scroll-y flex-fill bg-white bp-1 border" ]
+                    [ H.pre [ A.class "preformatted" ]
+                        [ H.text (CodeGen.emit Theme.defaultTheme model.viewport tree)
+                        ]
+                    ]
+                , H.div [ A.class "mt-2 d-grid" ]
+                    [ H.button [ E.onClick ClipboardCopyClicked, A.type_ "button", A.class "btn btn-primary" ]
+                        [ H.text "Copy Elm code" ]
+                    ]
+                ]
             ]
-        ]
-    ]
 
 
 leftPaneView : Model -> Html Msg
@@ -457,7 +448,7 @@ outlineView model =
         tree =
             Zipper.toTree model.document.present
     in
-    H.div [ A.class "bp-3 scroll-y border-bottom flex-grow-1" ]
+    H.div [ A.class "bp-3 scroll-y border-bottom flex-grow-1", A.style "flex-basis" "0" ]
         [ T.restructure identity (outlineItemView model) tree
         ]
 
@@ -470,7 +461,7 @@ outlineItemView model node children =
 
         topHint =
             H.div
-                (makeDroppableIf (Common.canDropSibling node model.dragDrop)
+                (makeDroppableIf (Common.canDropNextTo node model.dragDrop)
                     (InsertBefore node.id)
                     [ A.classList
                         [ ( "tree__drop-hint tree__drop-hint--before", True )
@@ -482,7 +473,7 @@ outlineItemView model node children =
 
         bottomHint =
             H.div
-                (makeDroppableIf (Common.canDropSibling node model.dragDrop)
+                (makeDroppableIf (Common.canDropNextTo node model.dragDrop)
                     (InsertAfter node.id)
                     [ A.classList
                         [ ( "tree__drop-hint tree__drop-hint--after", True )
@@ -599,7 +590,9 @@ emptyDocumentNotice model node =
             ]
             :: makeDroppableIf (Common.canDropInto node model.dragDrop) (AppendTo node.id) []
         )
-        []
+        [ H.div [ A.class "large fw-bold" ] [ H.text "Workspace is empty" ]
+        , H.text "Start adding pages."
+        ]
 
 
 treeLabel node =
@@ -670,7 +663,7 @@ isCollapsed model node =
 
 libraryView : Model -> Html Msg
 libraryView _ =
-    H.div [ A.class "bp-3 scroll-y", A.style "height" "350px", A.style "min-height" "350px" ]
+    H.div [ A.class "bp-3 scroll-y flex-grow-1", A.style "flex-basis" "0" ]
         (H.div [ A.class "fw-500" ]
             [ H.text "Library" ]
             :: (Library.groups
@@ -680,23 +673,23 @@ libraryView _ =
                                 [ H.h2 [ A.class "section__title mb-2" ]
                                     [ H.text head.group ]
                                 , H.div [ A.class "library d-flex flex-wrap" ]
-                                    (List.map templateView (head :: rest))
+                                    (List.map libraryItemView (head :: rest))
                                 ]
                         )
                )
         )
 
 
-templateView : LibraryItem Msg -> Html Msg
-templateView item =
+libraryItemView : LibraryItem Msg -> Html Msg
+libraryItemView item =
     let
         template =
             T.label item.root
     in
     H.div
         (A.class "library__item bp-2 d-flex mb-1"
-            :: A.title item.description
             :: DragDrop.draggable DragDropMsg (Insert item.root)
+            |> Common.addTooltipDown item.description
         )
         [ H.span [ A.class "me-1" ]
             [ item.icon ]
@@ -837,11 +830,18 @@ makeDraggable dragId attrs =
 
 
 isDroppingInto dropId dragDrop =
-    case DragDrop.getDropId dragDrop of
-        Just (AppendTo id) ->
-            id == dropId
+    case ( DragDrop.getDropId dragDrop, DragDrop.getDragId dragDrop ) of
+        ( Just (AppendTo dropId_), Just (Move _) ) ->
+            dropId_ == dropId
 
-        _ ->
+        ( Just (AppendTo dropId_), Just (Insert _) ) ->
+            dropId_ == dropId
+
+        ( Just _, _ ) ->
+            -- We are dragging stuff in the workspace, no need to hilight anything
+            False
+
+        ( Nothing, _ ) ->
             False
 
 

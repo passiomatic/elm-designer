@@ -27,19 +27,26 @@
   cursor: move;
   cursor: grab; // Safari
   border: 1px solid $border-color;
-  max-width: 8rem;
-  flex-grow: 1;
+  @include font-size($input-font-size-sm);
+  background: #fff;
+  color: $body-color;
+  transition: box-shadow 0.1s ease-out;
+
+  &:hover {
+    @extend .shadow-sm;
+  }
+}
+
+// Ghost image fro D&D operation
+
+.library__item-ghost {
+  @extend .rounded;
+  border: 1px solid $border-color;
   @include font-size($input-font-size-sm);
   // Force styles to apply to dragged nodes as well
   background: #fff !important;
   color: $body-color !important;
-  transform: scale(1);
-  transition: transform 0.1s ease-out, box-shadow 0.1s ease-out;
-}
-
-.library__item:hover {
-  transform: scale(1.1);
-  @extend .shadow-sm;
+  white-space: nowrap;
 }
 
 // Inspector

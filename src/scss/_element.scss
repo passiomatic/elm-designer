@@ -23,7 +23,7 @@
 }
 
 // ----------------------
-// Selected (design mode only)
+// Selected
 
 .element--selected {
   outline: 3px solid $primary;
@@ -35,6 +35,8 @@
 
 .element--Page {
   border: 2px solid $border-color !important;
+  cursor: move;
+  cursor: grab; // Safari
 }
 
 // ----------------------
@@ -80,7 +82,7 @@
   text-align: inherit;
 }
 
-// Disallow image dragging while in design mode
-.element > img {
+// Disallow image dragging
+.element--Image img {
   -webkit-user-drag: none;
 }

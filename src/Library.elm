@@ -113,7 +113,7 @@ heading1 theme =
         T.singleton
             { baseTemplate
                 | type_ = HeadingNode { level = 1, text = "" }
-                , name = "Heading 1"
+                , name = "Heading"
                 , width = Layout.fill
                 , spacing = theme.headingSpacing
                 , fontWeight = theme.headingFontWeight
@@ -133,7 +133,7 @@ heading2 theme =
         T.singleton
             { baseTemplate
                 | type_ = HeadingNode { level = 2, text = "" }
-                , name = "Heading 2"
+                , name = "Heading"
                 , width = Layout.fill
                 , spacing = theme.headingSpacing
                 , fontWeight = theme.headingFontWeight
@@ -153,7 +153,7 @@ heading3 theme =
         T.singleton
             { baseTemplate
                 | type_ = HeadingNode { level = 3, text = "" }
-                , name = "Heading 3"
+                , name = "Heading"
                 , width = Layout.fill
                 , spacing = theme.headingSpacing
                 , fontWeight = theme.headingFontWeight
@@ -280,8 +280,10 @@ textField theme =
                     TextFieldNode
                         { text = "Label"
                         , position = LabelAbove
+                        , color = Inherited
                         }
                 , width = Layout.fill
+                , background = Background.solid theme.backgroundColor
                 , borderWidth = theme.borderWidth
                 , borderColor = theme.borderColor
                 , borderCorner = theme.borderCorner
@@ -293,7 +295,7 @@ textFieldMultiline : Theme -> LibraryItem msg
 textFieldMultiline theme =
     { icon = Icons.edit
     , group = formElementsLabel
-    , description = "Text field which resizes based on its contents"
+    , description = "Resizes based on its contents"
     , accelerator = ""
     , root =
         T.singleton
@@ -305,8 +307,10 @@ textFieldMultiline theme =
                     TextFieldMultilineNode
                         { text = "Label"
                         , position = LabelAbove
+                        , color = Inherited
                         }
                 , width = Layout.fill
+                , background = Background.solid theme.backgroundColor
                 , borderWidth = theme.borderWidth
                 , borderColor = theme.borderColor
                 , borderCorner = theme.borderCorner
@@ -344,7 +348,7 @@ buttonHelper theme name border background =
                 , borderColor = border
                 , borderCorner = theme.borderCorner
                 , background = Solid background
-                , fontColor = Local (contrastColor background theme.textColor Palette.white)
+                , fontColor = Local (Theme.contrastColor background theme.textColor Palette.white)
                 , textAlignment = TextCenter
                 , type_ = ButtonNode { text = "Button Label" }
             }
@@ -362,7 +366,12 @@ checkbox theme =
             { baseTemplate
                 | name = "Checkbox"
                 , spacing = Layout.spacingXY (Theme.xsmall theme) 0
-                , type_ = CheckboxNode { text = "Checkbox Label", position = LabelRight }
+                , type_ =
+                    CheckboxNode
+                        { text = "Checkbox Label"
+                        , position = LabelRight
+                        , color = Inherited
+                        }
             }
     }
 
@@ -378,16 +387,21 @@ radio theme =
             { baseTemplate
                 | name = "Radio Selection"
                 , spacing = Layout.spacingXY 0 (Theme.xsmall theme)
-                , type_ = RadioNode { text = "Radio Selection", position = LabelAbove }
+                , type_ =
+                    RadioNode
+                        { text = "Radio Selection"
+                        , position = LabelAbove
+                        , color = Inherited
+                        }
             }
             [ T.singleton
                 { baseTemplate
-                    | name = "Option 1"
+                    | name = "Option"
                     , type_ = OptionNode { text = "Option 1" }
                 }
             , T.singleton
                 { baseTemplate
-                    | name = "Option 2"
+                    | name = "Option"
                     , type_ = OptionNode { text = "Option 2" }
                 }
             ]
@@ -411,17 +425,3 @@ option theme =
 
 baseTemplate =
     Document.baseTemplate
-
-
-{-| See <https://24ways.org/2010/calculating-color-contrast/>
--}
-contrastColor color dark light =
-    let
-        { red, green, blue, alpha } =
-            E.toRgb color
-    in
-    if ((red * 255 * 299) + (green * 255 * 587) + (blue * 255 * 114)) / 1000 > 150 then
-        dark
-
-    else
-        light

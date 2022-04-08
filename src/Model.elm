@@ -15,6 +15,7 @@ module Model exposing
     , WidgetState(..)
     , context
     , initialModel
+    , workspaceId
     , workspaceWrapperId
     )
 
@@ -30,10 +31,11 @@ import Random
 import Result exposing (Result(..))
 import Set exposing (Set)
 import Style.Background as Background exposing (Background)
-import Style.Border exposing (BorderStyle)
+import Style.Border exposing (BorderStyle, BorderWidth, BorderCorner)
 import Style.Font as Font exposing (..)
 import Style.Input as Input exposing (LabelPosition(..))
 import Style.Layout as Layout exposing (..)
+import Style.Shadow as Shadow exposing (..)
 import Style.Theme as Theme exposing (Theme)
 import Task
 import Time exposing (Posix)
@@ -67,9 +69,13 @@ type Msg
     | BackgroundColorChanged String
     | BackgroundChanged Background
     | BorderColorChanged String
+    | SetBorderClicked BorderWidth
     | BorderStyleChanged BorderStyle
     | ShadowColorChanged String
+    | ShadowTypeChanged ShadowType
+    | SetShadowClicked Shadow
     | LabelPositionChanged LabelPosition
+    | LabelColorChanged String
     | FieldEditingStarted Widget String
     | FieldEditingConfirmed
     | FieldEditingFinished
@@ -79,8 +85,8 @@ type Msg
     | PresetSizeChanged String
     | WrapRowItemsChanged Bool
     | ClipboardCopyClicked
-    | InsertPageClicked
     | RemoveNodeClicked NodeId
+    | DuplicateNodeClicked NodeId
     | InsertNodeClicked (Tree Node)
     | InsertImageClicked
     | DropDownChanged WidgetState
@@ -134,6 +140,7 @@ type Widget
     | BorderBottomRightCornerField
     | BorderBottomLeftCornerField
     | LabelField
+    | LabelColorField
     | OffsetXField
     | OffsetYField
     | WidthMinField
@@ -300,7 +307,7 @@ initialModel { width, height, seed1, seed2, seed3, seed4, platform, mode } =
                 (Random.initialSeed seed4)
 
         ( newSeeds, newDocument ) =
-            Document.defaultDocument seeds 1
+            Document.defaultDocument seeds
 
         ( contextMenu, cmd ) =
             ContextMenu.init
@@ -360,3 +367,7 @@ initialModel { width, height, seed1, seed2, seed3, seed4, platform, mode } =
 
 workspaceWrapperId =
     "workspace-wrapper"
+
+
+workspaceId =
+    "workspace"
