@@ -11,7 +11,7 @@ Elm Designer is now a web app. No more Electron binaries to download. Yay!
 
 ## Bugs fixed 
 
-* Image doens't collapse anymore when inserted into a row
+* Image doesn't collapse anymore when inserted into a row
 * "Insert" menu now allows only valid parent-child combinations
 
 --- 
