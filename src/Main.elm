@@ -298,15 +298,9 @@ update msg model =
                 Nothing ->
                     ( model, Cmd.none )
 
-        ClipboardCopyClicked ->
-            let
-                code =
-                    model.document.present
-                        |> Zipper.tree
-                        |> CodeGen.emit Theme.defaultTheme model.viewport
-            in
+        ClipboardCopyClicked text ->
             ( model
-            , Ports.copyToClipboard code
+            , Ports.copyToClipboard text
             )
 
         DocumentLoaded value ->

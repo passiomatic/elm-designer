@@ -394,6 +394,10 @@ codeView model =
     let
         tree =
             Zipper.tree model.document.present
+
+        code =
+            CodeGen.emit Theme.defaultTheme model.viewport tree
+
     in
     case (T.label tree).type_ of
         DocumentNode ->
@@ -415,7 +419,7 @@ codeView model =
                         ]
                     ]
                 , H.div [ A.class "mt-2 d-grid" ]
-                    [ H.button [ E.onClick ClipboardCopyClicked, A.type_ "button", A.class "btn btn-primary" ]
+                    [ H.button [ E.onClick (ClipboardCopyClicked code), A.type_ "button", A.class "btn btn-primary" ]
                         [ H.text "Copy Elm code" ]
                     ]
                 ]

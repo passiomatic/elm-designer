@@ -84,7 +84,7 @@ type Msg
     | ViewportChanged Viewport
     | PresetSizeChanged Viewport
     | WrapRowItemsChanged Bool
-    | ClipboardCopyClicked
+    | ClipboardCopyClicked String
     | RemoveNodeClicked NodeId
     | DuplicateNodeClicked NodeId
     | InsertNodeClicked (Tree Node)
