@@ -81,7 +81,7 @@ app.ports.setDragImage.subscribe(function (payload) {
   var node = null;
   if (payload.dragging) {
     // Dragging elements on workspace
-    node = payload.event.target.cloneNode(false);
+    node = payload.event.target.cloneNode(true);
     // Safari has issues with big ghost drag images, so set explictly final dimensions
     node.style.width = clientRect.width + "px";
     node.style.height = clientRect.height + "px";
@@ -96,9 +96,6 @@ app.ports.setDragImage.subscribe(function (payload) {
   node.style.position = "absolute";
   node.style.right = "9999px"; // Put offscreen
   document.body.appendChild(node);
-
-  // console.log("event.clientX "+ payload.event.clientX)
-  // console.log("event.clientY "+ payload.event.clientY)
   var offsetX = payload.event.clientX - clientRect.left;
   var offsetY = payload.event.clientY - clientRect.top;
   payload.event.dataTransfer.setDragImage(node, offsetX, offsetY);

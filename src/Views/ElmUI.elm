@@ -902,6 +902,17 @@ wrapElement ctx node selected renderer =
         ([ elementClasses ctx node selected
          , elementId node
          , onClick (NodeSelected False node.id)
+         , case DragDrop.getDragId ctx.dragDrop of
+            Just dragId ->
+                case dragId of
+                    Drag _ ->
+                        E.htmlAttribute (A.style "opacity" "0")
+
+                    _ ->
+                        E.htmlAttribute (A.style "opacity" "1")
+
+            Nothing ->
+                E.htmlAttribute (A.style "opacity" "1")
 
          --, E.onRight (E.el [ E.centerY, E.moveLeft 14 ] (E.html <| H.div [ A.class "element__connect" ] []))
          --  , E.onRight (E.el [E.alignBottom, E.moveLeft 14 ] (E.html <| H.div [ A.class "element__nudge" ] []))
