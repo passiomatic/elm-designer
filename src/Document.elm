@@ -59,12 +59,11 @@ module Document exposing
     , canInsertInto
     , canInsertNextTo
     , createImageNode
-    , defaultDeviceInfo
+    , defaultDevice
     , defaultDocument
-    , deviceInfo
+    , devices
     , duplicateNode
     , emptyPage
-    , findDeviceInfo
     , fromTemplate
     , fromTemplateAt
     , generateId
@@ -441,7 +440,7 @@ emptyPage : Theme -> Tree Node
 emptyPage theme =
     let
         ( width, height, _ ) =
-            defaultDeviceInfo
+            defaultDevice
     in
     T.singleton
         { baseTemplate
@@ -492,68 +491,62 @@ imageNode url =
 
 
 type Viewport
-    = DeviceModel String
+    = Device String Int Int Orientation
     | Custom Int Int Orientation
     | Fluid
 
 
-deviceInfo =
-    Dict.fromList
-        [ ( "Android", ( 360, 640, Portrait ) )
-        , ( "Pixel 3", ( 411, 823, Portrait ) )
-        , ( "Pixel 3 XL", ( 411, 846, Portrait ) )
-        , ( "Pixel 4", ( 411, 869, Portrait ) )
-        , ( "Pixel 4 XL", ( 411, 869, Portrait ) )
-        , ( "Galaxy S10", ( 360, 760, Portrait ) )
-        , ( "Galaxy S10+", ( 412, 869, Portrait ) )
-        , ( "Galaxy S10 Lite", ( 412, 914, Portrait ) )
+devices =
+    [ -- Android
+      Device "Android" 360 640 Portrait
+    , Device "Pixel 3" 411 823 Portrait
+    , Device "Pixel 3 XL" 411 846 Portrait
+    , Device "Pixel 4" 411 869 Portrait
+    , Device "Pixel 4 XL" 411 869 Portrait
+    , Device "Galaxy S10" 360 760 Portrait
+    , Device "Galaxy S10+" 412 869 Portrait
+    , Device "Galaxy S10 Lite" 412 914 Portrait
 
-        -- Android tablet
-        , ( "Nexus 7", ( 600, 690, Portrait ) )
-        , ( "Nexus 9", ( 768, 1024, Portrait ) )
-        , ( "Nexus 10", ( 800, 1280, Portrait ) )
-        , ( "Pixel Slate", ( 1333, 888, Portrait ) )
-        , ( "Pixelbook", ( 1200, 800, Portrait ) )
+    -- Android tablet
+    , Device "Nexus 7" 600 690 Portrait
+    , Device "Nexus 9" 768 1024 Portrait
+    , Device "Nexus 10" 800 1280 Portrait
+    , Device "Pixel Slate" 1333 888 Portrait
+    , Device "Pixelbook" 1200 800 Portrait
 
-        -- Apple
-        , ( "iPhone SE", ( 320, 568, Portrait ) )
-        , ( "iPhone 8", defaultDeviceInfo )
-        , ( "iPhone 8 Plus", ( 414, 736, Portrait ) )
-        , ( "iPhone 11 Pro", ( 375, 812, Portrait ) )
-        , ( "iPhone 11", ( 414, 896, Portrait ) )
-        , ( "iPhone 11 Pro Max", ( 414, 896, Portrait ) )
-        , ( "iPhone 12", ( 390, 844, Portrait ) )
-        , ( "iPhone 12 Pro", ( 390, 844, Portrait ) )
-        , ( "iPhone 12 Pro Max", ( 428, 926, Portrait ) )
-        , ( "iPad mini 7.9\" ", ( 768, 1024, Portrait ) )
-        , ( "iPad 10.2\"", ( 810, 1080, Portrait ) )
-        , ( "iPad Air 10.5\"", ( 834, 1112, Portrait ) )
-        , ( "iPad Air 10.9\" ", ( 840, 1180, Portrait ) )
-        , ( "iPad Pro 11\"", ( 834, 1194, Portrait ) )
-        , ( "iPad Pro 12.9\"", ( 1024, 1366, Portrait ) )
-        , ( "Apple TV", ( 1920, 1080, Landscape ) )
+    -- Apple
+    , Device "iPhone SE" 320 568 Portrait
+    , Device "iPhone 8" 375 667 Portrait
+    , Device "iPhone 8 Plus" 414 736 Portrait
+    , Device "iPhone 11 Pro" 375 812 Portrait
+    , Device "iPhone 11" 414 896 Portrait
+    , Device "iPhone 11 Pro Max" 414 896 Portrait
+    , Device "iPhone 12" 390 844 Portrait
+    , Device "iPhone 12 Pro" 390 844 Portrait
+    , Device "iPhone 12 Pro Max" 428 926 Portrait
+    , Device "iPad mini 7.9\"" 768 1024 Portrait
+    , Device "iPad 10.2\"" 810 1080 Portrait
+    , Device "iPad Air 10.5\"" 834 1112 Portrait
+    , Device "iPad Air 10.9\"" 840 1180 Portrait
+    , Device "iPad Pro 11\"" 834 1194 Portrait
+    , Device "iPad Pro 12.9\"" 1024 136 Portrait
+    , Device "Apple TV" 1920 1080 Landscape
 
-        -- Desktop
-        , ( "Desktop", ( 1024, 1024, Landscape ) )
-        , ( "Desktop HD", ( 1440, 1024, Landscape ) )
-        ]
+    -- Desktop
+    , Device "Desktop" 1024 1024 Landscape
+    , Device "Desktop HD" 1440 1024 Landscape
+    ]
 
 
 {-| Default is iPhone 8
 -}
-defaultDeviceInfo =
+defaultDevice =
     ( 375, 667, Portrait )
-
-
-findDeviceInfo : String -> ( Int, Int, Orientation )
-findDeviceInfo name =
-    Dict.get name deviceInfo
-        |> Maybe.withDefault defaultDeviceInfo
 
 
 viewports : List Viewport
 viewports =
-    Fluid :: List.map DeviceModel (Dict.keys deviceInfo)
+    Fluid :: devices
 
 
 

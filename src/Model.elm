@@ -82,9 +82,9 @@ type Msg
     | FieldChanged String
     | TextChanged String
     | ViewportChanged Viewport
-    | PresetSizeChanged String
+    | PresetSizeChanged Viewport
     | WrapRowItemsChanged Bool
-    | ClipboardCopyClicked
+    | ClipboardCopyClicked String
     | RemoveNodeClicked NodeId
     | DuplicateNodeClicked NodeId
     | InsertNodeClicked (Tree Node)
@@ -301,7 +301,7 @@ initialModel { width, height, seed1, seed2, seed3, seed4, platform } =
             ContextMenu.init
 
         ( pageWidth, pageHeight, _ ) =
-            Document.defaultDeviceInfo
+            Document.defaultDevice
 
         workspaceX =
             workspaceWidth / 2 - toFloat width / 2 + pageWidth / 2

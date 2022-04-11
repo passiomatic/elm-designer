@@ -302,29 +302,11 @@ viewportsView model =
 
                         label =
                             case viewport of
-                                DeviceModel name ->
-                                    let
-                                        ( w, h, _ ) =
-                                            Document.findDeviceInfo name
-                                    in
-                                    name
-                                        ++ " "
-                                        ++ Entity.mdash
-                                        ++ " "
-                                        ++ String.fromInt w
-                                        ++ Entity.times
-                                        ++ String.fromInt h
-                                        ++ " px"
+                                Device name w h _ ->
+                                    viewportLabel name w h
 
                                 Custom w h _ ->
-                                    "Custom"
-                                        ++ " "
-                                        ++ Entity.mdash
-                                        ++ " "
-                                        ++ String.fromInt w
-                                        ++ Entity.times
-                                        ++ String.fromInt h
-                                        ++ " px"
+                                    viewportLabel "Custom" w h
 
                                 Fluid ->
                                     "Fluid Layout"
@@ -337,13 +319,23 @@ viewportsView model =
         ]
 
 
+viewportLabel name width height =
+    name
+        ++ " "
+        ++ Entity.mdash
+        ++ " "
+        ++ String.fromInt width
+        ++ Entity.times
+        ++ String.fromInt height
+        ++ " px"
+
+
 viewportValue : Viewport -> Attribute msg
 viewportValue value =
     A.value (Codecs.encodeViewport value)
 
 
 onViewportSelect msg =
-    --E.stopPropagationOn "input" (Codecs.viewportDecoder msg)
     E.on "input" (Codecs.viewportDecoder msg)
 
 
@@ -402,8 +394,12 @@ codeView model =
     let
         tree =
             Zipper.tree model.document.present
+
+        code =
+            CodeGen.emit Theme.defaultTheme model.viewport tree
+
     in
-    case (T.label tree).type_ of    
+    case (T.label tree).type_ of
         DocumentNode ->
             [ H.section [ A.class "section bp-3 d-flex flex-column align-items-center justify-content-center h-100" ]
                 [ H.div [ A.class "text-muted" ]
@@ -423,7 +419,7 @@ codeView model =
                         ]
                     ]
                 , H.div [ A.class "mt-2 d-grid" ]
-                    [ H.button [ E.onClick ClipboardCopyClicked, A.type_ "button", A.class "btn btn-primary" ]
+                    [ H.button [ E.onClick (ClipboardCopyClicked code), A.type_ "button", A.class "btn btn-primary" ]
                         [ H.text "Copy Elm code" ]
                     ]
                 ]
@@ -705,11 +701,7 @@ documentView model =
 
         ( viewportClass, width, height ) =
             case model.viewport of
-                DeviceModel name ->
-                    let
-                        ( w, h, _ ) =
-                            Document.findDeviceInfo name
-                    in
+                Device _ w h _ ->
                     ( "viewport--device", px w, px h )
 
                 Custom w h _ ->

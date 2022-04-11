@@ -71,7 +71,7 @@ colorToString_ addHash value =
                 floor (f * 256)
 
         converter =
-            floatTo256 >> Hex.toString >> String.padLeft 2 '0'
+            floatTo256 >> Hex.toString >> String.toUpper >> String.padLeft 2 '0'
 
         rgba =
             Element.toRgb value

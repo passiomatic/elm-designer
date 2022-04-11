@@ -70,8 +70,11 @@ resolveStyleViews model zipper =
                     , backgroundView model node
                     ]
 
-                ImageNode data ->
-                    [ sectionView "Layout"
+                ImageNode image ->
+                    [ sectionView "Info"
+                        [ imageView image model node
+                        ]
+                    , sectionView "Layout"
                         [ alignmentView model node
                         , positionView model node
                         , lengthView model node
@@ -384,38 +387,38 @@ onLabelPositionSelect msg =
     E.on "input" (Codecs.labelPositionDecoder msg)
 
 
-imageView : ImageData -> Model -> Node -> Html Msg
-imageView image model _ =
-    let
-        imageSrc =
-            case model.inspector of
-                EditingField ImageSrcField new ->
-                    new
 
-                _ ->
-                    image.src
-    in
-    H.section [ A.class "section bp-3  border-bottom" ]
-        [ H.h2 [ A.class "section__title mb-2" ]
-            [ H.text "Image" ]
-        , H.div [ A.class "" ]
-            [ H.div [ A.class "" ]
-                [ H.input
-                    [ A.id (widgetId ImageSrcField)
-                    , A.type_ "text"
-                    , A.value imageSrc
-                    , A.placeholder "https://domain.com/sample.jpg"
-                    , A.class "form-control form-control-sm"
-                    , E.onFocus (FieldEditingStarted ImageSrcField imageSrc)
-                    , E.onBlur FieldEditingFinished
-                    , E.onInput FieldChanged
-                    ]
-                    []
-                , H.label [ A.for (widgetId ImageSrcField), A.class "small m-0" ]
-                    [ H.text "Image address" ]
-                ]
-            ]
-        ]
+-- imageView : ImageData -> Model -> Node -> Html Msg
+-- imageView image model _ =
+--     let
+--         imageSrc =
+--             case model.inspector of
+--                 EditingField ImageSrcField new ->
+--                     new
+--                 _ ->
+--                     image.src
+--     in
+--     H.section [ A.class "section bp-3  border-bottom" ]
+--         [ H.h2 [ A.class "section__title mb-2" ]
+--             [ H.text "Image" ]
+--         , H.div [ A.class "" ]
+--             [ H.div [ A.class "" ]
+--                 [ H.input
+--                     [ A.id (widgetId ImageSrcField)
+--                     , A.type_ "text"
+--                     , A.value imageSrc
+--                     , A.placeholder "https://domain.com/sample.jpg"
+--                     , A.class "form-control form-control-sm"
+--                     , E.onFocus (FieldEditingStarted ImageSrcField imageSrc)
+--                     , E.onBlur FieldEditingFinished
+--                     , E.onInput FieldChanged
+--                     ]
+--                     []
+--                 , H.label [ A.for (widgetId ImageSrcField), A.class "small m-0" ]
+--                     [ H.text "Image address" ]
+--                 ]
+--             ]
+--         ]
 
 
 paddingView : Model -> Node -> Html Msg
@@ -718,7 +721,7 @@ spacingYView model { spacing } =
         , H.div [ A.class "col-9" ]
             [ H.div [ A.class "d-flex justify-content-end" ]
                 [ numericFieldView SpacingYField "Y" y ]
-            ]            
+            ]
         ]
 
 
@@ -899,7 +902,7 @@ shadowTypeView model shadow =
         [ H.label [ A.class "col-3 col-form-label-sm m-0 text-nowrap" ]
             [ H.text "Type" ]
         , H.div [ A.class "col-9 d-flex" ]
-            [ H.div [ A.class "btn-group w-100 mb-2", A.attribute "role" "group" ]
+            [ H.div [ A.class "btn-group w-100", A.attribute "role" "group" ]
                 [ H.button
                     [ A.classList
                         [ ( "btn btn-secondary btn-sm", True )
@@ -1474,30 +1477,44 @@ presetSizeView model node =
         [ H.label [ A.class "col-3 col-form-label-sm m-0" ]
             [ H.text "Preset" ]
         , H.div [ A.class "col-9" ]
-            [ H.select [ E.onInput PresetSizeChanged, A.class "form-select form-select-sm" ]
+            [ H.select [ onViewportSelect PresetSizeChanged, A.class "form-select form-select-sm" ]
                 (H.option [] [ H.text "Custom" ]
-                    :: Dict.values
-                        (Dict.map
-                            (\name ( width, height, orientation ) ->
-                                let
-                                    label =
-                                        name
-                                            ++ Entity.ensp
-                                            ++ String.fromInt width
-                                            ++ Entity.times
-                                            ++ String.fromInt height
-                                            ++ "px"
-                                            ++ Entity.ensp
-                                            ++ orientationLabel orientation
-                                in
-                                H.option [ A.selected (node.width == Px width && node.heightMin == Just height), A.value name ]
-                                    [ H.text label ]
-                            )
-                            Document.deviceInfo
+                    :: List.map
+                        (\viewport ->
+                            case viewport of
+                                Device name width height orientation ->
+                                    let
+                                        label =
+                                            name
+                                                ++ Entity.ensp
+                                                ++ String.fromInt width
+                                                ++ Entity.times
+                                                ++ String.fromInt height
+                                                ++ "px"
+
+                                        --++ Entity.ensp
+                                        --++ orientationLabel orientation
+                                    in
+                                    H.option [ A.selected (node.width == Px width && node.heightMin == Just height), viewportValue viewport ]
+                                        [ H.text label ]
+
+                                _ ->
+                                    -- Should not happen
+                                    none
                         )
+                        Document.devices
                 )
             ]
         ]
+
+
+viewportValue : Viewport -> Attribute msg
+viewportValue value =
+    A.value (Codecs.encodeViewport value)
+
+
+onViewportSelect msg =
+    E.on "input" (Codecs.viewportDecoder msg)
 
 
 orientationLabel : Orientation -> String
@@ -1928,6 +1945,33 @@ pageHeightView model { height, heightMin, heightMax } =
                         _ ->
                             []
                     )
+                ]
+            ]
+        ]
+
+
+imageView : { a | src : String } -> Model -> Node -> Html Msg
+imageView image model node =
+    H.div [ A.class "row align-items-center mb-2" ]
+        [ H.label [ A.class "col-3 col-form-label-sm m-0" ]
+            [ H.text "URL" ]
+        , H.div [ A.class "col-9" ]
+            [ H.div [ A.class "input-group" ]
+                [ H.input
+                    [ A.id (widgetId ImageSrcField)
+                    , A.type_ "text"
+                    , A.value image.src
+                    , A.class "form-control form-control-sm"
+                    , A.readonly True
+                    ]
+                    []
+                , H.button
+                    [ A.class "btn btn-sm btn-secondary"
+                    , A.type_ "button"
+                    , E.onClick (ClipboardCopyClicked image.src)
+                    ]
+                    [ H.text "Copy"
+                    ]
                 ]
             ]
         ]
