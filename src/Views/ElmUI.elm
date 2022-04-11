@@ -902,17 +902,6 @@ wrapElement ctx node selected renderer =
         ([ elementClasses ctx node selected
          , elementId node
          , onClick (NodeSelected False node.id)
-         , case DragDrop.getDragId ctx.dragDrop of
-            Just dragId ->
-                case dragId of
-                    Drag _ ->
-                        E.htmlAttribute (A.style "opacity" "0")
-
-                    _ ->
-                        E.htmlAttribute (A.style "opacity" "1")
-
-            Nothing ->
-                E.htmlAttribute (A.style "opacity" "1")
 
          --, E.onRight (E.el [ E.centerY, E.moveLeft 14 ] (E.html <| H.div [ A.class "element__connect" ] []))
          --  , E.onRight (E.el [E.alignBottom, E.moveLeft 14 ] (E.html <| H.div [ A.class "element__nudge" ] []))
@@ -920,6 +909,7 @@ wrapElement ctx node selected renderer =
          --  , E.onLeft (E.el [E.alignTop, E.moveRight 14 ] (E.html <| H.div [ A.class "element__nudge" ] []))
          ]
             |> makeNodeDroppableIf (Common.canDropInto node ctx.dragDrop) (AppendTo node.id)
+            |> makeNodeInvisibleIfDragged ctx.dragDrop node
             |> applyWidth node.width node.widthMin node.widthMax
             |> applyHeight node.height node.heightMin node.heightMax
             |> applyAlignX node.alignmentX
@@ -947,6 +937,7 @@ wrapImageElement ctx node selected renderer =
          , onClick (NodeSelected False node.id)
          ]
             |> makeNodeDroppableIf (Common.canDropInto node ctx.dragDrop) (AppendTo node.id)
+            |> makeNodeInvisibleIfDragged ctx.dragDrop node
             |> applyWidth node.width node.widthMin node.widthMax
             |> applyHeight node.height node.heightMin node.heightMax
             |> applyAlignX node.alignmentX
@@ -957,6 +948,25 @@ wrapImageElement ctx node selected renderer =
             |> applyRotation node.rotation
         )
         (renderer attrs)
+
+
+makeNodeInvisibleIfDragged dragDrop node attrs =
+    case DragDrop.getDragId dragDrop of
+        Just dragId ->
+            case dragId of
+                Drag otherNode ->
+                    if nodeId otherNode.id == nodeId node.id then
+                        -- Make element temporary invisible if being dragged around
+                        E.htmlAttribute (A.style "opacity" "0") :: attrs
+
+                    else
+                        attrs
+
+                _ ->
+                    attrs
+
+        Nothing ->
+            attrs
 
 
 labelPosition position attrs text =

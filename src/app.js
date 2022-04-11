@@ -85,6 +85,7 @@ app.ports.setDragImage.subscribe(function (payload) {
     // Safari has issues with big ghost drag images, so set explictly final dimensions
     node.style.width = clientRect.width + "px";
     node.style.height = clientRect.height + "px";
+    //node.style.backgroundColor = "white"; // Force a bg color for Safari 
     node.classList.add("ghost-image");
   } else {
     // Dragging from Library/outline
