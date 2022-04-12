@@ -255,7 +255,7 @@ update msg model =
                 ( newSeeds, newNode ) =
                     let
                         indexer type_ =
-                            Document.getNextIndexFor type_ model.document.present
+                            Document.getNextIndexFor type_ (Zipper.root model.document.present)
                     in
                     Document.fromTemplate template model.seeds indexer
 

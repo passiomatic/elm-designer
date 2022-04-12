@@ -67,7 +67,7 @@ getDroppedNode model dragId position =
         Insert node ->
             let
                 indexer type_ = 
-                    Document.getNextIndexFor type_ model.document.present
+                    Document.getNextIndexFor type_ (Zipper.root model.document.present)
                                 
                 ( newSeeds, newNode ) =
                     Document.fromTemplateAt position node model.seeds indexer 
