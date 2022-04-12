@@ -462,7 +462,7 @@ emptyPage theme =
 createImageNode : String -> Seeds -> ( Seeds, Tree Node )
 createImageNode url seeds =
     let
-        -- TODO Generate correct imdex for images too
+        -- TODO Generate correct index for images too
         indexer _ =
             1
 
@@ -567,7 +567,7 @@ getNextIndexFor type_ zipper =
         (Zipper.tree zipper)
 
 
-{-| Find the node with the given id and if successuful move zipper focus to it.
+{-| Find the node with the given id and if successful move zipper focus to it.
 -}
 selectNodeWith : NodeId -> Zipper Node -> Maybe (Zipper Node)
 selectNodeWith id zipper =
@@ -575,7 +575,7 @@ selectNodeWith id zipper =
 
 
 
-{- Find the parent of the node with the given id and if successuful move zipper focus to it. -}
+{- Find the parent of the node with the given id and if successful move zipper focus to it. -}
 -- selectParentOf : NodeId -> Zipper Node -> Maybe (Zipper Node)
 -- selectParentOf id zipper =
 --     selectNodeWith id zipper
