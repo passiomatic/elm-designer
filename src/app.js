@@ -97,9 +97,7 @@ app.ports.setDragImage.subscribe(function (payload) {
   node.style.position = "absolute";
   node.style.right = "9999px"; // Put offscreen
   document.body.appendChild(node);
-  var offsetX = payload.event.clientX - clientRect.left;
-  var offsetY = payload.event.clientY - clientRect.top;
-  payload.event.dataTransfer.setDragImage(node, offsetX, offsetY);
+  payload.event.dataTransfer.setDragImage(node, payload.event.offsetX, payload.event.offsetY);
 });
 
 app.ports.endDrag.subscribe(function () {
