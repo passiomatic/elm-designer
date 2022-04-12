@@ -5,11 +5,11 @@
   "description": "A code generator for Elm UI",
   "repository": "https://github.com/passiomatic/elm-designer",
   "devDependencies": {
-    "@parcel/transformer-elm": "^2.0.0",
-    "@parcel/transformer-sass": "^2.0.0",
+    "@parcel/transformer-elm": "^2.4.1",
+    "@parcel/transformer-sass": "^2.4.1",
     "elm": "^0.19.1-5",
     "elm-constants": "^1.0.0",
-    "parcel": "^2.3.2"
+    "parcel": "^2.4.1"
   },
   "dependencies": {
     "balloon-css": "^1.2.0"
