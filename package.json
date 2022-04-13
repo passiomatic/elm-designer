@@ -17,8 +17,8 @@
   "scripts": {
     "dev": "parcel src/index.html",
     "constants": "elm-constants",
-    "build": "parcel build src/index.html --public-url ./",
-    "build-no-maps": "parcel build src/index.html --no-source-maps --public-url ./",
+    "build": "parcel build src/index.html",
+    "build-no-maps": "parcel build src/index.html --no-source-maps",
     "dev-no-debug": "NODE_ENV=production parcel src/index.html",
     "clean": "rm -fR dist"
   }
