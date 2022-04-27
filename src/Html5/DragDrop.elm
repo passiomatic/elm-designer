@@ -192,25 +192,25 @@ updateCommon sticky msg model =
         ( DragEnter dropId, Dragging dragId pos, _ ) ->
             -- let
             --     _ =
-            --         Debug.log "DragEnter on Dragging" pos
+            --         Debug.log "DragEnter while Dragging" pos
             -- in
             ( DraggedOver dragId dropId 0 pos Nothing, Nothing )
 
         ( DragEnter dropId, DraggedOver dragId _ _ draggablePos droppablePos, _ ) ->
-            let
-                _ =
-                    Debug.log "DragEnter" dropId
-            in          
+            -- let
+            --     _ =
+            --         Debug.log "DragEnter while DraggedOver" dropId
+            -- in          
             ( DraggedOver dragId dropId 0 draggablePos droppablePos, Nothing )
 
         -- Only handle DragLeave if it is for the current dropId.
         -- DragLeave and DragEnter sometimes come in the wrong order
         -- when two droppables are next to each other.
         ( DragLeave dropId_, DraggedOver dragId dropId _ draggablePos _, False ) ->
-            let
-                _ =
-                    Debug.log "DragLeave" dropId_
-            in        
+            -- let
+            --     _ =
+            --         Debug.log "DragLeave while DraggedOver" dropId_
+            -- in        
             if dropId_ == dropId then
                 ( Dragging dragId draggablePos, Nothing )
 
@@ -234,18 +234,14 @@ updateCommon sticky msg model =
         ( Drop dropId pos, Dragging dragId draggablePos, _ ) ->
             let
                 pos_ =
-                    Debug.log "getFinalPosition (Dragging)" (getFinalPosition draggablePos pos)
+                    getFinalPosition draggablePos pos
             in
             ( NotDragging, Just ( dragId, dropId, pos_ ) )
 
         ( Drop dropId pos, DraggedOver dragId _ _ draggablePos maybePos, _ ) ->
             let
-
-                _ =
-                    Debug.log "pos (Drop _ pos)" pos   
-
                 pos_ =
-                    Debug.log "getFinalPosition (DraggedOver)" (getFinalPosition draggablePos pos)
+                   getFinalPosition draggablePos pos
             in
             ( NotDragging, Just ( dragId, dropId, pos_ ) )
 
@@ -294,8 +290,8 @@ droppable wrap dropId =
 
     -- We don't stop propagation for dragover events because this will trigger redraw,
     -- and we get a lot of dragover events.
-    , onWithOptions "dragover" { stopPropagation = False, preventDefault = True } <| Json.map wrap <| Json.map2 (DragOver dropId) timeStampDecoder positionDecoder
-    , onWithOptions "drop" { stopPropagation = True, preventDefault = True } <| Json.map (wrap << Drop dropId) positionDecoder
+    , onWithOptions "dragover" { stopPropagation = False, preventDefault = True } <| Json.map wrap <| Json.map2 (DragOver dropId) timeStampDecoder droppablePositionDecoder
+    , onWithOptions "drop" { stopPropagation = True, preventDefault = True } <| Json.map (wrap << Drop dropId) droppablePositionDecoder
     ]
 
 
@@ -304,8 +300,10 @@ timeStampDecoder =
     Json.at [ "timeStamp" ] Json.float |> Json.map round
 
 
-positionDecoder : Json.Decoder DroppablePosition
-positionDecoder =
+{-| Decode pointer offset within the droppable element.
+-}
+droppablePositionDecoder : Json.Decoder DroppablePosition
+droppablePositionDecoder =
     Json.map4 DroppablePosition
         (Json.at [ "currentTarget", "clientWidth" ] Json.int)
         (Json.at [ "currentTarget", "clientHeight" ] Json.int)
