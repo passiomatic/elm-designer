@@ -352,6 +352,9 @@ type alias LabelData =
 type alias ImageData =
     { src : String
     , description : String
+    , width : Maybe Int
+    , height : Maybe Int
+    , mimeType : Maybe String
     }
 
 
@@ -459,8 +462,8 @@ emptyPage theme =
 
 {-| Images require the user to drop them _into_ the app workspace so we bypass the pick-from-library process here.
 -}
-createImageNode : String -> Seeds -> ( Seeds, Tree Node )
-createImageNode url seeds =
+createImageNode : ImageData -> Seeds -> ( Seeds, Tree Node )
+createImageNode data seeds =
     let
         -- TODO Generate correct index for images too
         indexer _ =
@@ -469,7 +472,7 @@ createImageNode url seeds =
         template =
             T.singleton
                 { baseTemplate
-                    | type_ = imageNode url
+                    | type_ = imageNode data
                     , name = "Image"
                 }
     in
@@ -479,11 +482,11 @@ createImageNode url seeds =
 {-| An empty placeholder image type.
 -}
 blankImageNode =
-    imageNode ""
+    imageNode { src = "", description = "", width = Nothing, height = Nothing, mimeType = Nothing }
 
 
-imageNode url =
-    ImageNode { src = url, description = "" }
+imageNode data =
+    ImageNode data
 
 
 

@@ -98,7 +98,7 @@ type Msg
     | FileDragging NodeId
     | FileDragCanceled
     | FileUploading File (List File) Progress
-    | FileUploaded (Result Error String)
+    | FileUploaded (Result Error ImageData)
     | DragDropMsg (DragDrop.Msg DragId DropId)
     | TabMsg Tab.State
     | Undo

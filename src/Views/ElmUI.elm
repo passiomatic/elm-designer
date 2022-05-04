@@ -263,7 +263,7 @@ renderImage ctx node selected image =
                     attrs
                         |> clipIf (Style.Border.isRounded node.borderCorner)
             in
-            E.image newAttrs image
+            E.image newAttrs { src = image.src, description = image.description }
     in
     wrapImageElement ctx node selected renderer
         |> RenderedElement node.position

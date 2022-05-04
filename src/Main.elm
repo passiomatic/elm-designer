@@ -155,10 +155,10 @@ update msg model =
 
         FileUploaded result ->
             case result of
-                Ok url ->
+                Ok image ->
                     let
                         ( newSeeds, newNode ) =
-                            Document.createImageNode (String.trim url) model.seeds
+                            Document.createImageNode image model.seeds
 
                         zipper =
                             model.document.present
@@ -1062,17 +1062,13 @@ serializeDocument document =
 
 acceptedTypes : List String
 acceptedTypes =
-    [ "image/jpeg", "image/png", "image/gif", "image/svg+xml" ]
+    [ "image/webp", "image/jpeg", "image/png", "image/gif", "image/svg+xml" ]
 
 
 acceptFiles files =
-    let
-        acceptedTypes_ =
-            Set.fromList acceptedTypes
-    in
     List.filter
         (\f ->
-            Set.member (File.mime f) acceptedTypes_
+            List.member (File.mime f) acceptedTypes
         )
         files
 

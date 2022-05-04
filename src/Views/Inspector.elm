@@ -7,7 +7,6 @@ import Css
 import Dict exposing (Dict)
 import Document exposing (..)
 import Element exposing (Color, Orientation(..))
-import Element.Background exposing (image)
 import Fonts
 import Html as H exposing (Attribute, Html)
 import Html.Attributes as A
@@ -1950,31 +1949,79 @@ pageHeightView model { height, heightMin, heightMax } =
         ]
 
 
-imageView : { a | src : String } -> Model -> Node -> Html Msg
+imageView : ImageData -> Model -> Node -> Html Msg
 imageView image model node =
-    H.div [ A.class "row align-items-center mb-2" ]
-        [ H.label [ A.class "col-3 col-form-label-sm m-0" ]
-            [ H.text "URL" ]
-        , H.div [ A.class "col-9" ]
-            [ H.div [ A.class "input-group" ]
-                [ H.input
-                    [ A.id (widgetId ImageSrcField)
-                    , A.type_ "text"
-                    , A.value image.src
-                    , A.class "form-control form-control-sm"
-                    , A.readonly True
+    let
+        width = 
+            Maybe.map String.fromInt image.width
+                |> Maybe.withDefault ""
+        
+        height = 
+            Maybe.map String.fromInt image.height
+                |> Maybe.withDefault ""            
+    in
+    
+    H.div []
+        [ H.div [ A.class "row align-items-center mb-2" ]
+            [ H.label [ A.class "col-3 col-form-label-sm m-0" ]
+                [ H.text "Format" ]
+            , H.div [ A.class "col-9" ]
+                [ H.div [ A.class "small" ]
+                    [ H.text (mimeTypeLabel image.mimeType)
+                    , H.text Entity.ensp
+                    , H.text width
+                    , H.text Entity.times
+                    , H.text height
+                    , H.text "px"
                     ]
-                    []
-                , H.button
-                    [ A.class "btn btn-sm btn-secondary"
-                    , A.type_ "button"
-                    , E.onClick (ClipboardCopyClicked image.src)
-                    ]
-                    [ H.text "Copy"
+                ]
+            ]
+        , H.div [ A.class "row align-items-center" ]
+            [ H.label [ A.class "col-3 col-form-label-sm m-0" ]
+                [ H.text "URL" ]
+            , H.div [ A.class "col-9" ]
+                [ H.div [ A.class "input-group" ]
+                    [ H.input
+                        [ A.id (widgetId ImageSrcField)
+                        , A.type_ "text"
+                        , A.value image.src
+                        , A.class "form-control form-control-sm"
+                        , A.readonly True
+                        ]
+                        []
+                    , H.button
+                        [ A.class "btn btn-sm btn-secondary"
+                        , A.type_ "button"
+                        , E.onClick (ClipboardCopyClicked image.src)
+                        ]
+                        [ H.text "Copy"
+                        ]
                     ]
                 ]
             ]
         ]
+
+
+mimeTypeLabel : Maybe String -> String
+mimeTypeLabel value =
+    case value of
+        Just "image/webp" ->
+            "WebP"
+
+        Just "image/jpeg" ->
+            "JPEG"
+
+        Just "image/png" ->
+            "PNG"
+
+        Just "image/gif" ->
+            "GIF"
+
+        Just "image/svg+xml" ->
+            "SVG"
+
+        _ ->
+            "Unknown"
 
 
 isContent value =

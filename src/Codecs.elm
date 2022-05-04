@@ -731,6 +731,9 @@ imageCodec =
     Codec.object ImageData
         |> Codec.field "src" .src Codec.string
         |> Codec.field "description" .description Codec.string
+        |> Codec.maybeField "width" .width Codec.int
+        |> Codec.maybeField "height" .height Codec.int
+        |> Codec.maybeField "mimeType" .mimeType Codec.string
         |> Codec.buildObject
 
 
