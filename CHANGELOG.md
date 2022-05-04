@@ -1,3 +1,18 @@
+# Version 0.4.1 • 2022-05-04
+
+## New features and tweaks
+
+* Implement collapsible inspector subpanels
+* Allow to tweak pages vertical spacing
+* Add images 'Info' section on inspector
+
+## Bugs fixed 
+
+* Remove up/down arrows in Firefox (#46)
+* Fix logic to select custom preset sizes (#48)
+
+---
+
 # Version 0.4.0 • 2022-02-28
 
 Elm Designer is now a web app. No more Electron binaries to download. Yay!
