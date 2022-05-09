@@ -926,6 +926,7 @@ wrapImageElement ctx node selected renderer =
     let
         attrs =
             []
+                -- Pass length settings to wrapped image
                 |> applyWidth node.width node.widthMin node.widthMax
                 |> applyHeight node.height node.heightMin node.heightMax
                 |> applyStyles node
@@ -936,8 +937,8 @@ wrapImageElement ctx node selected renderer =
          , onClick (NodeSelected False node.id)
          ]
             |> makeNodeDroppableIf (Common.canDropInto node ctx.dragDrop) (AppendTo node.id)
-            |> applyWidth node.width node.widthMin node.widthMax
-            |> applyHeight node.height node.heightMin node.heightMax
+            |> applyWidth Layout.fit node.widthMin node.widthMax
+            |> applyHeight Layout.fit node.heightMin node.heightMax
             |> applyAlignX node.alignmentX
             |> applyAlignY node.alignmentY
             -- TODO scale
