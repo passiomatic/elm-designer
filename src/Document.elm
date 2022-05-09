@@ -87,6 +87,7 @@ module Document exposing
     , viewports
     , workspaceHeight
     , workspaceWidth
+    , isImageNode
     )
 
 import Css
@@ -330,6 +331,14 @@ isDocumentNode node =
         _ ->
             False
 
+isImageNode : Node -> Bool
+isImageNode node =
+    case node.type_ of
+        ImageNode _ ->
+            True
+
+        _ ->
+            False
 
 type alias TextData =
     { text : String
