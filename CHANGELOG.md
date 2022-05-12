@@ -8,8 +8,8 @@
 
 ## Bugs fixed 
 
-* Remove up/down arrows in Firefox (#46)
-* Fix logic to select custom preset sizes (#48)
+* Remove up/down arrows in Firefox
+* Fix logic to select custom preset sizes
 
 ---
 
