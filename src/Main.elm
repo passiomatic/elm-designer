@@ -11,6 +11,7 @@ import Document exposing (DragId(..), DropId(..), Node, Viewport(..), nodeId)
 import DragDropHelper
 import Env
 import File exposing (File)
+import File.Download as Download
 import File.Select as Select
 import Fonts
 import Html5.DragDrop as DragDrop
@@ -67,8 +68,11 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         ExportDocumentClicked ->
-            ( model, Cmd.none )
-
+            let
+                data =
+                    serializeDocument model.currentTime model
+            in
+            ( model, Download.string "Elm-Designer-Document.json" "application/json" data )
 
         WorkspaceSizeChanged result ->
             case result of
@@ -215,7 +219,11 @@ update msg model =
                         Changed since ->
                             -- Save only if document hasn't been modified in saveInterval seconds
                             if Time.diff Second Time.utc since now > saveInterval then
-                                ( Saved now, serializeDocument now model )
+                                let
+                                    data =
+                                        serializeDocument now model
+                                in
+                                ( Saved now, Ports.saveDocument data )
 
                             else
                                 ( model.saveState, Cmd.none )
@@ -1059,9 +1067,7 @@ serializeDocument time model =
             , collapsedTreeItems = model.collapsedTreeItems
             }
     in
-    document
-        |> Codecs.toString
-        |> Ports.saveDocument
+    Codecs.toString document
 
 
 acceptedTypes : List String

@@ -23,7 +23,6 @@ port saveDocument : String -> Cmd msg
 
 port loadDocument : () -> Cmd msg
 
-
 port copyToClipboard : String -> Cmd msg
 
 
