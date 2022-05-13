@@ -66,6 +66,10 @@ init flags =
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
+        ExportDocumentClicked ->
+            ( model, Cmd.none )
+
+
         WorkspaceSizeChanged result ->
             case result of
                 Ok value ->
@@ -211,17 +215,7 @@ update msg model =
                         Changed since ->
                             -- Save only if document hasn't been modified in saveInterval seconds
                             if Time.diff Second Time.utc since now > saveInterval then
-                                let
-                                    document =
-                                        { schemaVersion = Document.schemaVersion
-                                        , lastUpdatedOn = now
-                                        , root = Zipper.toTree model.document.present
-                                        , selectedNodeId = Zipper.label model.document.present |> .id
-                                        , viewport = model.viewport
-                                        , collapsedTreeItems = model.collapsedTreeItems
-                                        }
-                                in
-                                ( Saved now, serializeDocument document )
+                                ( Saved now, serializeDocument now model )
 
                             else
                                 ( model.saveState, Cmd.none )
@@ -1054,7 +1048,17 @@ mouseDecoder =
         (Decode.field "button" Decode.int)
 
 
-serializeDocument document =
+serializeDocument time model =
+    let
+        document =
+            { schemaVersion = Document.schemaVersion
+            , lastUpdatedOn = time
+            , root = Zipper.toTree model.document.present
+            , selectedNodeId = Zipper.label model.document.present |> .id
+            , viewport = model.viewport
+            , collapsedTreeItems = model.collapsedTreeItems
+            }
+    in
     document
         |> Codecs.toString
         |> Ports.saveDocument

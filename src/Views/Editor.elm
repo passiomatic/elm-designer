@@ -168,6 +168,13 @@ headerView model =
 
         --, zoomView model
         --, modeButton
+        , exportView model
+        ]
+
+exportView : Model -> Html Msg
+exportView model =
+    H.div []
+        [ H.button [ E.onClick ExportDocumentClicked, A.class "btn btn-secondary btn-sm" ] [ Icons.share, H.text "Export" ]         
         ]
 
 

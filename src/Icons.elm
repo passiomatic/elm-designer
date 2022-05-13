@@ -28,6 +28,7 @@ module Icons exposing
     , plusCircle
     , plusCircleSmall
     , plusSmall
+    , share
     , smartphone
     , square
     , stop
@@ -56,6 +57,12 @@ mediumSize =
 
 largeSize =
     18
+
+
+share =
+    I.share
+        |> I.withSize mediumSize
+        |> I.toHtml []
 
 
 cornerUpLeft =
