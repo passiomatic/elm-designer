@@ -40,6 +40,14 @@
 }
 
 // ----------------------
+// Inline editor
+
+.element--editing {
+  // Set a width value for the inline editor to avoid collapsing when empty
+  min-width: 3rem; 
+}
+
+// ----------------------
 // Drag & drop
 
 .element--dropped:after {

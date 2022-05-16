@@ -1005,12 +1005,22 @@ elementClasses ctx node selected =
     E.htmlAttribute
         (A.classList
             [ ( "element", True )
+            , ( "element--editing", isEditingText ctx selected )
             , ( "element--dropped", isDroppingInto dropId ctx.dragDrop )
             , ( "element--selected", selected )
             , ( "element--" ++ type_, True )
             , ( "dragging--file", isDroppingFileInto node.id ctx.fileDrop )
             ]
         )
+
+
+isEditingText ctx selected =
+    case ( ctx.inspector, selected ) of
+        ( EditingText, True ) ->
+            True
+
+        _ ->
+            False
 
 
 textEditorId =
