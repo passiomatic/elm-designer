@@ -15,6 +15,7 @@ module Icons exposing
     , coloredSquare
     , cornerUpLeft
     , cornerUpRight
+    , download
     , edit
     , file
     , image
@@ -61,6 +62,12 @@ largeSize =
 
 share =
     I.share
+        |> I.withSize mediumSize
+        |> I.toHtml []
+
+
+download =
+    I.download
         |> I.withSize mediumSize
         |> I.toHtml []
 

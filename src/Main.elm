@@ -67,6 +67,9 @@ init flags =
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
+        ImportDocumentClicked ->
+            ( model, Cmd.none )
+
         ExportDocumentClicked ->
             let
                 data =

@@ -163,18 +163,20 @@ headerView model =
                         [ Icons.stop ]
     in
     H.header [ A.class "header d-flex justify-content-between align-items-center bp-2 border-bottom", A.style "gap" "1rem" ]
-        [ insertView model
+        [ fileView model
+        , insertView model
         , undoRedoView model
 
         --, zoomView model
         --, modeButton
-        , exportView model
         ]
 
-exportView : Model -> Html Msg
-exportView model =
+
+fileView : Model -> Html Msg
+fileView model =
     H.div []
-        [ H.button [ E.onClick ExportDocumentClicked, A.class "btn btn-secondary btn-sm" ] [ Icons.share, H.text "Export" ]         
+        [ H.button [ E.onClick ImportDocumentClicked, A.class "btn btn-secondary btn-sm me-3" ] [ Icons.download, H.text "Import" ]
+        , H.button [ E.onClick ExportDocumentClicked, A.class "btn btn-secondary btn-sm" ] [ Icons.share, H.text "Export" ]
         ]
 
 
@@ -404,7 +406,6 @@ codeView model =
 
         code =
             CodeGen.emit Theme.defaultTheme model.viewport tree
-
     in
     case (T.label tree).type_ of
         DocumentNode ->

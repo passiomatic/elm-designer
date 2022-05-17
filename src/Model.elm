@@ -92,6 +92,7 @@ type Msg
     | DropDownChanged WidgetState
     | DocumentLoaded String
     | ExportDocumentClicked
+    | ImportDocumentClicked
     | Ticked Posix
     | ModeChanged Mode
     | FileDropped NodeId File (List File)
