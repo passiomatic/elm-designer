@@ -267,7 +267,7 @@ update msg model =
             )
 
         InsertImageClicked ->
-            ( { model | dropDownState = Hidden }, Select.files acceptedTypes FileSelected )
+            ( { model | dropDownState = Hidden }, Select.files imageTypes FileSelected )
 
         DuplicateNodeClicked nodeId ->
             let
@@ -299,7 +299,7 @@ update msg model =
             )
 
         ImportDocumentClicked ->
-            ( model, Select.file [ "application/json" ] DocumentSelected )
+            ( model, Select.file [ projectType ] DocumentSelected )
 
         DocumentSelected file ->
             ( model, Task.perform DocumentLoaded (File.toString file) )
@@ -309,7 +309,7 @@ update msg model =
                 data =
                     serializeDocument model.currentTime model
             in
-            ( model, Download.string "Elm-Designer-Document.json" "application/json" data )
+            ( model, Download.string "Elm-Designer-Document.json" projectType data )
 
         DocumentLoaded value ->
             case Codecs.fromString value of
@@ -1076,17 +1076,21 @@ serializeDocument time model =
     Codecs.toString document
 
 
-acceptedTypes : List String
-acceptedTypes =
+imageTypes : List String
+imageTypes =
     [ "image/webp", "image/jpeg", "image/png", "image/gif", "image/svg+xml" ]
 
 
 acceptFiles files =
     List.filter
         (\f ->
-            List.member (File.mime f) acceptedTypes
+            List.member (File.mime f) imageTypes
         )
         files
+
+
+projectType =
+    "application/json"
 
 
 
