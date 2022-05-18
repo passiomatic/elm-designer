@@ -68,8 +68,24 @@ view model =
                     ]
                 , uploadProgressView model.uploadState
                 , ContextMenuPopup.view model.contextMenu
+                --, confirmDialogView model.confirmDialog
                 ]
         )
+
+
+-- confirmDialogView confirmDialog =
+--     case confirmDialog of
+--         ConfirmDialog text nextMsg ->
+--             dialog
+--                 [ A.id "confirm-dialog" ]
+--                 [ H.text text ]
+
+--         NoConfirmDialog ->
+--             none
+
+-- dialog : List (Attribute msg) -> List (Html msg) -> Html msg
+-- dialog  attrs content =
+--     H.node "dialog" attrs content
 
 
 workspaceView model =

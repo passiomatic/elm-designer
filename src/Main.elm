@@ -67,16 +67,6 @@ init flags =
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        ImportDocumentClicked ->
-            ( model, Cmd.none )
-
-        ExportDocumentClicked ->
-            let
-                data =
-                    serializeDocument model.currentTime model
-            in
-            ( model, Download.string "Elm-Designer-Document.json" "application/json" data )
-
         WorkspaceSizeChanged result ->
             case result of
                 Ok value ->
@@ -307,6 +297,19 @@ update msg model =
             ( model
             , Ports.copyToClipboard text
             )
+
+        ImportDocumentClicked ->
+            ( model, Select.file [ "application/json" ] DocumentSelected )
+
+        DocumentSelected file ->
+            ( model, Task.perform DocumentLoaded (File.toString file) )
+
+        ExportDocumentClicked ->
+            let
+                data =
+                    serializeDocument model.currentTime model
+            in
+            ( model, Download.string "Elm-Designer-Document.json" "application/json" data )
 
         DocumentLoaded value ->
             case Codecs.fromString value of

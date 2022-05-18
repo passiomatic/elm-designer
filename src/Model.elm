@@ -1,5 +1,6 @@
 module Model exposing
-    ( Context
+    ( ConfirmDialog(..)
+    , Context
     , ContextMenuPopup(..)
     , DocumentState(..)
     , FileDrop(..)
@@ -31,7 +32,7 @@ import Random
 import Result exposing (Result(..))
 import Set exposing (Set)
 import Style.Background as Background exposing (Background)
-import Style.Border exposing (BorderStyle, BorderWidth, BorderCorner)
+import Style.Border exposing (BorderCorner, BorderStyle, BorderWidth)
 import Style.Font as Font exposing (..)
 import Style.Input as Input exposing (LabelPosition(..))
 import Style.Layout as Layout exposing (..)
@@ -97,6 +98,7 @@ type Msg
     | ModeChanged Mode
     | FileDropped NodeId File (List File)
     | FileSelected File (List File)
+    | DocumentSelected File
     | FileDragging NodeId
     | FileDragCanceled
     | FileUploading File (List File) Progress
@@ -165,6 +167,11 @@ type WidgetState
     | Hidden
 
 
+type ConfirmDialog
+    = ConfirmDialog String Msg
+    | NoConfirmDialog
+
+
 type Mode
     = DesignMode
     | PreviewMode
@@ -204,6 +211,7 @@ type alias Model =
     , uploadState : UploadState
     , collapsedTreeItems : Set String
     , contextMenu : ContextMenu ContextMenuPopup
+    , confirmDialog : ConfirmDialog
     , isMac : Bool
     }
 
@@ -338,6 +346,7 @@ initialModel { width, height, seed1, seed2, seed3, seed4, platform } =
       , uploadState = Ready
       , collapsedTreeItems = Set.empty
       , contextMenu = contextMenu
+      , confirmDialog = ConfirmDialog "Some text"  (DocumentLoaded "Blah")
       , isMac = isMac platform
       }
     , Cmd.batch

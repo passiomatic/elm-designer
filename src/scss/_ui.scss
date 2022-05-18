@@ -70,3 +70,23 @@ body {
 .align-on {
   color: $primary;
 }
+
+// Confirm dialog
+
+dialog {
+  //position: fixed;
+  inset: 0;
+  z-index: 1;
+  width: 30rem;
+  aspect-ratio: 16 / 9;
+  //min-height: 20rem;
+  border: 1px solid $border-color;
+  border-radius: $border-radius;
+  //text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  // &::backdrop {
+  //   background: rgba(0, 0, 0, .7);
+  // }
+}
