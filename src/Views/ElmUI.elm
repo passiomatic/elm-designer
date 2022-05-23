@@ -219,7 +219,7 @@ renderPage ctx node selected children =
             let
                 newAttrs =
                     attrs
-                        |> makeDraggable (Drag node)
+                        |> makeDraggableIf (not <| isIdle ctx selected) (Drag node)
                         |> makeFileDroppableIf (not <| Common.isDragging ctx.dragDrop) node.id
             in
             if List.isEmpty children then
@@ -1014,9 +1014,22 @@ elementClasses ctx node selected =
         )
 
 
+{-| Editing this node?
+-}
 isEditingText ctx selected =
     case ( ctx.inspector, selected ) of
         ( EditingText, True ) ->
+            True
+
+        _ ->
+            False
+
+
+{-| Editing, but not this node.
+-}
+isIdle ctx selected =
+    case ( ctx.inspector, selected ) of
+        ( EditingText, False ) ->
             True
 
         _ ->
@@ -1121,8 +1134,12 @@ makeFileDroppableIf pred nodeId attrs =
         attrs
 
 
-makeDraggable dragId attrs =
-    attrs ++ List.map E.htmlAttribute (DragDrop.draggable DragDropMsg dragId)
+makeDraggableIf pred dragId attrs =
+    if pred then
+        attrs ++ List.map E.htmlAttribute (DragDrop.draggable DragDropMsg dragId)
+
+    else
+        attrs
 
 
 {-| Stop given event and prevent default behavior.
