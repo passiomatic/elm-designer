@@ -15,6 +15,9 @@ dev-no-debug: constants
 dev: constants
 	npm run dev
 
+landing: constants
+	npm run landing
+
 run: 
 	python3 server/manage.py runserver
 
