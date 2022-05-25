@@ -1,5 +1,5 @@
 module Model exposing
-    ( ConfirmDialog(..)
+    ( Dialog(..)
     , Context
     , ContextMenuPopup(..)
     , DocumentState(..)
@@ -94,6 +94,7 @@ type Msg
     | DocumentLoaded String
     | ExportDocumentClicked
     | ImportDocumentClicked
+    | ImportDocumentConfirmed
     | Ticked Posix
     | ModeChanged Mode
     | FileDropped NodeId File (List File)
@@ -167,9 +168,9 @@ type WidgetState
     | Hidden
 
 
-type ConfirmDialog
-    = ConfirmDialog String Msg
-    | NoConfirmDialog
+type Dialog
+    = WarningDialog String Msg
+    | NoDialog
 
 
 type Mode
@@ -211,7 +212,7 @@ type alias Model =
     , uploadState : UploadState
     , collapsedTreeItems : Set String
     , contextMenu : ContextMenu ContextMenuPopup
-    , confirmDialog : ConfirmDialog
+    , dialog : Dialog
     , isMac : Bool
     }
 
@@ -346,7 +347,8 @@ initialModel { width, height, seed1, seed2, seed3, seed4, platform } =
       , uploadState = Ready
       , collapsedTreeItems = Set.empty
       , contextMenu = contextMenu
-      , confirmDialog = ConfirmDialog "Some text"  (DocumentLoaded "Blah")
+      --, dialog = WarningDialog "You are going to replace your current document, no undo will be posssible." ImportDocumentConfirmed      
+      , dialog = NoDialog    
       , isMac = isMac platform
       }
     , Cmd.batch

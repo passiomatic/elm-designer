@@ -299,7 +299,14 @@ update msg model =
             )
 
         ImportDocumentClicked ->
-            ( model, Select.file [ projectType ] DocumentSelected )
+            let
+                newDialog =
+                    WarningDialog "You are going to replace your current document, no undo will be posssible." ImportDocumentConfirmed
+            in
+            ( { model | dialog = newDialog }, Ports.toggleDialog "dialog" )
+
+        ImportDocumentConfirmed ->
+            (  { model | dialog = NoDialog }, Select.file [ projectType ] DocumentSelected )
 
         DocumentSelected file ->
             ( model, Task.perform DocumentLoaded (File.toString file) )

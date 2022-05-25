@@ -61,7 +61,7 @@ body {
   }
 }
 
-// Align widget 
+// Align widget
 
 .align-off {
   color: rgba($black, 0.15);
@@ -71,22 +71,27 @@ body {
   color: $primary;
 }
 
-// Confirm dialog
+// Dialogs
 
 dialog {
-  //position: fixed;
   inset: 0;
   z-index: 1;
   width: 30rem;
-  aspect-ratio: 16 / 9;
-  //min-height: 20rem;
+  aspect-ratio: 2 / 1;
   border: 1px solid $border-color;
   border-radius: $border-radius;
-  //text-align: center;
+  gap: 1rem;
+  &::backdrop {
+    background: rgba(0, 0, 0, 0.6);
+  }
+}
+
+.dialog__body {
   display: flex;
   align-items: center;
   justify-content: center;
-  // &::backdrop {
-  //   background: rgba(0, 0, 0, .7);
-  // }
+  flex-direction: column;
+  gap: 1rem;
+  height: 100%;
+  text-align: center;
 }

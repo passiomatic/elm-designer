@@ -152,3 +152,13 @@ app.ports.showNotification.subscribe(function (options) {
     });
   }
 });
+
+app.ports.toggleDialog.subscribe(id => {
+  const dialog = document.querySelector(`#${id}`)
+
+  if (dialog.open) {
+      dialog.close();
+  } else {
+      dialog.showModal();
+  }  
+});

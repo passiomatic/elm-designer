@@ -68,24 +68,29 @@ view model =
                     ]
                 , uploadProgressView model.uploadState
                 , ContextMenuPopup.view model.contextMenu
-                --, confirmDialogView model.confirmDialog
+                , dialogView model.dialog
                 ]
         )
 
 
--- confirmDialogView confirmDialog =
---     case confirmDialog of
---         ConfirmDialog text nextMsg ->
---             dialog
---                 [ A.id "confirm-dialog" ]
---                 [ H.text text ]
+dialogView confirmDialog =
+    case confirmDialog of
+        WarningDialog text nextMsg ->
+            dialog
+                []
+                [ Icons.alertTriangle, H.text text, H.button [ A.type_ "button", A.class "btn btn-primary", E.onClick nextMsg ] [ H.text "Continue and delete" ] ]
 
---         NoConfirmDialog ->
---             none
+        NoDialog ->
+            dialog [] []
 
--- dialog : List (Attribute msg) -> List (Html msg) -> Html msg
--- dialog  attrs content =
---     H.node "dialog" attrs content
+
+
+dialog : List (Attribute msg) -> List (Html msg) -> Html msg
+dialog attrs content =
+    H.node "dialog"
+        (A.id "dialog" :: attrs)
+        [ H.div [ A.class "dialog__body" ] content
+        ]
 
 
 workspaceView model =
@@ -190,9 +195,9 @@ headerView model =
 
 fileView : Model -> Html Msg
 fileView model =
-    H.div []
-        [ H.button [ E.onClick ImportDocumentClicked, A.class "btn btn-secondary btn-sm me-3" ] [ Icons.download, H.text "Import" ]
-        , H.button [ E.onClick ExportDocumentClicked, A.class "btn btn-secondary btn-sm" ] [ Icons.share, H.text "Export" ]
+    H.div [ A.class "btn-group" ]
+        [ H.button [ A.type_ "button", E.onClick ImportDocumentClicked, A.class "btn btn-secondary btn-sm" ] [ H.text "Import..." ]
+        , H.button [ A.type_ "button", E.onClick ExportDocumentClicked, A.class "btn btn-secondary btn-sm" ] [ H.text "Export" ]
         ]
 
 
