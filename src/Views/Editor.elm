@@ -68,8 +68,34 @@ view model =
                     ]
                 , uploadProgressView model.uploadState
                 , ContextMenuPopup.view model.contextMenu
+                , dialogView model.dialog
                 ]
         )
+
+
+dialogView confirmDialog =
+    case confirmDialog of
+        WarningDialog text buttonText nextMsg ->
+            dialog
+                []
+                [ Icons.alertTriangle
+                , H.text text
+                , H.div [ A.class "dialog__buttons" ]
+                    [ H.button [ A.type_ "submit", A.class "btn btn-light" ] [ H.text "Cancel" ]
+                    , H.button [ A.type_ "button", A.class "btn btn-danger", E.onClick nextMsg ] [ H.text buttonText ]
+                    ]
+                ]
+
+        NoDialog ->
+            dialog [] []
+
+
+dialog : List (Attribute msg) -> List (Html msg) -> Html msg
+dialog attrs content =
+    H.node "dialog"
+        (A.id "dialog" :: attrs)
+        [ H.form [ A.class "h-100", A.method "dialog" ] [ H.div [ A.class "dialog__body" ] content ]
+        ]
 
 
 workspaceView model =
@@ -163,11 +189,20 @@ headerView model =
                         [ Icons.stop ]
     in
     H.header [ A.class "header d-flex justify-content-between align-items-center bp-2 border-bottom", A.style "gap" "1rem" ]
-        [ insertView model
+        [ fileView model
+        , insertView model
         , undoRedoView model
 
         --, zoomView model
         --, modeButton
+        ]
+
+
+fileView : Model -> Html Msg
+fileView model =
+    H.div [ A.class "btn-group" ]
+        [ H.button [ A.type_ "button", E.onClick ImportDocumentClicked, A.class "btn btn-secondary btn-sm" ] [ H.text "Import..." ]
+        , H.button [ A.type_ "button", E.onClick ExportDocumentClicked, A.class "btn btn-secondary btn-sm" ] [ H.text "Export" ]
         ]
 
 
@@ -397,7 +432,6 @@ codeView model =
 
         code =
             CodeGen.emit Theme.defaultTheme model.viewport tree
-
     in
     case (T.label tree).type_ of
         DocumentNode ->
