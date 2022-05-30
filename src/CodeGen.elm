@@ -411,7 +411,7 @@ emitCheckbox theme node label =
             [ ( "onChange", G.val "CheckboxClicked" )
             , ( "icon", G.fqFun inputModule "defaultCheckbox" )
             , ( "checked", G.val "False" )
-            , ( "label", emitLabel label.position [] label.text )
+            , ( "label", emitLabel label.position (emitFontColor label.color []) label.text )
             ]
         ]
 
@@ -464,7 +464,7 @@ emitRadio theme node label children =
                 , G.record
                     [ ( "onChange", G.val "RadioClicked" )
                     , ( "selected", G.val "Nothing" )
-                    , ( "label", emitLabel label.position (emitFontColor (Local theme.labelColor) []) label.text )
+                    , ( "label", emitLabel label.position (emitFontColor label.color []) label.text )
                     , ( "options", G.list children_ )
                     ]
                 ]

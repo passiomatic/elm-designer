@@ -185,6 +185,7 @@ resolveStyleViews model zipper =
                     [ sectionView "Label"
                         [ labelTextView label model node
                         , labelPositionView label model node
+                        , labelColorView label model zipper
                         , spacingXView model node
                         ]
                     , sectionView "Layout"
@@ -227,6 +228,9 @@ resolveStyleViews model zipper =
                     [ sectionView "Label"
                         [ labelTextView label model node
                         , labelPositionView label model node
+                        , labelColorView label model zipper
+                        -- TODO 
+                        --, spacingYView model node
                         ]
                     , sectionView "Layout"
                         [ alignmentView model node

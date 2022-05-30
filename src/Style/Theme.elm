@@ -20,7 +20,6 @@ import Style.Layout as Layout exposing (..)
 type alias Theme =
     { textColor : Color
     , headingColor : Color
-    , labelColor : Color
     , backgroundColor : Color
     , primaryColor : Color
     , accentColor : Color
@@ -49,7 +48,6 @@ defaultTheme : Theme
 defaultTheme =
     { textColor = Palette.darkCharcoal
     , headingColor = Palette.darkCharcoal
-    , labelColor = Palette.darkCharcoal
     , backgroundColor = Palette.white
     , primaryColor = Palette.blue
     , accentColor = Palette.orange

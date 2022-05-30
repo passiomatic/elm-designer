@@ -405,12 +405,16 @@ renderCheckbox : Context -> Node -> Bool -> LabelData -> RenderedNode
 renderCheckbox ctx node selected label =
     let
         renderer attrs =
+            let
+                labelAttrs =
+                    applyFontColor label.color []
+            in
             Input.checkbox
                 attrs
                 { onChange = \_ -> NoOp
                 , icon = Input.defaultCheckbox
                 , checked = True
-                , label = labelPosition label.position [ Font.color ctx.theme.labelColor ] label.text
+                , label = labelPosition label.position labelAttrs label.text
                 }
     in
     wrapElement ctx node selected renderer
@@ -421,11 +425,15 @@ renderRadio : Context -> Node -> Bool -> LabelData -> List RenderedNode -> Rende
 renderRadio ctx node selected label children =
     let
         renderer attrs =
+            let
+                labelAttrs =
+                    applyFontColor label.color []
+            in        
             Input.radio
                 attrs
                 { onChange = \_ -> NoOp
                 , selected = Nothing
-                , label = labelPosition label.position [ Font.color ctx.theme.labelColor ] label.text
+                , label = labelPosition label.position labelAttrs label.text
                 , options =
                     options children
                 }
