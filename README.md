@@ -1,7 +1,5 @@
 # Elm Designer—A code generator for Elm UI
 
-![Elm Designer interface](./assets/screenshot.jpg)
-
 ## Current status
 
 The application is in early stages of development and [supports a subset][support] of [Elm UI][elmui].
@@ -10,7 +8,7 @@ Previously Elm Designer was an Electron app, you can still download older versio
 
 ## New to Elm Designer? 
 
-The [one minute guide][guide] is waiting for you.
+The [quick guide][guide] is waiting for you.
 
 ## About images
 
