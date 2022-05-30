@@ -73,6 +73,7 @@ module Document exposing
     , insertNodeBefore
     , isContainer
     , isDocumentNode
+    , isImageNode
     , isPageNode
     , isSelected
     , nodeId
@@ -331,6 +332,16 @@ isDocumentNode node =
             False
 
 
+isImageNode : Node -> Bool
+isImageNode node =
+    case node.type_ of
+        ImageNode _ ->
+            True
+
+        _ ->
+            False
+
+
 type alias TextData =
     { text : String
     }
@@ -474,6 +485,11 @@ createImageNode data seeds =
                 { baseTemplate
                     | type_ = imageNode data
                     , name = "Image"
+                    -- Make images fluid but do not overstretch them
+                    , width = Layout.fill
+                    , widthMax = data.width
+                    , height = Layout.fill
+                    , heightMax = data.height
                 }
     in
     fromTemplate template seeds indexer
