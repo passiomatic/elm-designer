@@ -299,17 +299,17 @@ update msg model =
             )
 
         ImportDocumentClicked ->
-            let
-                newDialog =
-                    WarningDialog "You are going to replace your current document, no undo will be posssible." ImportDocumentConfirmed
-            in
-            ( { model | dialog = newDialog }, Ports.toggleDialog "dialog" )
-
-        ImportDocumentConfirmed ->
-            (  { model | dialog = NoDialog }, Select.file [ projectType ] DocumentSelected )
+            ( model, Select.file [ projectType ] DocumentSelected )
 
         DocumentSelected file ->
-            ( model, Task.perform DocumentLoaded (File.toString file) )
+            let
+                newDialog =
+                    WarningDialog "You are going to replace your current document. This operation cannot be undone." "Delete and continue loading" (ImportDocumentConfirmed file)
+            in
+            ( { model | dialog = newDialog }, Ports.toggleDialog ())
+
+        ImportDocumentConfirmed file ->
+            ( { model | dialog = NoDialog }, Cmd.batch [ Ports.toggleDialog (), Task.perform DocumentLoaded (File.toString file) ] )
 
         ExportDocumentClicked ->
             let

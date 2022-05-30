@@ -75,21 +75,26 @@ view model =
 
 dialogView confirmDialog =
     case confirmDialog of
-        WarningDialog text nextMsg ->
+        WarningDialog text buttonText nextMsg ->
             dialog
                 []
-                [ Icons.alertTriangle, H.text text, H.button [ A.type_ "button", A.class "btn btn-primary", E.onClick nextMsg ] [ H.text "Continue and delete" ] ]
+                [ Icons.alertTriangle
+                , H.text text
+                , H.div [ A.class "dialog__buttons" ]
+                    [ H.button [ A.type_ "submit", A.class "btn btn-light" ] [ H.text "Cancel" ]
+                    , H.button [ A.type_ "button", A.class "btn btn-danger", E.onClick nextMsg ] [ H.text buttonText ]
+                    ]
+                ]
 
         NoDialog ->
             dialog [] []
-
 
 
 dialog : List (Attribute msg) -> List (Html msg) -> Html msg
 dialog attrs content =
     H.node "dialog"
         (A.id "dialog" :: attrs)
-        [ H.div [ A.class "dialog__body" ] content
+        [ H.form [ A.class "h-100", A.method "dialog" ] [ H.div [ A.class "dialog__body" ] content ]
         ]
 
 

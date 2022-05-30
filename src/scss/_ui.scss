@@ -95,3 +95,8 @@ dialog {
   height: 100%;
   text-align: center;
 }
+
+.dialog__buttons {
+  display: flex;  
+  gap: .75rem;
+}

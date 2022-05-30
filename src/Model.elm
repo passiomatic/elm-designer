@@ -94,7 +94,7 @@ type Msg
     | DocumentLoaded String
     | ExportDocumentClicked
     | ImportDocumentClicked
-    | ImportDocumentConfirmed
+    | ImportDocumentConfirmed File
     | Ticked Posix
     | ModeChanged Mode
     | FileDropped NodeId File (List File)
@@ -169,7 +169,7 @@ type WidgetState
 
 
 type Dialog
-    = WarningDialog String Msg
+    = WarningDialog String String Msg
     | NoDialog
 
 
@@ -347,7 +347,6 @@ initialModel { width, height, seed1, seed2, seed3, seed4, platform } =
       , uploadState = Ready
       , collapsedTreeItems = Set.empty
       , contextMenu = contextMenu
-      --, dialog = WarningDialog "You are going to replace your current document, no undo will be posssible." ImportDocumentConfirmed      
       , dialog = NoDialog    
       , isMac = isMac platform
       }

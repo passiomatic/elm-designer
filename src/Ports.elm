@@ -40,7 +40,7 @@ port setDragImage : { event : Value, dragging : Bool } -> Cmd msg
 port endDrag : () -> Cmd msg
 
 
-port toggleDialog : String -> Cmd msg
+port toggleDialog : () -> Cmd msg
 
 
 port showNotification :

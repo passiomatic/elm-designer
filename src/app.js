@@ -153,8 +153,8 @@ app.ports.showNotification.subscribe(function (options) {
   }
 });
 
-app.ports.toggleDialog.subscribe(id => {
-  const dialog = document.querySelector(`#${id}`)
+app.ports.toggleDialog.subscribe(_ => {
+  const dialog = document.getElementById("dialog");
 
   if (dialog.open) {
       dialog.close();
