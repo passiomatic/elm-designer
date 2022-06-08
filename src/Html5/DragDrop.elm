@@ -88,7 +88,7 @@ type alias DroppablePosition =
     , height : Int
     , x : Int
     , y : Int
-    , classes: String
+    --, classes: String
     }
 
 
@@ -315,35 +315,27 @@ timeStampDecoder =
 -}
 droppablePositionDecoder : Json.Decoder DroppablePosition
 droppablePositionDecoder =
-    Json.map5 DroppablePosition
+    Json.map3 (\w h target -> { width = w, height = h, x = 0, y = 0 })
         (Json.at [ "currentTarget", "clientWidth" ] Json.int)
         (Json.at [ "currentTarget", "clientHeight" ] Json.int)
-        (Json.at [ "offsetX" ] Json.float |> Json.map round)
-        (Json.at [ "offsetY" ] Json.float |> Json.map round)
-        (Json.at [ "target", "className" ] Json.string
+        -- (Json.at [ "offsetX" ] Json.float |> Json.map round)
+        -- (Json.at [ "offsetY" ] Json.float |> Json.map round)
+        (Json.at [ "target" ] Json.value
             |> Json.andThen
-                (\className ->
-                    if String.contains "element--Document" className then
-                        (Json.at [ "offsetX" ] Json.float |> Json.map round)
-
-                    else
-                        -- Check relative positioned parent   
-                        Json.at [ "target", "offsetParent" ] Json.string
+                (\target -> 
+                    getOffset 0 0 target
                 )
         )
 
+getOffset: Int -> Int -> Json.Decoder Value -> (Json.Decoder Int, Json.Decoder Int )         
+getOffset totalOffsetX totalOffsetY target = 
+    if target.className == "element--Document" then 
+         (totalOffsetX, totalOffsetY)
+    else if target.offsetParent then 
+        getOffset (totalOffsetX + target.offsetLeft) (totalOffsetY + target.offsetTop)  target.offsetParent 
+    else 
+        (totalOffsetX, totalOffsetY)
 
--- getOffsetFor node offsetX offsetY = 
---     if node.className == document then 
---         (Json.at [ "offsetX" ] Json.float |> Json.map round, Json.at [ "offsetY" ] Json.float |> Json.map round))
---          offsetX offsetY 
---     else if node.offsetParent then 
---         getOffsetFor node.offsetParent (offsetX + node.offsetLeft) (offsetY + node.offsetTop)
---     else 
---         (offsetX, offsetY)
-
-type DomNode
-    = DomNode { id : String, offsetParent : Value }
 
 domNodeDecoder value accum = 
     Json.at [ "target", "className" ] Json.string
