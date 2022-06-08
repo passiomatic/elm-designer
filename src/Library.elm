@@ -113,7 +113,7 @@ heading1 theme =
         T.singleton
             { baseTemplate
                 | type_ = HeadingNode { level = 1, text = "" }
-                , name = "Heading"
+                , name = "Heading1"
                 , width = Layout.fill
                 , spacing = theme.headingSpacing
                 , fontWeight = theme.headingFontWeight
@@ -133,7 +133,7 @@ heading2 theme =
         T.singleton
             { baseTemplate
                 | type_ = HeadingNode { level = 2, text = "" }
-                , name = "Heading"
+                , name = "Heading2"
                 , width = Layout.fill
                 , spacing = theme.headingSpacing
                 , fontWeight = theme.headingFontWeight
@@ -153,7 +153,7 @@ heading3 theme =
         T.singleton
             { baseTemplate
                 | type_ = HeadingNode { level = 3, text = "" }
-                , name = "Heading"
+                , name = "Heading3"
                 , width = Layout.fill
                 , spacing = theme.headingSpacing
                 , fontWeight = theme.headingFontWeight

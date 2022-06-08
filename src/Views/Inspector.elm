@@ -7,7 +7,6 @@ import Css
 import Dict exposing (Dict)
 import Document exposing (..)
 import Element exposing (Color, Orientation(..))
-import Element.Background exposing (image)
 import Fonts
 import Html as H exposing (Attribute, Html)
 import Html.Attributes as A
@@ -1547,7 +1546,7 @@ wrapRowOptionView wrapped =
 
 
 widthView : Model -> Node -> Html Msg
-widthView model { width, widthMin, widthMax } =
+widthView model ({ width, widthMin, widthMax } as node) =
     let
         min =
             case model.inspector of
@@ -1566,22 +1565,32 @@ widthView model { width, widthMin, widthMax } =
                 _ ->
                     Maybe.map String.fromInt widthMax
                         |> Maybe.withDefault ""
+
+        addFitButton : List (Html Msg) -> Html Msg
+        addFitButton buttons =
+            H.div [ A.class "btn-group w-100 mb-1", A.attribute "role" "group" ]
+                (if not (Document.isImageNode node) then
+                    H.button
+                        [ A.classList
+                            [ ( "btn btn-secondary btn-sm", True )
+                            , ( "active", isContent width )
+                            ]
+                        , E.onClick (WidthChanged Layout.fit)
+                        , A.type_ "button"
+                        ]
+                        [ H.text "Fit" ]
+                        :: buttons
+
+                 else
+                    buttons
+                )
     in
     H.div [ A.class "row align-items-center mb-3" ]
         [ H.label [ A.class "col-3 col-form-label-sm m-0" ]
             [ H.text "Width" ]
         , H.div [ A.class "col-9" ]
-            [ H.div [ A.class "btn-group w-100 mb-1", A.attribute "role" "group" ]
-                [ H.button
-                    [ A.classList
-                        [ ( "btn btn-secondary btn-sm", True )
-                        , ( "active", isContent width )
-                        ]
-                    , E.onClick (WidthChanged Layout.fit)
-                    , A.type_ "button"
-                    ]
-                    [ H.text "Fit" ]
-                , case width of
+            [ addFitButton
+                [ case width of
                     Fill value ->
                         H.button
                             [ A.classList
@@ -1747,7 +1756,7 @@ pageWidthView model { width, widthMin, widthMax } =
 
 
 heightView : Model -> Node -> Html Msg
-heightView model { height, heightMin, heightMax } =
+heightView model ({ height, heightMin, heightMax } as node) =
     let
         min =
             case model.inspector of
@@ -1766,14 +1775,12 @@ heightView model { height, heightMin, heightMax } =
                 _ ->
                     Maybe.map String.fromInt heightMax
                         |> Maybe.withDefault ""
-    in
-    H.div []
-        [ H.div [ A.class "row align-items-center  mb-3" ]
-            [ H.label [ A.class "col-3 col-form-label-sm m-0" ]
-                [ H.text "Height" ]
-            , H.div [ A.class "col-9" ]
-                [ H.div [ A.class "btn-group w-100 mb-1", A.attribute "role" "group" ]
-                    [ H.button
+
+        addFitButton : List (Html Msg) -> Html Msg
+        addFitButton buttons =
+            H.div [ A.class "btn-group w-100 mb-1", A.attribute "role" "group" ]
+                (if not (Document.isImageNode node) then
+                    H.button
                         [ A.classList
                             [ ( "btn btn-secondary btn-sm", True )
                             , ( "active", isContent height )
@@ -1782,103 +1789,113 @@ heightView model { height, heightMin, heightMax } =
                         , A.type_ "button"
                         ]
                         [ H.text "Fit" ]
-                    , case height of
-                        Fill value ->
-                            H.button
-                                [ A.classList
-                                    [ ( "btn btn-secondary btn-sm", True )
-                                    , ( "active", True )
-                                    ]
-                                , E.onClick (HeightChanged (Layout.portion value))
-                                , A.type_ "button"
+                        :: buttons
+
+                 else
+                    buttons
+                )
+    in
+    H.div [ A.class "row align-items-center  mb-3" ]
+        [ H.label [ A.class "col-3 col-form-label-sm m-0" ]
+            [ H.text "Height" ]
+        , H.div [ A.class "col-9" ]
+            [ addFitButton
+                [ case height of
+                    Fill value ->
+                        H.button
+                            [ A.classList
+                                [ ( "btn btn-secondary btn-sm", True )
+                                , ( "active", True )
                                 ]
-                                [ H.text "Fill" ]
+                            , E.onClick (HeightChanged (Layout.portion value))
+                            , A.type_ "button"
+                            ]
+                            [ H.text "Fill" ]
 
-                        _ ->
-                            H.button
-                                [ A.classList
-                                    [ ( "btn btn-secondary btn-sm", True )
-                                    ]
-                                , E.onClick (HeightChanged Layout.fill)
-                                , A.type_ "button"
+                    _ ->
+                        H.button
+                            [ A.classList
+                                [ ( "btn btn-secondary btn-sm", True )
                                 ]
-                                [ H.text "Fill" ]
-                    , case height of
-                        Px value ->
-                            H.button
-                                [ A.classList
-                                    [ ( "btn btn-secondary btn-sm", True )
-                                    , ( "active", isPxOrUnspecified height )
-                                    ]
-                                , E.onClick (HeightChanged (Layout.px value))
-                                , A.type_ "button"
+                            , E.onClick (HeightChanged Layout.fill)
+                            , A.type_ "button"
+                            ]
+                            [ H.text "Fill" ]
+                , case height of
+                    Px value ->
+                        H.button
+                            [ A.classList
+                                [ ( "btn btn-secondary btn-sm", True )
+                                , ( "active", isPxOrUnspecified height )
                                 ]
-                                [ H.text "Px" ]
+                            , E.onClick (HeightChanged (Layout.px value))
+                            , A.type_ "button"
+                            ]
+                            [ H.text "Px" ]
 
-                        _ ->
-                            H.button
-                                [ A.classList
-                                    [ ( "btn btn-secondary btn-sm", True )
-                                    , ( "active", isPxOrUnspecified height )
-                                    ]
-                                , E.onClick (HeightChanged Layout.unspecified)
-                                , A.type_ "button"
+                    _ ->
+                        H.button
+                            [ A.classList
+                                [ ( "btn btn-secondary btn-sm", True )
+                                , ( "active", isPxOrUnspecified height )
                                 ]
-                                [ H.text "Px" ]
-                    ]
-                , H.div [ A.class "d-flex justify-content-end", A.style "gap" ".25rem" ]
-                    (case height of
-                        Px value ->
-                            let
-                                value_ =
-                                    case model.inspector of
-                                        EditingField HeightPxField new ->
-                                            new
-
-                                        _ ->
-                                            String.fromInt value
-                            in
-                            [ numericFieldView HeightPxField "Exact" value_
-                            , numericFieldView HeightMinField "Min." min
-                            , numericFieldView HeightMaxField "Max." max
+                            , E.onClick (HeightChanged Layout.unspecified)
+                            , A.type_ "button"
                             ]
-
-                        Unspecified ->
-                            let
-                                value_ =
-                                    case model.inspector of
-                                        EditingField HeightPxField new ->
-                                            new
-
-                                        _ ->
-                                            ""
-                            in
-                            [ numericFieldView HeightPxField "Exact" value_
-                            , numericFieldView HeightMinField "Min." min
-                            , numericFieldView HeightMaxField "Max." max
-                            ]
-
-                        Content ->
-                            [ numericFieldView HeightMinField "Min." min
-                            , numericFieldView HeightMaxField "Max." max
-                            ]
-
-                        Fill value ->
-                            let
-                                value_ =
-                                    case model.inspector of
-                                        EditingField HeightPortionField new ->
-                                            new
-
-                                        _ ->
-                                            String.fromInt value
-                            in
-                            [ numericFieldView HeightPortionField "Portion" value_
-                            , numericFieldView HeightMinField "Min." min
-                            , numericFieldView HeightMaxField "Max." max
-                            ]
-                    )
+                            [ H.text "Px" ]
                 ]
+            , H.div [ A.class "d-flex justify-content-end", A.style "gap" ".25rem" ]
+                (case height of
+                    Px value ->
+                        let
+                            value_ =
+                                case model.inspector of
+                                    EditingField HeightPxField new ->
+                                        new
+
+                                    _ ->
+                                        String.fromInt value
+                        in
+                        [ numericFieldView HeightPxField "Exact" value_
+                        , numericFieldView HeightMinField "Min." min
+                        , numericFieldView HeightMaxField "Max." max
+                        ]
+
+                    Unspecified ->
+                        let
+                            value_ =
+                                case model.inspector of
+                                    EditingField HeightPxField new ->
+                                        new
+
+                                    _ ->
+                                        ""
+                        in
+                        [ numericFieldView HeightPxField "Exact" value_
+                        , numericFieldView HeightMinField "Min." min
+                        , numericFieldView HeightMaxField "Max." max
+                        ]
+
+                    Content ->
+                        [ numericFieldView HeightMinField "Min." min
+                        , numericFieldView HeightMaxField "Max." max
+                        ]
+
+                    Fill value ->
+                        let
+                            value_ =
+                                case model.inspector of
+                                    EditingField HeightPortionField new ->
+                                        new
+
+                                    _ ->
+                                        String.fromInt value
+                        in
+                        [ numericFieldView HeightPortionField "Portion" value_
+                        , numericFieldView HeightMinField "Min." min
+                        , numericFieldView HeightMaxField "Max." max
+                        ]
+                )
             ]
         ]
 
@@ -1950,31 +1967,78 @@ pageHeightView model { height, heightMin, heightMax } =
         ]
 
 
-imageView : { a | src : String } -> Model -> Node -> Html Msg
+imageView : ImageData -> Model -> Node -> Html Msg
 imageView image model node =
-    H.div [ A.class "row align-items-center mb-2" ]
-        [ H.label [ A.class "col-3 col-form-label-sm m-0" ]
-            [ H.text "URL" ]
-        , H.div [ A.class "col-9" ]
-            [ H.div [ A.class "input-group" ]
-                [ H.input
-                    [ A.id (widgetId ImageSrcField)
-                    , A.type_ "text"
-                    , A.value image.src
-                    , A.class "form-control form-control-sm"
-                    , A.readonly True
+    let
+        width =
+            Maybe.map String.fromInt image.width
+                |> Maybe.withDefault ""
+
+        height =
+            Maybe.map String.fromInt image.height
+                |> Maybe.withDefault ""
+    in
+    H.div []
+        [ H.div [ A.class "row align-items-center mb-2" ]
+            [ H.label [ A.class "col-3 col-form-label-sm m-0" ]
+                [ H.text "Format" ]
+            , H.div [ A.class "col-9" ]
+                [ H.div [ A.class "small" ]
+                    [ H.text (mimeTypeLabel image.mimeType)
+                    , H.text Entity.ensp
+                    , H.text width
+                    , H.text Entity.times
+                    , H.text height
+                    , H.text "px"
                     ]
-                    []
-                , H.button
-                    [ A.class "btn btn-sm btn-secondary"
-                    , A.type_ "button"
-                    , E.onClick (ClipboardCopyClicked image.src)
-                    ]
-                    [ H.text "Copy"
+                ]
+            ]
+        , H.div [ A.class "row align-items-center" ]
+            [ H.label [ A.class "col-3 col-form-label-sm m-0" ]
+                [ H.text "URL" ]
+            , H.div [ A.class "col-9" ]
+                [ H.div [ A.class "input-group" ]
+                    [ H.input
+                        [ A.id (widgetId ImageSrcField)
+                        , A.type_ "text"
+                        , A.value image.src
+                        , A.class "form-control form-control-sm"
+                        , A.readonly True
+                        ]
+                        []
+                    , H.button
+                        [ A.class "btn btn-sm btn-secondary"
+                        , A.type_ "button"
+                        , E.onClick (ClipboardCopyClicked image.src)
+                        ]
+                        [ H.text "Copy"
+                        ]
                     ]
                 ]
             ]
         ]
+
+
+mimeTypeLabel : Maybe String -> String
+mimeTypeLabel value =
+    case value of
+        Just "image/webp" ->
+            "WebP"
+
+        Just "image/jpeg" ->
+            "JPEG"
+
+        Just "image/png" ->
+            "PNG"
+
+        Just "image/gif" ->
+            "GIF"
+
+        Just "image/svg+xml" ->
+            "SVG"
+
+        _ ->
+            "Unknown"
 
 
 isContent value =

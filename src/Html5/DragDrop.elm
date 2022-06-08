@@ -55,7 +55,7 @@ to do `event.dataTransfer.setData('text', '')`. to fix this.
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
-import Json.Decode as Json
+import Json.Decode as Json exposing (Value)
 
 
 {-| The drag and drop state.
@@ -88,6 +88,7 @@ type alias DroppablePosition =
     , height : Int
     , x : Int
     , y : Int
+    , classes: String
     }
 
 
@@ -233,6 +234,8 @@ updateCommon sticky msg model =
 
         ( Drop dropId pos, Dragging dragId draggablePos, _ ) ->
             let
+                _ =
+                    Debug.log "Drappable Pos.classes" pos.classes            
                 pos_ =
                     getFinalPosition draggablePos pos
             in
@@ -240,6 +243,8 @@ updateCommon sticky msg model =
 
         ( Drop dropId pos, DraggedOver dragId _ _ draggablePos maybePos, _ ) ->
             let
+                _ =
+                    Debug.log "Drappable Pos.classes" pos.classes                
                 pos_ =
                    getFinalPosition draggablePos pos
             in
@@ -300,16 +305,57 @@ timeStampDecoder =
     Json.at [ "timeStamp" ] Json.float |> Json.map round
 
 
-{-| Decode pointer offset within the droppable element.
+{-| Decode element offset within the droppable element, 
+      recursively check parent nodes if needed.
+  
+  References:
+    https://github.com/passiomatic/elm-designer/issues/45#issuecomment-1054397736
+    https://www.quirksmode.org/js/findpos.html
+    https://dev.to/margaretkrutikova/elm-dom-node-decoder-to-detect-click-outside-3ioh
 -}
 droppablePositionDecoder : Json.Decoder DroppablePosition
 droppablePositionDecoder =
-    Json.map4 DroppablePosition
+    Json.map5 DroppablePosition
         (Json.at [ "currentTarget", "clientWidth" ] Json.int)
         (Json.at [ "currentTarget", "clientHeight" ] Json.int)
         (Json.at [ "offsetX" ] Json.float |> Json.map round)
         (Json.at [ "offsetY" ] Json.float |> Json.map round)
+        (Json.at [ "target", "className" ] Json.string
+            |> Json.andThen
+                (\className ->
+                    if String.contains "element--Document" className then
+                        (Json.at [ "offsetX" ] Json.float |> Json.map round)
 
+                    else
+                        -- Check relative positioned parent   
+                        Json.at [ "target", "offsetParent" ] Json.string
+                )
+        )
+
+
+-- getOffsetFor node offsetX offsetY = 
+--     if node.className == document then 
+--         (Json.at [ "offsetX" ] Json.float |> Json.map round, Json.at [ "offsetY" ] Json.float |> Json.map round))
+--          offsetX offsetY 
+--     else if node.offsetParent then 
+--         getOffsetFor node.offsetParent (offsetX + node.offsetLeft) (offsetY + node.offsetTop)
+--     else 
+--         (offsetX, offsetY)
+
+type DomNode
+    = DomNode { id : String, offsetParent : Value }
+
+domNodeDecoder value accum = 
+    Json.at [ "target", "className" ] Json.string
+        |> Json.andThen
+            (\className ->
+                if String.contains "element--Document" className then
+                    (Json.at [ "offsetX" ] Json.float |> Json.map round)
+
+                else
+                    -- Check relative positioned parent   
+                    Json.at [ "target", "offsetParent" ] Json.string
+            )    
 
 {-| Decode pointer offset within the draggable element.
 -}

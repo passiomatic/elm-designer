@@ -15,6 +15,7 @@ module Icons exposing
     , coloredSquare
     , cornerUpLeft
     , cornerUpRight
+    , download
     , edit
     , file
     , image
@@ -28,6 +29,7 @@ module Icons exposing
     , plusCircle
     , plusCircleSmall
     , plusSmall
+    , share
     , smartphone
     , square
     , stop
@@ -56,6 +58,20 @@ mediumSize =
 
 largeSize =
     18
+
+hugeSize =
+    24
+
+share =
+    I.share
+        |> I.withSize mediumSize
+        |> I.toHtml []
+
+
+download =
+    I.download
+        |> I.withSize mediumSize
+        |> I.toHtml []
 
 
 cornerUpLeft =
@@ -240,7 +256,7 @@ chevronDown =
 alertTriangle : Html msg
 alertTriangle =
     I.alertTriangle
-        |> I.withSize largeSize
+        |> I.withSize hugeSize
         |> I.toHtml []
 
 
