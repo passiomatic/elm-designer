@@ -1,5 +1,6 @@
 port module Ports exposing
     ( copyToClipboard
+    , endDrag
     , loadDocument
     , onDocumentLoad
     , saveDocument
@@ -7,6 +8,7 @@ port module Ports exposing
     , setDragImage
     , setFontLinks
     , showNotification
+    , toggleDialog
     )
 
 import Json.Decode exposing (Value)
@@ -32,7 +34,13 @@ port selectText : String -> Cmd msg
 port setFontLinks : List String -> Cmd msg
 
 
-port setDragImage : { event : Value, width : Maybe Int, height : Maybe Int } -> Cmd msg
+port setDragImage : { event : Value, dragging : Bool } -> Cmd msg
+
+
+port endDrag : () -> Cmd msg
+
+
+port toggleDialog : () -> Cmd msg
 
 
 port showNotification :

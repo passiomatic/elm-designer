@@ -1,17 +1,17 @@
 module Main exposing (main)
 
 import Browser
-import Browser.Dom as Dom
+import Browser.Dom as Dom exposing (Error(..))
 import Browser.Events as BE
 import CodeGen
 import Codecs
 import ContextMenu exposing (ContextMenu)
 import Dict exposing (Dict)
-import Document exposing (DragId(..), DropId(..), Node, Viewport(..))
-import DragDrop2
-import Element exposing (Orientation(..))
+import Document exposing (DragId(..), DropId(..), Node, Viewport(..), nodeId)
+import DragDropHelper
 import Env
 import File exposing (File)
+import File.Download as Download
 import File.Select as Select
 import Fonts
 import Html5.DragDrop as DragDrop
@@ -27,7 +27,6 @@ import Style.Font as Font exposing (..)
 import Style.Layout as Layout exposing (..)
 import Style.Shadow as Shadow exposing (Shadow, ShadowType(..))
 import Style.Theme as Theme exposing (Theme)
-import Svg.Attributes exposing (orientation)
 import Task
 import Time
 import Time.Extra as Time exposing (Interval(..))
@@ -157,10 +156,10 @@ update msg model =
 
         FileUploaded result ->
             case result of
-                Ok url ->
+                Ok image ->
                     let
                         ( newSeeds, newNode ) =
-                            Document.imageNode (String.trim url) model.seeds
+                            Document.createImageNode image model.seeds
 
                         zipper =
                             model.document.present
@@ -214,16 +213,10 @@ update msg model =
                             -- Save only if document hasn't been modified in saveInterval seconds
                             if Time.diff Second Time.utc since now > saveInterval then
                                 let
-                                    document =
-                                        { schemaVersion = Document.schemaVersion
-                                        , lastUpdatedOn = now
-                                        , root = Zipper.toTree model.document.present
-                                        , selectedNodeId = Zipper.label model.document.present |> .id
-                                        , viewport = model.viewport
-                                        , collapsedTreeItems = model.collapsedTreeItems
-                                        }
+                                    data =
+                                        serializeDocument now model
                                 in
-                                ( Saved now, serializeDocument document )
+                                ( Saved now, Ports.saveDocument data )
 
                             else
                                 ( model.saveState, Cmd.none )
@@ -241,17 +234,25 @@ update msg model =
             , cmd
             )
 
-        PresetSizeChanged name ->
-            let
-                ( width, height, _ ) =
-                    Document.findDeviceInfo name
-            in
-            applyChange model Document.apply (\node -> { node | width = Layout.px width, heightMin = Just height })
+        PresetSizeChanged viewport ->
+            case viewport of
+                Device _ w h _ ->
+                    applyChange model Document.apply (\node -> { node | width = Layout.px w, heightMin = Just h })
+
+                Custom w h _ ->
+                    applyChange model Document.apply (\node -> { node | width = Layout.px w, heightMin = Just h })
+
+                Fluid ->
+                    ( model, Cmd.none )
 
         InsertNodeClicked template ->
             let
                 ( newSeeds, newNode ) =
-                    Document.fromTemplate template model.seeds
+                    let
+                        indexer type_ =
+                            Document.getNextIndexFor type_ (Zipper.root model.document.present)
+                    in
+                    Document.fromTemplate template model.seeds indexer
 
                 newDocument =
                     Document.insertNode newNode model.document.present
@@ -266,7 +267,19 @@ update msg model =
             )
 
         InsertImageClicked ->
-            ( { model | dropDownState = Hidden }, Select.files acceptedTypes FileSelected )
+            ( { model | dropDownState = Hidden }, Select.files imageTypes FileSelected )
+
+        DuplicateNodeClicked nodeId ->
+            let
+                maybeZipper =
+                    Document.selectNodeWith nodeId model.document.present
+            in
+            case maybeZipper of
+                Just zipper ->
+                    duplicateNode model zipper
+
+                Nothing ->
+                    ( model, Cmd.none )
 
         RemoveNodeClicked nodeId ->
             let
@@ -280,16 +293,30 @@ update msg model =
                 Nothing ->
                     ( model, Cmd.none )
 
-        ClipboardCopyClicked ->
-            let
-                code =
-                    model.document.present
-                        |> Zipper.tree
-                        |> CodeGen.emit Theme.defaultTheme model.viewport
-            in
+        ClipboardCopyClicked text ->
             ( model
-            , Ports.copyToClipboard code
+            , Ports.copyToClipboard text
             )
+
+        ImportDocumentClicked ->
+            ( model, Select.file [ projectType ] DocumentSelected )
+
+        DocumentSelected file ->
+            let
+                newDialog =
+                    WarningDialog "You are going to replace your current document. This operation cannot be undone." "Delete and continue loading" (ImportDocumentConfirmed file)
+            in
+            ( { model | dialog = newDialog }, Ports.toggleDialog ())
+
+        ImportDocumentConfirmed file ->
+            ( { model | dialog = NoDialog }, Cmd.batch [ Ports.toggleDialog (), Task.perform DocumentLoaded (File.toString file) ] )
+
+        ExportDocumentClicked ->
+            let
+                data =
+                    serializeDocument model.currentTime model
+            in
+            ( model, Download.string "Elm-Designer-Document.json" projectType data )
 
         DocumentLoaded value ->
             case Codecs.fromString value of
@@ -303,13 +330,16 @@ update msg model =
                             zipper
                                 |> Document.selectNodeWith document.selectedNodeId
                                 |> Maybe.withDefault zipper
+
+                        centerCmd =
+                            revealNode model newZipper
                     in
-                    ( { model                        
+                    ( { model
                         | document = UndoList.fresh newZipper
                         , viewport = document.viewport
                         , saveState = Original
                       }
-                    , Cmd.none
+                    , centerCmd
                     )
 
                 Err reason ->
@@ -352,25 +382,10 @@ update msg model =
             in
             case maybeZipper of
                 Just zipper ->
-                    let
-                        node =
-                            Zipper.label zipper
-
-                        length value =
-                            case value of
-                                Px value_ ->
-                                    toFloat value_
-
-                                _ ->
-                                    0
-
-                        offsetX =
-                            node.offsetX - model.workspaceViewportWidth / 2 + length node.width / 2
-
-                        offsetY =
-                            -- A tad above the middle line
-                            node.offsetY - model.workspaceViewportHeight / 2 + 100
-                    in
+                    -- let
+                    --     node =
+                    --         Zipper.label zipper
+                    -- in
                     ( { model
                         | document =
                             UndoList.mapPresent
@@ -383,8 +398,7 @@ update msg model =
                         , inspector = NotEdited
                       }
                     , if reveal then
-                        Dom.setViewportOf Model.workspaceWrapperId offsetX offsetY
-                            |> Task.attempt (\_ -> NoOp)
+                        revealNode model zipper
 
                       else
                         Cmd.none
@@ -464,6 +478,10 @@ update msg model =
         FontFamilyChanged family ->
             applyChange model Document.applyFontFamily family
 
+        SetBorderClicked value ->
+            -- Used to create a new border from scratch without editing a numeric field
+            applyChange model Document.applyBorder value
+
         BorderStyleChanged value ->
             applyChange model Document.applyBorderStyle value
 
@@ -476,8 +494,14 @@ update msg model =
         BorderColorChanged value ->
             applyChange model Document.applyBorderColor value
 
+        SetShadowClicked value ->
+            applyChange model Document.applyShadow value
+
         ShadowColorChanged value ->
             applyChange model Document.applyShadowColor value
+
+        ShadowTypeChanged value ->
+            applyChange model Document.applyShadowType value
 
         FontColorChanged value ->
             applyChange model Document.applyFontColor value
@@ -505,47 +529,43 @@ update msg model =
                 ( newDragDrop, dragDropResult ) =
                     DragDrop.update msg_ model.dragDrop
 
-                ( newSeeds, newDocument, hasNewUndo ) =
+                ( newSeeds, newDocument, wasDragDropSuccessful ) =
                     case dragDropResult of
                         Just ( dragId, dropId, position ) ->
                             let
                                 ( newSeeds_, maybeNode, newZipper ) =
-                                    DragDrop2.getDroppedNode model dragId { x = toFloat position.x, y = toFloat position.y }
-
-                                -- _ =
-                                --     Debug.log "Final Position->" position
+                                    DragDropHelper.getDroppedNode model dragId { x = toFloat position.x, y = toFloat position.y }
                             in
                             case maybeNode of
                                 Just node ->
-                                    ( newSeeds_, DragDrop2.addDroppedNode model dropId node newZipper, True )
+                                    ( newSeeds_, DragDropHelper.addDroppedNode model dropId node newZipper, True )
 
                                 Nothing ->
                                     ( model.seeds, model.document.present, False )
 
                         Nothing ->
-                            -- let
-                            --     _ =
-                            --         Debug.log "DroppablePosition->" (DragDrop.getDroppablePosition newDragDrop)
-                            -- in
                             -- Still going/failed drag and drop operation
                             ( model.seeds, model.document.present, False )
             in
-            ( { model
-                | dragDrop = newDragDrop
-                , document =
-                    if hasNewUndo then
-                        UndoList.new newDocument model.document
+            if wasDragDropSuccessful then
+                ( { model
+                    | dragDrop = newDragDrop
+                    , document = UndoList.new newDocument model.document
+                    , saveState = Changed model.currentTime
+                    , seeds = newSeeds
+                  }
+                  -- TODO We should fire this even when D&D fails, however JS will take care of this
+                , Ports.endDrag ()
+                )
 
-                    else
-                        -- Replace current document
-                        UndoList.mapPresent (\_ -> newDocument) model.document
-                , seeds = newSeeds
-                , saveState = Changed model.currentTime
-              }
-            , DragDrop.getDragstartEvent msg_
-                |> Maybe.map DragDrop2.setDragImage
-                |> Maybe.withDefault Cmd.none
-            )
+            else
+                ( { model
+                    | dragDrop = newDragDrop
+                  }
+                , DragDrop.getDragstartEvent msg_
+                    |> Maybe.map DragDropHelper.setDragImage
+                    |> Maybe.withDefault Cmd.none
+                )
 
         ViewportChanged viewport ->
             ( { model
@@ -570,10 +590,19 @@ update msg model =
                     removeNode model model.document.present
 
                 -- ############
-                -- Close any dropdown
+                -- Close any dropdown and context menu
                 -- ############
                 ( False, "Escape", NotEdited ) ->
-                    ( { model | dropDownState = Hidden }, Cmd.none )
+                    let
+                        ( contextMenu, _ ) =
+                            ContextMenu.init
+                    in
+                    ( { model
+                        | dropDownState = Hidden
+                        , contextMenu = contextMenu
+                      }
+                    , Cmd.none
+                    )
 
                 -- ############
                 -- Stop field and inline editing
@@ -832,16 +861,16 @@ updateField model =
         -- Shadow
         -- ###########
         EditingField ShadowOffsetXField newValue ->
-            applyChange model (Document.applyShadow Shadow.setOffsetX) newValue
+            applyChange model (Document.applyShadowFromString Shadow.setOffsetX) newValue
 
         EditingField ShadowOffsetYField newValue ->
-            applyChange model (Document.applyShadow Shadow.setOffsetY) newValue
+            applyChange model (Document.applyShadowFromString Shadow.setOffsetY) newValue
 
         EditingField ShadowSizeField newValue ->
-            applyChange model (Document.applyShadow Shadow.setSize) newValue
+            applyChange model (Document.applyShadowFromString Shadow.setSize) newValue
 
         EditingField ShadowBlurField newValue ->
-            applyChange model (Document.applyShadow Shadow.setBlur) newValue
+            applyChange model (Document.applyShadowFromString Shadow.setBlur) newValue
 
         EditingField ShadowColorField newValue ->
             applyChange model Document.applyShadowColor newValue
@@ -884,6 +913,24 @@ removeNode model zipper =
     )
 
 
+duplicateNode : Model -> Zipper Node -> ( Model, Cmd Msg )
+duplicateNode model zipper =
+    let
+        ( newSeeds, newTree ) =
+            Document.duplicateNode zipper model.seeds
+
+        newZipper =
+            Document.insertNode newTree zipper
+    in
+    ( { model
+        | document = UndoList.new newZipper model.document
+        , saveState = Changed model.currentTime
+        , seeds = newSeeds
+      }
+    , Cmd.none
+    )
+
+
 applyChange : Model -> (a -> Zipper Node -> Zipper Node) -> a -> ( Model, Cmd Msg )
 applyChange model updater newValue =
     ( { model
@@ -902,6 +949,56 @@ unfocusElement id =
 focusElement : String -> Cmd Msg
 focusElement id =
     Task.attempt (\_ -> NoOp) (Dom.focus id)
+
+
+revealNode : Model -> Zipper Node -> Cmd Msg
+revealNode _ zipper =
+    let
+        node =
+            Zipper.label zipper
+    in
+    case Document.selectPageOf node.id zipper |> Maybe.map Zipper.label of
+        Just page ->
+            Dom.getElement workspaceWrapperId
+                |> Task.andThen
+                    (\workspace ->
+                        let
+                            offsetX =
+                                --Debug.log "offsetX" (page.offsetX - workspace.element.width / 2 + length page.width / 2)
+                                page.offsetX - workspace.element.width / 2 + pageWidth page / 2
+
+                            offsetY =
+                                --Debug.log "offsetY" (page.offsetY - workspace.element.height / 2 + length page.height / 2)
+                                page.offsetY - workspace.element.height / 2 + pageHeight page / 2
+                        in
+                        Dom.setViewportOf Model.workspaceWrapperId offsetX offsetY
+                    )
+                |> Task.attempt (\_ -> NoOp)
+
+        Nothing ->
+            Cmd.none
+
+
+pageWidth node =
+    case node.width of
+        Px value_ ->
+            toFloat value_
+
+        _ ->
+            node.widthMin
+                |> Maybe.map toFloat
+                |> Maybe.withDefault 0
+
+
+pageHeight node =
+    case node.height of
+        Px value_ ->
+            toFloat value_
+
+        _ ->
+            node.heightMin
+                |> Maybe.map toFloat
+                |> Maybe.withDefault 0
 
 
 
@@ -972,27 +1069,35 @@ mouseDecoder =
         (Decode.field "button" Decode.int)
 
 
-serializeDocument document =
-    document
-        |> Codecs.toString
-        |> Ports.saveDocument
+serializeDocument time model =
+    let
+        document =
+            { schemaVersion = Document.schemaVersion
+            , lastUpdatedOn = time
+            , root = Zipper.toTree model.document.present
+            , selectedNodeId = Zipper.label model.document.present |> .id
+            , viewport = model.viewport
+            , collapsedTreeItems = model.collapsedTreeItems
+            }
+    in
+    Codecs.toString document
 
 
-acceptedTypes : List String
-acceptedTypes =
-    [ "image/jpeg", "image/png", "image/gif", "image/svg+xml" ]
+imageTypes : List String
+imageTypes =
+    [ "image/webp", "image/jpeg", "image/png", "image/gif", "image/svg+xml" ]
 
 
 acceptFiles files =
-    let
-        acceptedTypes_ =
-            Set.fromList acceptedTypes
-    in
     List.filter
         (\f ->
-            Set.member (File.mime f) acceptedTypes_
+            List.member (File.mime f) imageTypes
         )
         files
+
+
+projectType =
+    "application/json"
 
 
 

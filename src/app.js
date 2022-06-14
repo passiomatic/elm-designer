@@ -74,33 +74,41 @@ app.ports.selectText.subscribe(function (id) {
 // * https://transitory.technology/set-drag-image/
 //
 app.ports.setDragImage.subscribe(function (payload) {
-  //console.log(payload.event)
   // FF compatibility
   payload.event.dataTransfer.setData("text", "");
+  var clientRect = payload.event.target.getBoundingClientRect();
 
   var node = null;
-  if (payload.width && payload.height) {
+  if (payload.dragging) {
+    // Dragging elements on workspace
     node = payload.event.target.cloneNode(false);
-    node.style.width = payload.width + "px";
-    node.style.height = payload.height + "px";
+    // Safari has issues with big ghost drag images, so set explictly final dimensions
+    node.style.width = clientRect.width + "px";
+    node.style.height = clientRect.height + "px";
+    node.classList.add("ghost-image");
   } else {
+    // Dragging from Library/outline
     node = payload.event.target.cloneNode(true);
-    // Don't add a ghost class for pages already in the workspace
+    node.classList.add("ghost-image");
     node.classList.add("library__item-ghost");
   }
   node.title = "";
   node.style.position = "absolute";
-  node.style.top = "-9999px";
+  node.style.right = "9999px"; // Put offscreen
   document.body.appendChild(node);
 
-  var clientRect = payload.event.target.getBoundingClientRect();
-  // console.log("target.clientRect.top "+ clientRect.top)
-  // console.log("target.clientRect.left "+ clientRect.left)
   // console.log("event.clientX "+ payload.event.clientX)
   // console.log("event.clientY "+ payload.event.clientY)
   var offsetX = payload.event.clientX - clientRect.left;
   var offsetY = payload.event.clientY - clientRect.top;
   payload.event.dataTransfer.setDragImage(node, offsetX, offsetY);
+});
+
+app.ports.endDrag.subscribe(function () {
+  // Cleanup
+  document.querySelectorAll(".ghost-image").forEach((el) => {
+    el.remove(); 
+  });
 });
 
 // app.ports.setDragCursor.subscribe(function (event, cursor) {
@@ -143,4 +151,14 @@ app.ports.showNotification.subscribe(function (options) {
       }
     });
   }
+});
+
+app.ports.toggleDialog.subscribe(_ => {
+  const dialog = document.getElementById("dialog");
+
+  if (dialog.open) {
+      dialog.close();
+  } else {
+      dialog.showModal();
+  }  
 });

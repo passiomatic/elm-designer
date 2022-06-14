@@ -3,6 +3,7 @@ module Style.Border exposing
     , BorderStyle(..)
     , BorderWidth
     , corner
+    , hasWidth
     , isDashed
     , isDotted
     , isRounded
@@ -40,6 +41,11 @@ type alias BorderWidth =
 width : Int -> BorderWidth
 width value =
     BorderWidth True value value value value
+
+
+hasWidth : BorderWidth -> Bool
+hasWidth value =
+    value.top /= 0 || value.right /= 0 || value.bottom /= 0 || value.left /= 0
 
 
 setWidth : BorderWidth -> { a | borderWidth : BorderWidth } -> { a | borderWidth : BorderWidth }

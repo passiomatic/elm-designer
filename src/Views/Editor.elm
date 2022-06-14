@@ -68,8 +68,34 @@ view model =
                     ]
                 , uploadProgressView model.uploadState
                 , ContextMenuPopup.view model.contextMenu
+                , dialogView model.dialog
                 ]
         )
+
+
+dialogView confirmDialog =
+    case confirmDialog of
+        WarningDialog text buttonText nextMsg ->
+            dialog
+                []
+                [ Icons.alertTriangle
+                , H.text text
+                , H.div [ A.class "dialog__buttons" ]
+                    [ H.button [ A.type_ "submit", A.class "btn btn-light" ] [ H.text "Cancel" ]
+                    , H.button [ A.type_ "button", A.class "btn btn-danger", E.onClick nextMsg ] [ H.text buttonText ]
+                    ]
+                ]
+
+        NoDialog ->
+            dialog [] []
+
+
+dialog : List (Attribute msg) -> List (Html msg) -> Html msg
+dialog attrs content =
+    H.node "dialog"
+        (A.id "dialog" :: attrs)
+        [ H.form [ A.class "h-100", A.method "dialog" ] [ H.div [ A.class "dialog__body" ] content ]
+        ]
 
 
 workspaceView model =
@@ -101,9 +127,7 @@ workspaceView model =
                 ]
             , A.style "width" (px Document.workspaceWidth)
             , A.style "height" (px Document.workspaceHeight)
-
-            --, transformAttr
-            --, transformOriginAttr
+            , A.id "workspace"
             ]
             [ documentView model
             ]
@@ -165,11 +189,20 @@ headerView model =
                         [ Icons.stop ]
     in
     H.header [ A.class "header d-flex justify-content-between align-items-center bp-2 border-bottom", A.style "gap" "1rem" ]
-        [ insertView model
+        [ fileView model
+        , insertView model
         , undoRedoView model
 
         --, zoomView model
         --, modeButton
+        ]
+
+
+fileView : Model -> Html Msg
+fileView model =
+    H.div [ A.class "btn-group" ]
+        [ H.button [ A.type_ "button", E.onClick ImportDocumentClicked, A.class "btn btn-secondary btn-sm" ] [ H.text "Import..." ]
+        , H.button [ A.type_ "button", E.onClick ExportDocumentClicked, A.class "btn btn-secondary btn-sm" ] [ H.text "Export" ]
         ]
 
 
@@ -246,13 +279,12 @@ dividerView =
 
 
 insertImageView : Node -> Html Msg
-insertImageView container =
+insertImageView node =
     H.li []
         [ H.button
             [ A.classList
                 [ ( "dropdown-item", True )
-
-                --, ( "disabled", not (Document.canDropInto container) )
+                , ( "disabled", not (Document.canInsertInto node Document.blankImageNode || Document.canInsertNextTo node Document.blankImageNode) )
                 ]
             , A.type_ "button"
             , E.onClick InsertImageClicked
@@ -262,7 +294,7 @@ insertImageView container =
 
 
 insertItemView : Node -> LibraryItem Msg -> Html Msg
-insertItemView container item =
+insertItemView node item =
     let
         template =
             T.label item.root
@@ -271,7 +303,7 @@ insertItemView container item =
         [ H.button
             [ A.classList
                 [ ( "dropdown-item", True )
-                , ( "disabled", not (Document.canDropInto container template) )
+                , ( "disabled", not (Document.canInsertInto node template.type_ || Document.canInsertNextTo node template.type_) )
                 ]
             , A.type_ "button"
             , E.onClick (InsertNodeClicked item.root)
@@ -305,29 +337,11 @@ viewportsView model =
 
                         label =
                             case viewport of
-                                DeviceModel name ->
-                                    let
-                                        ( w, h, _ ) =
-                                            Document.findDeviceInfo name
-                                    in
-                                    name
-                                        ++ " "
-                                        ++ Entity.mdash
-                                        ++ " "
-                                        ++ String.fromInt w
-                                        ++ Entity.times
-                                        ++ String.fromInt h
-                                        ++ " px"
+                                Device name w h _ ->
+                                    viewportLabel name w h
 
                                 Custom w h _ ->
-                                    "Custom"
-                                        ++ " "
-                                        ++ Entity.mdash
-                                        ++ " "
-                                        ++ String.fromInt w
-                                        ++ Entity.times
-                                        ++ String.fromInt h
-                                        ++ " px"
+                                    viewportLabel "Custom" w h
 
                                 Fluid ->
                                     "Fluid Layout"
@@ -340,13 +354,23 @@ viewportsView model =
         ]
 
 
+viewportLabel name width height =
+    name
+        ++ " "
+        ++ Entity.mdash
+        ++ " "
+        ++ String.fromInt width
+        ++ Entity.times
+        ++ String.fromInt height
+        ++ " px"
+
+
 viewportValue : Viewport -> Attribute msg
 viewportValue value =
     A.value (Codecs.encodeViewport value)
 
 
 onViewportSelect msg =
-    --E.stopPropagationOn "input" (Codecs.viewportDecoder msg)
     E.on "input" (Codecs.viewportDecoder msg)
 
 
@@ -403,24 +427,37 @@ rightPaneView model =
 codeView : Model -> List (Html Msg)
 codeView model =
     let
-        node =
+        tree =
             Zipper.tree model.document.present
+
+        code =
+            CodeGen.emit Theme.defaultTheme model.viewport tree
     in
-    [ H.section [ A.class "section bp-3 d-flex flex-column h-100" ]
-        [ H.div [ A.class "mb-2 fw-500" ]
-            [ H.text ("Generated code for " ++ (T.label node |> .name))
-            ]
-        , H.div [ A.class "scroll-y flex-fill bg-white bp-1 border" ]
-            [ H.pre [ A.class "preformatted" ]
-                [ H.text (CodeGen.emit Theme.defaultTheme model.viewport node)
+    case (T.label tree).type_ of
+        DocumentNode ->
+            [ H.section [ A.class "section bp-3 d-flex flex-column align-items-center justify-content-center h-100" ]
+                [ H.div [ A.class "text-muted" ]
+                    [ H.text "Select a page or another element."
+                    ]
                 ]
             ]
-        , H.div [ A.class "mt-2 d-grid" ]
-            [ H.button [ E.onClick ClipboardCopyClicked, A.type_ "button", A.class "btn btn-primary" ]
-                [ H.text "Copy Elm code" ]
+
+        _ ->
+            [ H.section [ A.class "section bp-3 d-flex flex-column h-100" ]
+                [ H.div [ A.class "mb-2 fw-500" ]
+                    [ H.text ("Generated code for " ++ (T.label tree |> .name))
+                    ]
+                , H.div [ A.class "scroll-y flex-fill bg-white bp-1 border" ]
+                    [ H.pre [ A.class "preformatted" ]
+                        [ H.text (CodeGen.emit Theme.defaultTheme model.viewport tree)
+                        ]
+                    ]
+                , H.div [ A.class "mt-2 d-grid" ]
+                    [ H.button [ E.onClick (ClipboardCopyClicked code), A.type_ "button", A.class "btn btn-primary" ]
+                        [ H.text "Copy Elm code" ]
+                    ]
+                ]
             ]
-        ]
-    ]
 
 
 leftPaneView : Model -> Html Msg
@@ -450,7 +487,7 @@ outlineItemView model node children =
 
         topHint =
             H.div
-                (makeDroppableIf (Common.canDropSibling node model.dragDrop)
+                (makeDroppableIf (Common.canDropNextTo node model.dragDrop)
                     (InsertBefore node.id)
                     [ A.classList
                         [ ( "tree__drop-hint tree__drop-hint--before", True )
@@ -462,7 +499,7 @@ outlineItemView model node children =
 
         bottomHint =
             H.div
-                (makeDroppableIf (Common.canDropSibling node model.dragDrop)
+                (makeDroppableIf (Common.canDropNextTo node model.dragDrop)
                     (InsertAfter node.id)
                     [ A.classList
                         [ ( "tree__drop-hint tree__drop-hint--after", True )
@@ -698,11 +735,7 @@ documentView model =
 
         ( viewportClass, width, height ) =
             case model.viewport of
-                DeviceModel name ->
-                    let
-                        ( w, h, _ ) =
-                            Document.findDeviceInfo name
-                    in
+                Device _ w h _ ->
                     ( "viewport--device", px w, px h )
 
                 Custom w h _ ->

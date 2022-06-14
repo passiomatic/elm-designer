@@ -4,16 +4,26 @@
     <title>Elm Designer</title>
     <meta charset="utf-8" />
     <link rel="stylesheet" href="./scss/app.scss" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" />
     <link rel="icon" href="./images/favicon.svg">
     <link rel="mask-icon" href="./images/favicon.svg" color="#3C4A6E">
+    <style>
+        body {
+          background: #191814 url(./images/landing-background.jpg) center center no-repeat;
+          background-size: cover;
+        }
+    </style>
   </head>
-
   <body>
-    <div class="d-flex flex-column justify-content-center align-items-center h-100" id="app">
-        <img class="img-fluid mb-3" src="./images/icon.png" alt="" width="100" height="100">
-        <p class="large">Elm Designer is starting...</p>
-    </div>
-    <script src="./app.js"></script>
+      <div class="d-flex flex-column justify-content-center align-items-center h-100" style="max-width: 1000px; margin: auto">
+        <h1 class="mt-5 text-center text-white">Elm Designer</h1>
+        <p class="large text-center text-white">A visual code generator for Elm UI</p>
+        <a href="./app.html"><img class="img-fluid mb-3" src="./images/landing-screenshot.png" alt="" loading="lazy" width="1000" height="670"></a>
+        <a class="btn btn-lg btn-outline-light" href="./app.html">Launch app</a>
+        <div class="my-5 text-white">
+          <a class="text-white" href="https://github.com/passiomatic/elm-designer/wiki/One-minute-guide">Jump to quick guide</a> •
+          <a class="text-white" href="https://github.com/passiomatic/elm-designer/issues">Open an issue on GitHub</a> •
+          <a class="text-white" href="https://github.com/passiomatic/elm-designer">Browse source code</a>
+        </div> 
+      </div>
   </body>
 </html>

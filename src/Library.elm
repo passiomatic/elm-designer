@@ -114,7 +114,7 @@ heading1 theme =
         T.singleton
             { baseTemplate
                 | type_ = HeadingNode { level = 1, text = "" }
-                , name = "Heading 1"
+                , name = "Heading1"
                 , width = Layout.fill
                 , spacing = theme.headingSpacing
                 , fontWeight = theme.headingFontWeight
@@ -134,7 +134,7 @@ heading2 theme =
         T.singleton
             { baseTemplate
                 | type_ = HeadingNode { level = 2, text = "" }
-                , name = "Heading 2"
+                , name = "Heading2"
                 , width = Layout.fill
                 , spacing = theme.headingSpacing
                 , fontWeight = theme.headingFontWeight
@@ -154,7 +154,7 @@ heading3 theme =
         T.singleton
             { baseTemplate
                 | type_ = HeadingNode { level = 3, text = "" }
-                , name = "Heading 3"
+                , name = "Heading3"
                 , width = Layout.fill
                 , spacing = theme.headingSpacing
                 , fontWeight = theme.headingFontWeight
@@ -277,7 +277,12 @@ textField theme =
                 | name = "Text Field"
                 , padding = Layout.padding (Theme.small theme)
                 , spacing = Layout.spacingXY 0 (Theme.xsmall theme)
-                , type_ = TextFieldNode (labelAbove "Label")
+                , type_ =
+                    TextFieldNode
+                        { text = "Label"
+                        , position = LabelAbove
+                        , color = Inherited
+                        }
                 , width = Layout.fill
                 , background = Background.solid theme.backgroundColor
                 , borderWidth = theme.borderWidth
@@ -299,7 +304,12 @@ textFieldMultiline theme =
                 | name = "Multiline Field"
                 , padding = Layout.padding (Theme.small theme)
                 , spacing = Layout.spacingXY 0 (Theme.xsmall theme)
-                , type_ = TextFieldMultilineNode (labelAbove "Label")
+                , type_ =
+                    TextFieldMultilineNode
+                        { text = "Label"
+                        , position = LabelAbove
+                        , color = Inherited
+                        }
                 , width = Layout.fill
                 , background = Background.solid theme.backgroundColor
                 , borderWidth = theme.borderWidth
@@ -358,8 +368,11 @@ checkbox theme =
                 | name = "Checkbox"
                 , spacing = Layout.spacingXY (Theme.xsmall theme) 0
                 , type_ =
-                    CheckboxNode (labelRight  "Checkbox Label")
-                     
+                    CheckboxNode
+                        { text = "Checkbox Label"
+                        , position = LabelRight
+                        , color = Inherited
+                        }
             }
     }
 
@@ -376,17 +389,20 @@ radio theme =
                 | name = "Radio Selection"
                 , spacing = Layout.spacingXY 0 (Theme.xsmall theme)
                 , type_ =
-                    RadioNode (labelAbove "Radio Selection")
-                        
+                    RadioNode
+                        { text = "Radio Selection"
+                        , position = LabelAbove
+                        , color = Inherited
+                        }
             }
             [ T.singleton
                 { baseTemplate
-                    | name = "Option 1"
+                    | name = "Option"
                     , type_ = OptionNode { text = "Option 1" }
                 }
             , T.singleton
                 { baseTemplate
-                    | name = "Option 2"
+                    | name = "Option"
                     , type_ = OptionNode { text = "Option 2" }
                 }
             ]
@@ -433,8 +449,8 @@ baseTemplate =
 
 
 labelAbove text =
-    { text = text, position = LabelAbove, color = Inherit }
+    { text = text, position = LabelAbove, color = Inherited }
 
 
 labelRight text =
-    { text = text, position = LabelRight, color = Inherit }
+    { text = text, position = LabelRight, color = Inherited }

@@ -1,9 +1,7 @@
-module DragDrop2 exposing (addDroppedNode, getDroppedNode, setDragImage)
+module DragDropHelper exposing (addDroppedNode, getDroppedNode, setDragImage)
 
 {-| Drag and drop helpers.
 -}
-
---import Html5.DragDrop as DragDrop
 
 import Document exposing (DragId(..), DropId(..), Node)
 import Json.Decode as Decode exposing (Decoder, Value)
@@ -68,8 +66,11 @@ getDroppedNode model dragId position =
 
         Insert node ->
             let
+                indexer type_ = 
+                    Document.getNextIndexFor type_ (Zipper.root model.document.present)
+                                
                 ( newSeeds, newNode ) =
-                    Document.fromTemplateAt position node model.seeds
+                    Document.fromTemplateAt position node model.seeds indexer 
             in
             ( newSeeds, Just newNode, model.document.present )
 
@@ -99,43 +100,8 @@ addDroppedNode model dropId node zipper =
 
 setDragImage dragStart =
     case dragStart.dragId of
-        Drag node ->
-            let
-                -- _ =
-                --     Debug.log "DragEvent" (Decode.decodeValue dragEventDecoder dragStart.event)
-
-                -- TODO Check node.widthMin as fallback
-                width =
-                    case node.width of
-                        Px value ->
-                            value
-
-                        _ ->
-                            999
-
-                height =
-                    case node.heightMin of
-                        Just value ->
-                            value
-
-                        _ ->
-                            999
-            in
-            Ports.setDragImage { event = dragStart.event, width = Just width, height = Just height }
+        Drag _ ->
+            Ports.setDragImage { event = dragStart.event, dragging = True }
 
         _ ->
-            -- Use intrisct dimensions
-            Ports.setDragImage { event = dragStart.event, width = Nothing, height = Nothing }
-
-
-type alias DragEvent =
-    { offsetX : Int
-    , offsetY : Int
-    }
-
-
-dragEventDecoder : Decoder DragEvent
-dragEventDecoder =
-    Decode.map2 DragEvent
-        (Decode.field "offsetX" Decode.float |> Decode.map round)
-        (Decode.field "offsetY" Decode.float |> Decode.map round)
+            Ports.setDragImage { event = dragStart.event, dragging = False }

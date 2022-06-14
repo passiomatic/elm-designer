@@ -104,6 +104,7 @@ nodeCodec : Codec Node
 nodeCodec =
     Codec.object Node
         |> Codec.field "id" .id nodeIdCodec
+        |> Codec.field "index" .index Codec.int
         |> Codec.field "name" .name Codec.string
         |> Codec.field "width" .width lengthCodec
         |> Codec.field "widthMin" .widthMin (Codec.maybe Codec.int)
@@ -162,11 +163,11 @@ localCodec codec =
                 Local value ->
                     local value
 
-                Inherit ->
+                Inherited ->
                     inherit
         )
         |> Codec.variant1 "Local" Local codec
-        |> Codec.variant0 "Inherit" Inherit
+        |> Codec.variant0 "Inherited" Inherited
         |> Codec.buildCustom
 
 
@@ -613,10 +614,10 @@ nodeTypeCodec =
 viewportCodec : Codec Viewport
 viewportCodec =
     Codec.custom
-        (\deviceModel custom fluid value ->
+        (\device custom fluid value ->
             case value of
-                DeviceModel n ->
-                    deviceModel n
+                Device name w h o ->
+                    device name w h o
 
                 Custom w h o ->
                     custom w h o
@@ -624,7 +625,7 @@ viewportCodec =
                 Fluid ->
                     fluid
         )
-        |> Codec.variant1 "DeviceModel" DeviceModel Codec.string
+        |> Codec.variant4 "Device" Device Codec.string Codec.int Codec.int orientationCodec
         |> Codec.variant3 "Custom" Custom Codec.int Codec.int orientationCodec
         |> Codec.variant0 "Fluid" Fluid
         |> Codec.buildCustom
@@ -743,6 +744,9 @@ imageCodec =
     Codec.object ImageData
         |> Codec.field "src" .src Codec.string
         |> Codec.field "description" .description Codec.string
+        |> Codec.maybeField "width" .width Codec.int
+        |> Codec.maybeField "height" .height Codec.int
+        |> Codec.maybeField "mimeType" .mimeType Codec.string
         |> Codec.buildObject
 
 
