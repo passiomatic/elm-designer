@@ -1,3 +1,17 @@
+# Version 0.4.2 • 2022-06-14
+
+## New features and tweaks
+
+* Import and export current document as JSON file
+* Display image width, height and format in 'Info' section 
+
+## Bugs fixed 
+
+* Fix labelHidden emit
+* Made image resizing more predictable when tweaking its width and height settings
+
+---
+
 # Version 0.4.1 • 2022-05-04
 
 ## New features and tweaks
