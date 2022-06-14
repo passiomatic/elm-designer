@@ -1,7 +1,7 @@
 {
   "name": "elm-designer",
   "productName": "Elm Designer",
-  "version": "0.4.1",
+  "version": "0.4.2",
   "description": "A code generator for Elm UI",
   "repository": "https://github.com/passiomatic/elm-designer",
   "devDependencies": {
