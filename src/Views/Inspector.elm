@@ -261,7 +261,10 @@ resolveStyleViews model zipper =
                     ]
 
                 SliderNode slider label ->
-                    [ sectionView "Label"
+                    [ sectionView "Settings"
+                        [ sliderView slider model node
+                        ]
+                    , sectionView "Label"
                         [ labelTextView label model node
                         , labelPositionView label model node
                         , labelColorView label model zipper
@@ -316,6 +319,48 @@ sectionView title views =
          )
             :: views
         )
+
+
+sliderView : SliderData -> Model -> Node -> Html Msg
+sliderView slider model node =
+    let
+        minValue =
+            case model.inspector of
+                EditingField SliderMinField new ->
+                    new
+
+                _ ->
+                    String.fromFloat slider.min
+
+        maxValue =
+            case model.inspector of
+                EditingField SliderMaxField new ->
+                    new
+
+                _ ->
+                    String.fromFloat slider.max
+
+        stepValue =
+            case model.inspector of
+                EditingField SliderStepField new ->
+                    new
+
+                _ ->
+                    Maybe.map String.fromFloat slider.step
+                        |> Maybe.withDefault ""
+    in
+    H.div [ A.class "mb-2 row align-items-center" ]
+        [ H.label [ A.class "col-3 col-form-label-sm m-0 text-nowrap" ]
+            [ H.text "Values"
+            ]
+        , H.div [ A.class "col-9" ]
+            [ H.div [ A.class "d-flex justify-content-end", A.style "gap" ".25rem" ]
+                [ numericFieldView SliderMinField "Min." minValue
+                , numericFieldView SliderMaxField "Max." maxValue
+                , numericFieldView SliderStepField "Step" stepValue
+                ]
+            ]
+        ]
 
 
 labelTextView : { a | text : String } -> Model -> Node -> Html Msg

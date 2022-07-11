@@ -46,6 +46,7 @@ module Document exposing
     , applyShadowColor
     , applyShadowFromString
     , applyShadowType
+    , applySliderMin
     , applySpacing
     , applyText
     , applyTextAlign
@@ -88,7 +89,7 @@ module Document exposing
     , selectPageOf
     , viewports
     , workspaceHeight
-    , workspaceWidth
+    , workspaceWidth, applySliderMax
     )
 
 import Css
@@ -497,6 +498,7 @@ createImageNode data seeds =
                 { baseTemplate
                     | type_ = imageNode data
                     , name = "Image"
+
                     -- Make images fluid but do not overstretch them
                     , width = Layout.fill
                     , widthMax = data.width
@@ -1009,6 +1011,44 @@ applyLabelColor value zipper =
         )
         zipper
 
+
+applySliderMin : String -> Zipper Node -> Zipper Node
+applySliderMin value zipper =
+    let
+        value_ =
+            String.toFloat value
+                |> Maybe.withDefault 0
+    in
+    Zipper.mapLabel
+        (\node ->
+            case node.type_ of
+                SliderNode slider label ->
+                    { node | type_ = SliderNode (Input.setSliderMin value_ slider) label }
+
+                _ ->
+                    node
+        )
+        zipper
+
+
+applySliderMax : String -> Zipper Node -> Zipper Node
+applySliderMax value zipper =
+    let
+        value_ =
+            String.toFloat value
+                -- TODO check min value and figure out a sensible value for max
+                |> Maybe.withDefault 100
+    in
+    Zipper.mapLabel
+        (\node ->
+            case node.type_ of
+                SliderNode slider label ->
+                    { node | type_ = SliderNode (Input.setSliderMax value_ slider) label }
+
+                _ ->
+                    node
+        )
+        zipper
 
 
 -- applyImageSrc : String -> Zipper Node -> Zipper Node

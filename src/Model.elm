@@ -161,7 +161,9 @@ type Widget
     | ShadowColorField
     | ShadowSizeField
     | InsertDropdown
-
+    | SliderMaxField
+    | SliderMinField
+    | SliderStepField
 
 type WidgetState
     = Visible Widget

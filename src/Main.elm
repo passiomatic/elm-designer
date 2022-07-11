@@ -306,7 +306,7 @@ update msg model =
                 newDialog =
                     WarningDialog "You are going to replace your current document. This operation cannot be undone." "Delete and continue loading" (ImportDocumentConfirmed file)
             in
-            ( { model | dialog = newDialog }, Ports.toggleDialog ())
+            ( { model | dialog = newDialog }, Ports.toggleDialog () )
 
         ImportDocumentConfirmed file ->
             ( { model | dialog = NoDialog }, Cmd.batch [ Ports.toggleDialog (), Task.perform DocumentLoaded (File.toString file) ] )
@@ -898,6 +898,15 @@ updateField model =
 
         EditingField SpacingYField newValue ->
             applyChange model (Document.applySpacing Layout.setSpacingY) newValue
+
+        -- ###########
+        -- Slider
+        -- ###########
+        EditingField SliderMinField newValue ->
+            applyChange model Document.applySliderMin newValue
+
+        EditingField SliderMaxField newValue ->
+            applyChange model Document.applySliderMax newValue
 
         _ ->
             ( model, Cmd.none )

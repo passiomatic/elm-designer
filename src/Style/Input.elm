@@ -3,6 +3,9 @@ module Style.Input exposing
     , labelPositionName
     , setLabelColor
     , setLabelPosition
+    , setSliderMax
+    , setSliderMin
+    , setSliderSlider
     )
 
 import Element exposing (Color)
@@ -45,3 +48,18 @@ setLabelPosition value record =
 setLabelColor : Local Color -> { a | color : Local Color } -> { a | color : Local Color }
 setLabelColor value record =
     { record | color = value }
+
+
+setSliderMin : Float -> { a | min : Float } -> { a | min : Float }
+setSliderMin value record =
+    { record | min = value }
+
+
+setSliderMax : Float -> { a | max : Float } -> { a | max : Float }
+setSliderMax value record =
+    { record | max = value }
+
+
+setSliderSlider : Maybe Float -> { a | step : Maybe Float } -> { a | step : Maybe Float }
+setSliderSlider value record =
+    { record | step = value }

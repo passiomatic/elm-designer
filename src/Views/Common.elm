@@ -209,6 +209,14 @@ widgetId field =
         InsertDropdown ->
             "insert"
 
+        SliderMinField ->
+            "slider-min"
+
+        SliderMaxField ->
+            "slider-max"
+
+        SliderStepField ->
+            "slider-step"
 
 none =
     H.div [] []
