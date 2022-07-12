@@ -85,7 +85,7 @@ resolveStyleViews model zipper =
                     ]
 
                 RowNode data ->
-                    [ sectionView ""
+                    [ sectionView "Settings"
                         [ wrapRowOptionView data.wrapped
                         ]
                     , sectionView "Layout"

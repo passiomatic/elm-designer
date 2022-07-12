@@ -435,6 +435,7 @@ slider theme =
             { baseTemplate
                 | name = "Slider"
                 , height = Layout.Px 30
+                , spacing = Layout.spacingXY 0 (Theme.xsmall theme)                
                 , type_ = SliderNode { min = 0, max = 100, step = Just 5 } (labelAbove "Label")
             }
     }
