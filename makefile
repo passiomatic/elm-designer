@@ -6,6 +6,9 @@ constants:
 build: clean constants 
 	npm run build
 
+serve: build
+	npx serve dist
+
 build-no-maps: clean constants
 	npm run build-no-maps
 
