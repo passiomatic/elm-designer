@@ -11,6 +11,7 @@ import Document exposing (DragId(..), DropId(..), Node, Viewport(..), nodeId)
 import DragDropHelper
 import Env
 import File exposing (File)
+import File.Download as Download
 import File.Select as Select
 import Fonts
 import Html5.DragDrop as DragDrop
@@ -155,10 +156,10 @@ update msg model =
 
         FileUploaded result ->
             case result of
-                Ok url ->
+                Ok image ->
                     let
                         ( newSeeds, newNode ) =
-                            Document.createImageNode (String.trim url) model.seeds
+                            Document.createImageNode image model.seeds model.document.present
 
                         zipper =
                             model.document.present
@@ -212,16 +213,10 @@ update msg model =
                             -- Save only if document hasn't been modified in saveInterval seconds
                             if Time.diff Second Time.utc since now > saveInterval then
                                 let
-                                    document =
-                                        { schemaVersion = Document.schemaVersion
-                                        , lastUpdatedOn = now
-                                        , root = Zipper.toTree model.document.present
-                                        , selectedNodeId = Zipper.label model.document.present |> .id
-                                        , viewport = model.viewport
-                                        , collapsedTreeItems = model.collapsedTreeItems
-                                        }
+                                    data =
+                                        serializeDocument now model
                                 in
-                                ( Saved now, serializeDocument document )
+                                ( Saved now, Ports.saveDocument data )
 
                             else
                                 ( model.saveState, Cmd.none )
@@ -239,19 +234,23 @@ update msg model =
             , cmd
             )
 
-        PresetSizeChanged name ->
-            let
-                ( width, height, _ ) =
-                    Document.findDeviceInfo name
-            in
-            applyChange model Document.apply (\node -> { node | width = Layout.px width, heightMin = Just height })
+        PresetSizeChanged viewport ->
+            case viewport of
+                Device _ w h _ ->
+                    applyChange model Document.apply (\node -> { node | width = Layout.px w, heightMin = Just h })
+
+                Custom w h _ ->
+                    applyChange model Document.apply (\node -> { node | width = Layout.px w, heightMin = Just h })
+
+                Fluid ->
+                    ( model, Cmd.none )
 
         InsertNodeClicked template ->
             let
-                ( newSeeds, newNode ) = 
+                ( newSeeds, newNode ) =
                     let
-                        indexer type_ = 
-                            Document.getNextIndexFor type_ model.document.present
+                        indexer type_ =
+                            Document.getNextIndexFor type_ (Zipper.root model.document.present)
                     in
                     Document.fromTemplate template model.seeds indexer
 
@@ -268,7 +267,7 @@ update msg model =
             )
 
         InsertImageClicked ->
-            ( { model | dropDownState = Hidden }, Select.files acceptedTypes FileSelected )
+            ( { model | dropDownState = Hidden }, Select.files imageTypes FileSelected )
 
         DuplicateNodeClicked nodeId ->
             let
@@ -294,16 +293,30 @@ update msg model =
                 Nothing ->
                     ( model, Cmd.none )
 
-        ClipboardCopyClicked ->
-            let
-                code =
-                    model.document.present
-                        |> Zipper.tree
-                        |> CodeGen.emit Theme.defaultTheme model.viewport
-            in
+        ClipboardCopyClicked text ->
             ( model
-            , Ports.copyToClipboard code
+            , Ports.copyToClipboard text
             )
+
+        ImportDocumentClicked ->
+            ( model, Select.file [ projectType ] DocumentSelected )
+
+        DocumentSelected file ->
+            let
+                newDialog =
+                    WarningDialog "You are going to replace your current document. This operation cannot be undone." "Delete and continue loading" (ImportDocumentConfirmed file)
+            in
+            ( { model | dialog = newDialog }, Ports.toggleDialog ())
+
+        ImportDocumentConfirmed file ->
+            ( { model | dialog = NoDialog }, Cmd.batch [ Ports.toggleDialog (), Task.perform DocumentLoaded (File.toString file) ] )
+
+        ExportDocumentClicked ->
+            let
+                data =
+                    serializeDocument model.currentTime model
+            in
+            ( model, Download.string "Elm-Designer-Document.json" projectType data )
 
         DocumentLoaded value ->
             case Codecs.fromString value of
@@ -465,6 +478,10 @@ update msg model =
         FontFamilyChanged family ->
             applyChange model Document.applyFontFamily family
 
+        SetBorderClicked value ->
+            -- Used to create a new border from scratch without editing a numeric field
+            applyChange model Document.applyBorder value
+
         BorderStyleChanged value ->
             applyChange model Document.applyBorderStyle value
 
@@ -476,6 +493,9 @@ update msg model =
 
         BorderColorChanged value ->
             applyChange model Document.applyBorderColor value
+
+        SetShadowClicked value ->
+            applyChange model Document.applyShadow value
 
         ShadowColorChanged value ->
             applyChange model Document.applyShadowColor value
@@ -841,16 +861,16 @@ updateField model =
         -- Shadow
         -- ###########
         EditingField ShadowOffsetXField newValue ->
-            applyChange model (Document.applyShadow Shadow.setOffsetX) newValue
+            applyChange model (Document.applyShadowFromString Shadow.setOffsetX) newValue
 
         EditingField ShadowOffsetYField newValue ->
-            applyChange model (Document.applyShadow Shadow.setOffsetY) newValue
+            applyChange model (Document.applyShadowFromString Shadow.setOffsetY) newValue
 
         EditingField ShadowSizeField newValue ->
-            applyChange model (Document.applyShadow Shadow.setSize) newValue
+            applyChange model (Document.applyShadowFromString Shadow.setSize) newValue
 
         EditingField ShadowBlurField newValue ->
-            applyChange model (Document.applyShadow Shadow.setBlur) newValue
+            applyChange model (Document.applyShadowFromString Shadow.setBlur) newValue
 
         EditingField ShadowColorField newValue ->
             applyChange model Document.applyShadowColor newValue
@@ -1049,27 +1069,35 @@ mouseDecoder =
         (Decode.field "button" Decode.int)
 
 
-serializeDocument document =
-    document
-        |> Codecs.toString
-        |> Ports.saveDocument
+serializeDocument time model =
+    let
+        document =
+            { schemaVersion = Document.schemaVersion
+            , lastUpdatedOn = time
+            , root = Zipper.toTree model.document.present
+            , selectedNodeId = Zipper.label model.document.present |> .id
+            , viewport = model.viewport
+            , collapsedTreeItems = model.collapsedTreeItems
+            }
+    in
+    Codecs.toString document
 
 
-acceptedTypes : List String
-acceptedTypes =
-    [ "image/jpeg", "image/png", "image/gif", "image/svg+xml" ]
+imageTypes : List String
+imageTypes =
+    [ "image/webp", "image/jpeg", "image/png", "image/gif", "image/svg+xml" ]
 
 
 acceptFiles files =
-    let
-        acceptedTypes_ =
-            Set.fromList acceptedTypes
-    in
     List.filter
         (\f ->
-            Set.member (File.mime f) acceptedTypes_
+            List.member (File.mime f) imageTypes
         )
         files
+
+
+projectType =
+    "application/json"
 
 
 

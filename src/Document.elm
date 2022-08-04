@@ -19,6 +19,7 @@ module Document exposing
     , applyBackground
     , applyBackgroundColor
     , applyBackgroundImage
+    , applyBorder
     , applyBorderColor
     , applyBorderCorner
     , applyBorderLock
@@ -42,6 +43,7 @@ module Document exposing
     , applyPosition
     , applyShadow
     , applyShadowColor
+    , applyShadowFromString
     , applyShadowType
     , applySpacing
     , applyText
@@ -57,12 +59,11 @@ module Document exposing
     , canInsertInto
     , canInsertNextTo
     , createImageNode
-    , defaultDeviceInfo
+    , defaultDevice
     , defaultDocument
-    , deviceInfo
+    , devices
     , duplicateNode
     , emptyPage
-    , findDeviceInfo
     , fromTemplate
     , fromTemplateAt
     , generateId
@@ -72,6 +73,7 @@ module Document exposing
     , insertNodeBefore
     , isContainer
     , isDocumentNode
+    , isImageNode
     , isPageNode
     , isSelected
     , nodeId
@@ -330,6 +332,16 @@ isDocumentNode node =
             False
 
 
+isImageNode : Node -> Bool
+isImageNode node =
+    case node.type_ of
+        ImageNode _ ->
+            True
+
+        _ ->
+            False
+
+
 type alias TextData =
     { text : String
     }
@@ -351,6 +363,9 @@ type alias LabelData =
 type alias ImageData =
     { src : String
     , description : String
+    , width : Maybe Int
+    , height : Maybe Int
+    , mimeType : Maybe String
     }
 
 
@@ -376,11 +391,11 @@ fromTemplateAt position template seeds indexer =
                 ( uuid, newSeeds ) =
                     generateId seeds_
 
-                nextIndex = 
-                    indexer template_.type_ 
+                nextIndex =
+                    indexer template_.type_
 
                 newName =
-                    template_.name ++ " " ++ (String.fromInt nextIndex)
+                    template_.name ++ " " ++ String.fromInt nextIndex
 
                 newNode =
                     case template_.type_ of
@@ -388,7 +403,7 @@ fromTemplateAt position template seeds indexer =
                         PageNode ->
                             { template_
                                 | id = uuid
-                                , index = nextIndex 
+                                , index = nextIndex
                                 , name = newName
                                 , offsetX = position.x
                                 , offsetY = position.y
@@ -397,7 +412,7 @@ fromTemplateAt position template seeds indexer =
                         _ ->
                             { template_
                                 | id = uuid
-                                , index = nextIndex 
+                                , index = nextIndex
                                 , name = newName
                             }
             in
@@ -418,6 +433,7 @@ defaultDocument : Seeds -> ( Seeds, Tree Node )
 defaultDocument seeds =
     let
         indexer _ =
+            -- Document is empty, no index to find
             1
 
         template =
@@ -439,7 +455,7 @@ emptyPage : Theme -> Tree Node
 emptyPage theme =
     let
         ( width, height, _ ) =
-            defaultDeviceInfo
+            defaultDevice
     in
     T.singleton
         { baseTemplate
@@ -458,18 +474,25 @@ emptyPage theme =
 
 {-| Images require the user to drop them _into_ the app workspace so we bypass the pick-from-library process here.
 -}
-createImageNode : String -> Seeds -> ( Seeds, Tree Node )
-createImageNode url seeds =
+createImageNode : ImageData -> Seeds -> Zipper Node -> ( Seeds, Tree Node )
+createImageNode data seeds zipper =
     let
-        -- TODO Generate correct imdex for images too
-        indexer _ =
-            1
+        image =
+            imageNode data
 
+        indexer _ =
+            getNextIndexFor image (Zipper.root zipper)
+
+        -- Make image fluid but do not overstretch them
         template =
             T.singleton
                 { baseTemplate
-                    | type_ = imageNode url
+                    | type_ = image
                     , name = "Image"
+                    , width = Layout.fill
+                    , widthMax = data.width
+                    , height = Layout.fill
+                    , heightMax = data.height
                 }
     in
     fromTemplate template seeds indexer
@@ -478,11 +501,11 @@ createImageNode url seeds =
 {-| An empty placeholder image type.
 -}
 blankImageNode =
-    imageNode ""
+    imageNode { src = "", description = "", width = Nothing, height = Nothing, mimeType = Nothing }
 
 
-imageNode url =
-    ImageNode { src = url, description = "" }
+imageNode data =
+    ImageNode data
 
 
 
@@ -490,68 +513,62 @@ imageNode url =
 
 
 type Viewport
-    = DeviceModel String
+    = Device String Int Int Orientation
     | Custom Int Int Orientation
     | Fluid
 
 
-deviceInfo =
-    Dict.fromList
-        [ ( "Android", ( 360, 640, Portrait ) )
-        , ( "Pixel 3", ( 411, 823, Portrait ) )
-        , ( "Pixel 3 XL", ( 411, 846, Portrait ) )
-        , ( "Pixel 4", ( 411, 869, Portrait ) )
-        , ( "Pixel 4 XL", ( 411, 869, Portrait ) )
-        , ( "Galaxy S10", ( 360, 760, Portrait ) )
-        , ( "Galaxy S10+", ( 412, 869, Portrait ) )
-        , ( "Galaxy S10 Lite", ( 412, 914, Portrait ) )
+devices =
+    [ -- Android
+      Device "Android" 360 640 Portrait
+    , Device "Pixel 3" 411 823 Portrait
+    , Device "Pixel 3 XL" 411 846 Portrait
+    , Device "Pixel 4" 411 869 Portrait
+    , Device "Pixel 4 XL" 411 869 Portrait
+    , Device "Galaxy S10" 360 760 Portrait
+    , Device "Galaxy S10+" 412 869 Portrait
+    , Device "Galaxy S10 Lite" 412 914 Portrait
 
-        -- Android tablet
-        , ( "Nexus 7", ( 600, 690, Portrait ) )
-        , ( "Nexus 9", ( 768, 1024, Portrait ) )
-        , ( "Nexus 10", ( 800, 1280, Portrait ) )
-        , ( "Pixel Slate", ( 1333, 888, Portrait ) )
-        , ( "Pixelbook", ( 1200, 800, Portrait ) )
+    -- Android tablet
+    , Device "Nexus 7" 600 690 Portrait
+    , Device "Nexus 9" 768 1024 Portrait
+    , Device "Nexus 10" 800 1280 Portrait
+    , Device "Pixel Slate" 1333 888 Portrait
+    , Device "Pixelbook" 1200 800 Portrait
 
-        -- Apple
-        , ( "iPhone SE", ( 320, 568, Portrait ) )
-        , ( "iPhone 8", defaultDeviceInfo )
-        , ( "iPhone 8 Plus", ( 414, 736, Portrait ) )
-        , ( "iPhone 11 Pro", ( 375, 812, Portrait ) )
-        , ( "iPhone 11", ( 414, 896, Portrait ) )
-        , ( "iPhone 11 Pro Max", ( 414, 896, Portrait ) )
-        , ( "iPhone 12", ( 390, 844, Portrait ) )
-        , ( "iPhone 12 Pro", ( 390, 844, Portrait ) )
-        , ( "iPhone 12 Pro Max", ( 428, 926, Portrait ) )
-        , ( "iPad mini 7.9\" ", ( 768, 1024, Portrait ) )
-        , ( "iPad 10.2\"", ( 810, 1080, Portrait ) )
-        , ( "iPad Air 10.5\"", ( 834, 1112, Portrait ) )
-        , ( "iPad Air 10.9\" ", ( 840, 1180, Portrait ) )
-        , ( "iPad Pro 11\"", ( 834, 1194, Portrait ) )
-        , ( "iPad Pro 12.9\"", ( 1024, 1366, Portrait ) )
-        , ( "Apple TV", ( 1920, 1080, Landscape ) )
+    -- Apple
+    , Device "iPhone SE" 320 568 Portrait
+    , Device "iPhone 8" 375 667 Portrait
+    , Device "iPhone 8 Plus" 414 736 Portrait
+    , Device "iPhone 11 Pro" 375 812 Portrait
+    , Device "iPhone 11" 414 896 Portrait
+    , Device "iPhone 11 Pro Max" 414 896 Portrait
+    , Device "iPhone 12" 390 844 Portrait
+    , Device "iPhone 12 Pro" 390 844 Portrait
+    , Device "iPhone 12 Pro Max" 428 926 Portrait
+    , Device "iPad mini 7.9\"" 768 1024 Portrait
+    , Device "iPad 10.2\"" 810 1080 Portrait
+    , Device "iPad Air 10.5\"" 834 1112 Portrait
+    , Device "iPad Air 10.9\"" 840 1180 Portrait
+    , Device "iPad Pro 11\"" 834 1194 Portrait
+    , Device "iPad Pro 12.9\"" 1024 136 Portrait
+    , Device "Apple TV" 1920 1080 Landscape
 
-        -- Desktop
-        , ( "Desktop", ( 1024, 1024, Landscape ) )
-        , ( "Desktop HD", ( 1440, 1024, Landscape ) )
-        ]
+    -- Desktop
+    , Device "Desktop" 1024 1024 Landscape
+    , Device "Desktop HD" 1440 1024 Landscape
+    ]
 
 
 {-| Default is iPhone 8
 -}
-defaultDeviceInfo =
+defaultDevice =
     ( 375, 667, Portrait )
-
-
-findDeviceInfo : String -> ( Int, Int, Orientation )
-findDeviceInfo name =
-    Dict.get name deviceInfo
-        |> Maybe.withDefault defaultDeviceInfo
 
 
 viewports : List Viewport
 viewports =
-    Fluid :: List.map DeviceModel (Dict.keys deviceInfo)
+    Fluid :: devices
 
 
 
@@ -562,7 +579,8 @@ getNextIndexFor : NodeType -> Zipper Node -> Int
 getNextIndexFor type_ zipper =
     T.foldl
         (\node accum ->
-            if type_ == node.type_ && node.index >= accum then
+            -- Check for node name equality only
+            if nodeType type_ == nodeType node.type_ && node.index >= accum then
                 node.index + 1
 
             else
@@ -572,7 +590,7 @@ getNextIndexFor type_ zipper =
         (Zipper.tree zipper)
 
 
-{-| Find the node with the given id and if successuful move zipper focus to it.
+{-| Find the node with the given id and if successful move zipper focus to it.
 -}
 selectNodeWith : NodeId -> Zipper Node -> Maybe (Zipper Node)
 selectNodeWith id zipper =
@@ -580,7 +598,7 @@ selectNodeWith id zipper =
 
 
 
-{- Find the parent of the node with the given id and if successuful move zipper focus to it. -}
+{- Find the parent of the node with the given id and if successful move zipper focus to it. -}
 -- selectParentOf : NodeId -> Zipper Node -> Maybe (Zipper Node)
 -- selectParentOf id zipper =
 --     selectNodeWith id zipper
@@ -1262,6 +1280,12 @@ applyBorderColor value zipper =
     Zipper.mapLabel (Border.setColor value_) zipper
 
 
+applyBorder : BorderWidth -> Zipper Node -> Zipper Node
+applyBorder width zipper =
+    -- @@TODO Merge width and corner into a single record to handle this better
+    Zipper.mapLabel (Border.setWidth width >> Border.setCorner (Border.corner 0)) zipper
+
+
 applyBorderWidth : (Int -> BorderWidth -> BorderWidth) -> String -> Zipper Node -> Zipper Node
 applyBorderWidth setter value zipper =
     let
@@ -1303,16 +1327,21 @@ applyFontWeight value zipper =
     Zipper.mapLabel (Font.setWeight value) zipper
 
 
-applyShadow : (Float -> Shadow -> Shadow) -> String -> Zipper Node -> Zipper Node
-applyShadow setter value zipper =
+applyShadowFromString : (Float -> Shadow -> Shadow) -> String -> Zipper Node -> Zipper Node
+applyShadowFromString setter value zipper =
     let
         value_ =
             String.toFloat value
-                -- TODO handle negative and positive offset values whule clamping 0-positive blur and size
+                -- TODO handle negative and positive offset values whle clamping 0-positive blur and size
                 --|> Maybe.map (clamp 0 999)
                 |> Maybe.withDefault 0
     in
     Zipper.mapLabel (\node -> Shadow.setShadow (setter value_ node.shadow) node) zipper
+
+
+applyShadow : Shadow -> Zipper Node -> Zipper Node
+applyShadow value zipper =
+    Zipper.mapLabel (\node -> Shadow.setShadow value node) zipper
 
 
 applyShadowColor : String -> Zipper Node -> Zipper Node

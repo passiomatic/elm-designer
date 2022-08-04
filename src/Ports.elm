@@ -8,6 +8,7 @@ port module Ports exposing
     , setDragImage
     , setFontLinks
     , showNotification
+    , toggleDialog
     )
 
 import Json.Decode exposing (Value)
@@ -37,6 +38,9 @@ port setDragImage : { event : Value, dragging : Bool } -> Cmd msg
 
 
 port endDrag : () -> Cmd msg
+
+
+port toggleDialog : () -> Cmd msg
 
 
 port showNotification :

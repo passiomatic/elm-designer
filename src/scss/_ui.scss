@@ -61,7 +61,7 @@ body {
   }
 }
 
-// Align widget 
+// Align widget
 
 .align-off {
   color: rgba($black, 0.15);
@@ -69,4 +69,34 @@ body {
 
 .align-on {
   color: $primary;
+}
+
+// Dialogs
+
+dialog {
+  inset: 0;
+  z-index: 1;
+  width: 30rem;
+  aspect-ratio: 2 / 1;
+  border: 1px solid $border-color;
+  border-radius: $border-radius;
+  gap: 1rem;
+  &::backdrop {
+    background: rgba(0, 0, 0, 0.6);
+  }
+}
+
+.dialog__body {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 1rem;
+  height: 100%;
+  text-align: center;
+}
+
+.dialog__buttons {
+  display: flex;  
+  gap: .75rem;
 }

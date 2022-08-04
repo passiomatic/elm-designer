@@ -1,5 +1,6 @@
 module Model exposing
-    ( Context
+    ( Dialog(..)
+    , Context
     , ContextMenuPopup(..)
     , DocumentState(..)
     , FileDrop(..)
@@ -31,7 +32,7 @@ import Random
 import Result exposing (Result(..))
 import Set exposing (Set)
 import Style.Background as Background exposing (Background)
-import Style.Border exposing (BorderStyle)
+import Style.Border exposing (BorderCorner, BorderStyle, BorderWidth)
 import Style.Font as Font exposing (..)
 import Style.Input as Input exposing (LabelPosition(..))
 import Style.Layout as Layout exposing (..)
@@ -69,9 +70,11 @@ type Msg
     | BackgroundColorChanged String
     | BackgroundChanged Background
     | BorderColorChanged String
+    | SetBorderClicked BorderWidth
     | BorderStyleChanged BorderStyle
     | ShadowColorChanged String
     | ShadowTypeChanged ShadowType
+    | SetShadowClicked Shadow
     | LabelPositionChanged LabelPosition
     | LabelColorChanged String
     | FieldEditingStarted Widget String
@@ -80,23 +83,27 @@ type Msg
     | FieldChanged String
     | TextChanged String
     | ViewportChanged Viewport
-    | PresetSizeChanged String
+    | PresetSizeChanged Viewport
     | WrapRowItemsChanged Bool
-    | ClipboardCopyClicked
+    | ClipboardCopyClicked String
     | RemoveNodeClicked NodeId
     | DuplicateNodeClicked NodeId
     | InsertNodeClicked (Tree Node)
     | InsertImageClicked
     | DropDownChanged WidgetState
     | DocumentLoaded String
+    | ExportDocumentClicked
+    | ImportDocumentClicked
+    | ImportDocumentConfirmed File
     | Ticked Posix
     | ModeChanged Mode
     | FileDropped NodeId File (List File)
     | FileSelected File (List File)
+    | DocumentSelected File
     | FileDragging NodeId
     | FileDragCanceled
     | FileUploading File (List File) Progress
-    | FileUploaded (Result Error String)
+    | FileUploaded (Result Error ImageData)
     | DragDropMsg (DragDrop.Msg DragId DropId)
     | TabMsg Tab.State
     | Undo
@@ -161,6 +168,11 @@ type WidgetState
     | Hidden
 
 
+type Dialog
+    = WarningDialog String String Msg
+    | NoDialog
+
+
 type Mode
     = DesignMode
     | PreviewMode
@@ -200,6 +212,7 @@ type alias Model =
     , uploadState : UploadState
     , collapsedTreeItems : Set String
     , contextMenu : ContextMenu ContextMenuPopup
+    , dialog : Dialog
     , isMac : Bool
     }
 
@@ -299,7 +312,7 @@ initialModel { width, height, seed1, seed2, seed3, seed4, platform } =
             ContextMenu.init
 
         ( pageWidth, pageHeight, _ ) =
-            Document.defaultDeviceInfo
+            Document.defaultDevice
 
         workspaceX =
             workspaceWidth / 2 - toFloat width / 2 + pageWidth / 2
@@ -334,6 +347,7 @@ initialModel { width, height, seed1, seed2, seed3, seed4, platform } =
       , uploadState = Ready
       , collapsedTreeItems = Set.empty
       , contextMenu = contextMenu
+      , dialog = NoDialog    
       , isMac = isMac platform
       }
     , Cmd.batch

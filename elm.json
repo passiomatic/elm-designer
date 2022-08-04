@@ -39,7 +39,7 @@
             "elm/bytes": "1.0.8",
             "elm/parser": "1.1.0",
             "elm/url": "1.0.0",
-            "elm/virtual-dom": "1.0.2",
+            "elm/virtual-dom": "1.0.3",
             "elm-community/basics-extra": "4.0.0",
             "elm-community/json-extra": "4.2.0",
             "elm-community/maybe-extra": "5.0.0",

@@ -1,7 +1,7 @@
 {
   "name": "elm-designer",
   "productName": "Elm Designer",
-  "version": "0.4.0",
+  "version": "0.4.2",
   "description": "A code generator for Elm UI",
   "repository": "https://github.com/passiomatic/elm-designer",
   "devDependencies": {
@@ -16,11 +16,12 @@
   },
   "browserslist": "> 0.5%, last 2 versions, not dead",
   "scripts": {
-    "dev": "parcel src/index.html",
+    "dev": "parcel src/app.html",
+    "dev-no-debug": "NODE_ENV=production parcel src/app.html",
+    "landing": "parcel src/index.html",
     "constants": "elm-constants",
     "build": "parcel build src/index.html",
     "build-no-maps": "parcel build src/index.html --no-source-maps",
-    "dev-no-debug": "NODE_ENV=production parcel src/index.html",
     "clean": "rm -fR dist"
   }
 }
