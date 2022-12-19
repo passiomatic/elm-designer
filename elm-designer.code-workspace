@@ -8,6 +8,7 @@
 		"search.exclude": {
 			"**/dist": true,
 			"**/elm-stuff": true
-		}
+		},
+		"makefile.extensionOutputFolder": "./.vscode"
 	}
 }

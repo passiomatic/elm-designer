@@ -98,28 +98,29 @@ type Position
     | Normal
 
 
+positionName : Position -> Maybe String
 positionName position =
     case position of
         Above ->
-            "Above"
+            Just "Above"
 
         Below ->
-            "Below"
+            Just "Below"
 
         OnStart ->
-            "Left"
+            Just "Left"
 
         OnEnd ->
-            "Right"
+            Just "Right"
 
         InFront ->
-            "In Front"
+            Just "In Front"
 
         BehindContent ->
-            "Behind Content"
+            Just "Behind Content"
 
         Normal ->
-            "Normal"
+            Nothing
 
 
 setPosition : Position -> { a | position : Position } -> { a | position : Position }

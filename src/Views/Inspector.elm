@@ -1985,7 +1985,9 @@ imageView image model node =
             , H.div [ A.class "col-9" ]
                 [ H.div [ A.class "small" ]
                     [ H.text (mimeTypeLabel image.mimeType)
-                    , H.text Entity.ensp
+                    , H.text Entity.nbsp
+                    , H.text Entity.middot
+                    , H.text Entity.nbsp
                     , H.text width
                     , H.text Entity.times
                     , H.text height
@@ -2141,6 +2143,7 @@ positionView model { type_, position } =
                         let
                             name =
                                 Layout.positionName position_
+                                    |> Maybe.withDefault "Normal"
                         in
                         ( name
                         , H.option (setSelected position_ [ positionValue position_ ])

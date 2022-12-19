@@ -5,8 +5,7 @@ elm-stuff
 repl-temp-*
 # Node, Parcel
 node_modules
-build
 dist
-.cache
+.parcel-cache
 # Python
 __pycache__/

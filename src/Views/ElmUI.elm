@@ -939,8 +939,8 @@ wrapImageElement ctx node selected renderer =
          ]
             |> makeNodeDroppableIf (Common.canDropInto node ctx.dragDrop) (AppendTo node.id)
             |> makeNodeInvisibleIfDragged ctx.dragDrop node
-            |> applyWidth node.width node.widthMin node.widthMax
-            |> applyHeight node.height node.heightMin node.heightMax
+            |> applyWidth Layout.fit node.widthMin node.widthMax
+            |> applyHeight Layout.fit node.heightMin node.heightMax
             |> applyAlignX node.alignmentX
             |> applyAlignY node.alignmentY
             -- TODO scale
