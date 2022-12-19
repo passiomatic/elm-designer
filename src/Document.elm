@@ -73,6 +73,7 @@ module Document exposing
     , insertNodeBefore
     , isContainer
     , isDocumentNode
+    , isImageNode
     , isPageNode
     , isSelected
     , nodeId
@@ -331,6 +332,16 @@ isDocumentNode node =
             False
 
 
+isImageNode : Node -> Bool
+isImageNode node =
+    case node.type_ of
+        ImageNode _ ->
+            True
+
+        _ ->
+            False
+
+
 type alias TextData =
     { text : String
     }
@@ -352,6 +363,9 @@ type alias LabelData =
 type alias ImageData =
     { src : String
     , description : String
+    , width : Maybe Int
+    , height : Maybe Int
+    , mimeType : Maybe String
     }
 
 
@@ -419,6 +433,7 @@ defaultDocument : Seeds -> ( Seeds, Tree Node )
 defaultDocument seeds =
     let
         indexer _ =
+            -- Document is empty, no index to find
             1
 
         template =
@@ -459,18 +474,25 @@ emptyPage theme =
 
 {-| Images require the user to drop them _into_ the app workspace so we bypass the pick-from-library process here.
 -}
-createImageNode : String -> Seeds -> ( Seeds, Tree Node )
-createImageNode url seeds =
+createImageNode : ImageData -> Seeds -> Zipper Node -> ( Seeds, Tree Node )
+createImageNode data seeds zipper =
     let
-        -- TODO Generate correct imdex for images too
-        indexer _ =
-            1
+        image =
+            imageNode data
 
+        indexer _ =
+            getNextIndexFor image (Zipper.root zipper)
+
+        -- Make image fluid but do not overstretch them
         template =
             T.singleton
                 { baseTemplate
-                    | type_ = imageNode url
+                    | type_ = image
                     , name = "Image"
+                    , width = Layout.fill
+                    , widthMax = data.width
+                    , height = Layout.fill
+                    , heightMax = data.height
                 }
     in
     fromTemplate template seeds indexer
@@ -479,11 +501,11 @@ createImageNode url seeds =
 {-| An empty placeholder image type.
 -}
 blankImageNode =
-    imageNode ""
+    imageNode { src = "", description = "", width = Nothing, height = Nothing, mimeType = Nothing }
 
 
-imageNode url =
-    ImageNode { src = url, description = "" }
+imageNode data =
+    ImageNode data
 
 
 
@@ -557,7 +579,8 @@ getNextIndexFor : NodeType -> Zipper Node -> Int
 getNextIndexFor type_ zipper =
     T.foldl
         (\node accum ->
-            if type_ == node.type_ && node.index >= accum then
+            -- Check for node name equality only
+            if nodeType type_ == nodeType node.type_ && node.index >= accum then
                 node.index + 1
 
             else
@@ -567,7 +590,7 @@ getNextIndexFor type_ zipper =
         (Zipper.tree zipper)
 
 
-{-| Find the node with the given id and if successuful move zipper focus to it.
+{-| Find the node with the given id and if successful move zipper focus to it.
 -}
 selectNodeWith : NodeId -> Zipper Node -> Maybe (Zipper Node)
 selectNodeWith id zipper =
@@ -575,7 +598,7 @@ selectNodeWith id zipper =
 
 
 
-{- Find the parent of the node with the given id and if successuful move zipper focus to it. -}
+{- Find the parent of the node with the given id and if successful move zipper focus to it. -}
 -- selectParentOf : NodeId -> Zipper Node -> Maybe (Zipper Node)
 -- selectParentOf id zipper =
 --     selectNodeWith id zipper

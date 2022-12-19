@@ -226,7 +226,7 @@ emitNode : Theme -> Node -> List EmittedNode -> EmittedNode
 emitNode theme node children =
     (case node.type_ of
         -- Fall back to emitPage just to make it compile for now.
-        --   We need to emit one module per page and allow to export 
+        --   We need to emit one module per page and allow to export
         --   the enterire document as a zip file.
         DocumentNode ->
             emitPage node children
@@ -411,14 +411,7 @@ emitCheckbox theme node label =
             [ ( "onChange", G.val "CheckboxClicked" )
             , ( "icon", G.fqFun inputModule "defaultCheckbox" )
             , ( "checked", G.val "False" )
-            , ( "label"
-              , G.apply
-                    [ emitLabelPosition label.position
-                    , G.list
-                        []
-                    , G.parens (G.apply [ G.fqFun elementModule "text", G.string label.text ])
-                    ]
-              )
+            , ( "label", emitLabel label.position [] label.text )
             ]
         ]
 
@@ -435,16 +428,7 @@ emitTextField theme node label =
             [ ( "onChange", G.val "TextChanged" )
             , ( "text", G.string "" )
             , ( "placeholder", G.val "Nothing" )
-            , ( "label"
-              , G.apply
-                    [ emitLabelPosition label.position
-                    , G.list
-                        ([]
-                            |> emitFontColor label.color
-                        )
-                    , G.parens (G.apply [ G.fqFun elementModule "text", G.string label.text ])
-                    ]
-              )
+            , ( "label", emitLabel label.position (emitFontColor label.color []) label.text )
             ]
         ]
 
@@ -462,16 +446,7 @@ emitTextFieldMultiline theme node label =
             , ( "text", G.string "" )
             , ( "placeholder", G.val "Nothing" )
             , ( "spellcheck", G.val "False" )
-            , ( "label"
-              , G.apply
-                    [ emitLabelPosition label.position
-                    , G.list
-                        ([]
-                            |> emitFontColor label.color
-                        )
-                    , G.parens (G.apply [ G.fqFun elementModule "text", G.string label.text ])
-                    ]
-              )
+            , ( "label", emitLabel label.position (emitFontColor label.color []) label.text )
             ]
         ]
 
@@ -489,15 +464,7 @@ emitRadio theme node label children =
                 , G.record
                     [ ( "onChange", G.val "RadioClicked" )
                     , ( "selected", G.val "Nothing" )
-                    , ( "label"
-                      , G.apply
-                            [ emitLabelPosition label.position
-                            , G.list
-                                [ G.apply [ G.fqFun fontModule "color", G.parens (emitColor theme.labelColor) ]
-                                ]
-                            , G.parens (G.apply [ G.fqFun elementModule "text", G.string label.text ])
-                            ]
-                      )
+                    , ( "label", emitLabel label.position (emitFontColor (Local theme.labelColor) []) label.text )
                     , ( "options", G.list children_ )
                     ]
                 ]
@@ -1113,25 +1080,39 @@ emitBackgroundColor color =
         ]
 
 
-emitLabelPosition : LabelPosition -> Expression
-emitLabelPosition position =
+emitLabel : LabelPosition -> List Expression -> String -> Expression
+emitLabel position attrs text =
     (case position of
         LabelAbove ->
-            "labelAbove"
+            [ G.fqFun inputModule "labelAbove"
+            , G.list attrs
+            , G.parens (G.apply [ G.fqFun elementModule "text", G.string text ])
+            ]
 
         LabelBelow ->
-            "labelBelow"
+            [ G.fqFun inputModule "labelBelow"
+            , G.list attrs
+            , G.parens (G.apply [ G.fqFun elementModule "text", G.string text ])
+            ]
 
         LabelLeft ->
-            "labelLeft"
+            [ G.fqFun inputModule "labelLeft"
+            , G.list attrs
+            , G.parens (G.apply [ G.fqFun elementModule "text", G.string text ])
+            ]
 
         LabelRight ->
-            "labelRight"
+            [ G.fqFun inputModule "labelRight"
+            , G.list attrs
+            , G.parens (G.apply [ G.fqFun elementModule "text", G.string text ])
+            ]
 
         LabelHidden ->
-            "labelHidden"
+            [ G.fqFun inputModule "labelHidden"
+            , G.string text
+            ]
     )
-        |> G.fqFun inputModule
+        |> G.apply
 
 
 

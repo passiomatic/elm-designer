@@ -148,3 +148,13 @@ app.ports.showNotification.subscribe(function (options) {
     });
   }
 });
+
+app.ports.toggleDialog.subscribe(_ => {
+  const dialog = document.getElementById("dialog");
+
+  if (dialog.open) {
+      dialog.close();
+  } else {
+      dialog.showModal();
+  }  
+});

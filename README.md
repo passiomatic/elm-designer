@@ -1,7 +1,5 @@
 # Elm Designer—A code generator for Elm UI
 
-![Elm Designer interface](./assets/screenshot.jpg)
-
 ## Current status
 
 The application is in early stages of development and [supports a subset][support] of [Elm UI][elmui].
@@ -10,7 +8,7 @@ Previously Elm Designer was an Electron app, you can still download older versio
 
 ## New to Elm Designer? 
 
-The [one minute guide][guide] is waiting for you.
+The [quick guide][guide] is waiting for you.
 
 ## About images
 
@@ -55,7 +53,7 @@ Elm Designer contains patched versions of the following packages:
 [r]: https://github.com/passiomatic/elm-designer/releases
 [api]: https://api.imgbb.com
 [imgbb]: https://imgbb.com
-[guide]: https://github.com/passiomatic/elm-designer/wiki/One-minute-guide
+[guide]: https://github.com/passiomatic/elm-designer/wiki/Quick-guide
 [eb]: https://github.com/rundis/elm-bootstrap
 [hdd]: https://github.com/norpan/elm-html5-drag-drop
 [support]: https://github.com/passiomatic/elm-designer/wiki/Elm-UI-support-status
