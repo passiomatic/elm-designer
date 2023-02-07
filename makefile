@@ -24,8 +24,5 @@ dev: constants
 landing: constants
 	npm run landing
 
-run: 
-	python3 server/manage.py runserver
-
 clean: 
 	npm run clean
