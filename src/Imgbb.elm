@@ -7,9 +7,13 @@ Typical response after a successul upload is:
     {
     "data": {
         "url": "https://i.ibb.co/6NMDgSB/sample.jpg",
-        "width": "2333",
-        "height": "3500",
+        "width": 2333,
+        "height": 3500,
         ...
+        "image": {
+            "mime": "image/jpeg",
+            ...
+        }
     },
     "success": true,
     "status": 200
@@ -73,6 +77,6 @@ responseDecoder =
     D.map5 ImageData
         (D.at [ "data", "url" ] D.string)
         (D.succeed "")
-        (D.map String.toInt (D.at [ "data", "width" ] D.string))
-        (D.map String.toInt (D.at [ "data", "height" ] D.string))
+        (D.at [ "data", "width" ] (D.maybe D.int))
+        (D.at [ "data", "height" ] (D.maybe D.int))
         (D.at [ "data", "image", "mime" ] (D.maybe D.string))
