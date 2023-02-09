@@ -446,6 +446,7 @@ defaultDocument : Seeds -> ( Seeds, Tree Node )
 defaultDocument seeds =
     let
         indexer _ =
+            -- Document is empty, no index to find
             1
 
         template =
@@ -486,20 +487,21 @@ emptyPage theme =
 
 {-| Images require the user to drop them _into_ the app workspace so we bypass the pick-from-library process here.
 -}
-createImageNode : ImageData -> Seeds -> ( Seeds, Tree Node )
-createImageNode data seeds =
+createImageNode : ImageData -> Seeds -> Zipper Node -> ( Seeds, Tree Node )
+createImageNode data seeds zipper =
     let
-        -- TODO Generate correct index for images too
-        indexer _ =
-            1
+        image =
+            imageNode data
 
+        indexer _ =
+            getNextIndexFor image (Zipper.root zipper)
+
+        -- Make image fluid but do not overstretch them
         template =
             T.singleton
                 { baseTemplate
-                    | type_ = imageNode data
+                    | type_ = image
                     , name = "Image"
-
-                    -- Make images fluid but do not overstretch them
                     , width = Layout.fill
                     , widthMax = data.width
                     , height = Layout.fill
@@ -590,7 +592,8 @@ getNextIndexFor : NodeType -> Zipper Node -> Int
 getNextIndexFor type_ zipper =
     T.foldl
         (\node accum ->
-            if type_ == node.type_ && node.index >= accum then
+            -- Check for node name equality only
+            if nodeType type_ == nodeType node.type_ && node.index >= accum then
                 node.index + 1
 
             else

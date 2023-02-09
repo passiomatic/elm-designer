@@ -6,6 +6,9 @@ constants:
 build: clean constants 
 	npm run build
 
+serve: build
+	npx serve dist
+
 build-no-maps: clean constants
 	npm run build-no-maps
 
@@ -20,9 +23,6 @@ dev: constants
 
 landing: constants
 	npm run landing
-
-run: 
-	python3 server/manage.py runserver
 
 clean: 
 	npm run clean

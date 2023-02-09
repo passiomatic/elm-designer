@@ -24,6 +24,7 @@ import Json.Decode as Decode exposing (Decoder)
 import Library exposing (LibraryItem)
 import Model exposing (..)
 import Set exposing (Set)
+import Style.Layout as Layout
 import Style.Theme as Theme
 import Tree as T exposing (Tree)
 import Tree.Zipper as Zipper exposing (Zipper)
@@ -623,6 +624,10 @@ emptyDocumentNotice model node =
 
 treeLabel node =
     let
+        position = 
+                Layout.positionName node.position
+                    |> Maybe.map (\value -> Entity.nbsp ++ Entity.middot ++ Entity.nbsp ++ value )
+                    |> Maybe.withDefault ""
         label =
             (case node.type_ of
                 ParagraphNode data ->
@@ -668,7 +673,7 @@ treeLabel node =
                 node.name
 
              else
-                label
+                label ++ position
             )
         ]
 

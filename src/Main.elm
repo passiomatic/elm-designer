@@ -159,7 +159,7 @@ update msg model =
                 Ok image ->
                     let
                         ( newSeeds, newNode ) =
-                            Document.createImageNode image model.seeds
+                            Document.createImageNode image model.seeds model.document.present
 
                         zipper =
                             model.document.present

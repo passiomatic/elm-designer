@@ -5,24 +5,23 @@
   "description": "A code generator for Elm UI",
   "repository": "https://github.com/passiomatic/elm-designer",
   "devDependencies": {
-    "@babel/core": "^7.16.12",
-    "@babel/preset-env": "^7.16.11",
+    "@parcel/transformer-elm": "^2.8.3",
+    "@parcel/transformer-sass": "^2.8.3",
+    "elm": "^0.19.1-5",
     "elm-constants": "^1.0.0",
-    "elm-hot": "^1.1.6",
-    "node-elm-compiler": "^5.0.6",
-    "sass": "^1.43.4"
+    "parcel": "^2.8.3"
   },
   "dependencies": {
-    "balloon-css": "^1.2.0",
-    "parcel-bundler": "1.12.3"
+    "balloon-css": "^1.2.0"
   },
+  "browserslist": "> 0.5%, last 2 versions, not dead",
   "scripts": {
     "dev": "parcel src/app.html",
     "dev-no-debug": "NODE_ENV=production parcel src/app.html",
     "landing": "parcel src/index.html",
     "constants": "elm-constants",
-    "build": "parcel build src/index.html --public-url ./ --out-file index.html",
-    "build-no-maps": "parcel build src/index.html --no-source-maps --public-url ./ --out-file index.html",
+    "build": "parcel build src/index.html",
+    "build-no-maps": "parcel build src/index.html --no-source-maps",
     "clean": "rm -fR dist"
   }
 }

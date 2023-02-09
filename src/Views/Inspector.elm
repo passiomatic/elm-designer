@@ -2209,6 +2209,7 @@ positionView model { type_, position } =
                         let
                             name =
                                 Layout.positionName position_
+                                    |> Maybe.withDefault "Normal"
                         in
                         ( name
                         , H.option (setSelected position_ [ positionValue position_ ])
