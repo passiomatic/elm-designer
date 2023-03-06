@@ -86,6 +86,7 @@ emit theme _ tree =
                 [ ( "CheckboxClicked", [ G.boolAnn ] )
                 , ( "RadioClicked", [ G.intAnn ] )
                 , ( "TextChanged", [ G.stringAnn ] )
+                , ( "SliderChanged", [ G.floatAnn ] )
                 ]
 
         decls =
@@ -178,6 +179,15 @@ emitUpdate =
               , G.apply
                     [ G.fqFun debugModule "log"
                     , G.string "Text changed"
+                    , G.val "model"
+                    ]
+              )
+            , ( G.namedPattern "SliderChanged"
+                    [ G.varPattern "value"
+                    ]
+              , G.apply
+                    [ G.fqFun debugModule "log"
+                    , G.string "Slider changed"
                     , G.val "model"
                     ]
               )
@@ -274,7 +284,7 @@ emitNode theme node children =
             emitOption node data
 
         SliderNode data label ->
-            emitSlider node data label
+            emitSlider theme node data label
     )
         |> EmittedNode node.position
 
@@ -493,11 +503,50 @@ emitOption node { text } =
         ]
 
 
-emitSlider : Node -> SliderData -> LabelData -> Expression
-emitSlider node { min, max, step } label =
-    -- TODO emit actual code
+emitSlider : Theme -> Node -> SliderData -> LabelData -> Expression
+emitSlider theme node { min, max, step } label =
+    let
+        track =
+            G.apply
+                [ G.fqFun elementModule "el"
+                , G.list
+                    [ G.apply
+                        [ G.fqFun elementModule "width"
+                        , G.fqVal elementModule "fill"
+                        ]
+                    , G.apply
+                        [ G.fqFun elementModule "height"
+                        , G.parens (G.apply [ G.fqFun elementModule "px", G.int 2 ])
+                        ]
+                    , G.fqVal elementModule "centerY"
+                    , G.apply
+                        [ G.fqFun backgroundModule "color"
+                        , G.parens (emitColor Palette.darkGray)
+                        ]
+                    , G.apply
+                        [ G.fqFun borderModule "rounded"
+                        , G.int 2
+                        ]
+                    ]
+                , G.fqFun elementModule "none"
+                ]
+    in
     G.apply
         [ G.fqFun inputModule "slider"
+        , G.list
+            ([ G.apply [ G.fqFun elementModule "behindContent", G.parens track ]
+             ]
+                |> emitHeight node.height Nothing Nothing
+            )
+        , G.record
+            [ ( "onChange", G.val "SliderChanged" )
+            , ( "label", emitLabel label.position (emitFontColor (Local theme.labelColor) []) label.text )
+            , ( "min", G.float min )
+            , ( "max", G.float max )
+
+            --, ( "step",  G.construct "Just" [ G.float step ] )
+            , ( "thumb", G.fqVal inputModule "defaultThumb" )
+            ]
         ]
 
 

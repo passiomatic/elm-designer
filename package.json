@@ -12,7 +12,8 @@
     "parcel": "^2.8.3"
   },
   "dependencies": {
-    "balloon-css": "^1.2.0"
+    "balloon-css": "^1.2.0",
+    "elm-format": "^0.8.6"
   },
   "browserslist": "> 0.5%, last 2 versions, not dead",
   "scripts": {
