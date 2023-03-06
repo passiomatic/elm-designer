@@ -510,24 +510,22 @@ emitSlider theme node { min, max, step } label =
             G.apply
                 [ G.fqFun elementModule "el"
                 , G.list
-                    [ G.apply
-                        [ G.fqFun elementModule "width"
-                        , G.fqVal elementModule "fill"
-                        ]
-                    , G.apply
+                    ([ G.apply
                         [ G.fqFun elementModule "height"
                         , G.parens (G.apply [ G.fqFun elementModule "px", G.int 2 ])
                         ]
-                    , G.fqVal elementModule "centerY"
-                    , G.apply
+                     , G.fqVal elementModule "centerY"
+                     , G.apply
                         [ G.fqFun backgroundModule "color"
                         , G.parens (emitColor Palette.darkGray)
                         ]
-                    , G.apply
+                     , G.apply
                         [ G.fqFun borderModule "rounded"
                         , G.int 2
                         ]
-                    ]
+                     ]
+                        |> emitWidth node.width Nothing Nothing
+                    )
                 , G.fqFun elementModule "none"
                 ]
 
@@ -548,10 +546,11 @@ emitSlider theme node { min, max, step } label =
             )
         , G.record
             [ ( "onChange", G.val "SliderChanged" )
-            , ( "label", emitLabel label.position (emitFontColor (Local theme.labelColor) []) label.text )
+            , ( "label", emitLabel label.position (emitFontColor label.color []) label.text )
             , ( "min", G.float min )
             , ( "max", G.float max )
             , ( "step", step_ )
+            , ( "value", G.float min ) -- Use min. value as default
             , ( "thumb", G.fqVal inputModule "defaultThumb" )
             ]
         ]

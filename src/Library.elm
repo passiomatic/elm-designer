@@ -434,7 +434,7 @@ slider theme =
         T.singleton
             { baseTemplate
                 | name = "Slider"
-                , height = Layout.Px 30
+                , height = Layout.Px 40
                 , spacing = Layout.spacingXY 0 (Theme.xsmall theme)                
                 , type_ = SliderNode { min = 0, max = 100, step = Nothing } (labelAbove "Label")
             }
