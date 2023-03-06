@@ -46,7 +46,9 @@ module Document exposing
     , applyShadowColor
     , applyShadowFromString
     , applyShadowType
+    , applySliderMax
     , applySliderMin
+    , applySliderStep
     , applySpacing
     , applyText
     , applyTextAlign
@@ -89,7 +91,7 @@ module Document exposing
     , selectPageOf
     , viewports
     , workspaceHeight
-    , workspaceWidth, applySliderMax
+    , workspaceWidth
     )
 
 import Css
@@ -1052,6 +1054,25 @@ applySliderMax value zipper =
                     node
         )
         zipper
+
+
+applySliderStep : String -> Zipper Node -> Zipper Node
+applySliderStep value zipper =
+    let
+        value_ =
+            String.toFloat value
+    in
+    Zipper.mapLabel
+        (\node ->
+            case node.type_ of
+                SliderNode slider label ->
+                    { node | type_ = SliderNode (Input.setSliderStep value_ slider) label }
+
+                _ ->
+                    node
+        )
+        zipper
+
 
 
 -- applyImageSrc : String -> Zipper Node -> Zipper Node

@@ -530,6 +530,14 @@ emitSlider theme node { min, max, step } label =
                     ]
                 , G.fqFun elementModule "none"
                 ]
+
+        step_ =
+            case step of
+                Just value ->
+                    G.construct "Just" [ G.float value ]
+
+                Nothing ->
+                    G.construct "Nothing" []
     in
     G.apply
         [ G.fqFun inputModule "slider"
@@ -543,8 +551,7 @@ emitSlider theme node { min, max, step } label =
             , ( "label", emitLabel label.position (emitFontColor (Local theme.labelColor) []) label.text )
             , ( "min", G.float min )
             , ( "max", G.float max )
-
-            --, ( "step",  G.construct "Just" [ G.float step ] )
+            , ( "step", step_ )
             , ( "thumb", G.fqVal inputModule "defaultThumb" )
             ]
         ]

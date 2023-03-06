@@ -908,6 +908,9 @@ updateField model =
         EditingField SliderMaxField newValue ->
             applyChange model Document.applySliderMax newValue
 
+        EditingField SliderStepField newValue ->
+            applyChange model Document.applySliderStep newValue
+
         _ ->
             ( model, Cmd.none )
 

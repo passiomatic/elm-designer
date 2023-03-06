@@ -5,7 +5,7 @@ module Style.Input exposing
     , setLabelPosition
     , setSliderMax
     , setSliderMin
-    , setSliderSlider
+    , setSliderStep
     )
 
 import Element exposing (Color)
@@ -60,6 +60,6 @@ setSliderMax value record =
     { record | max = value }
 
 
-setSliderSlider : Maybe Float -> { a | step : Maybe Float } -> { a | step : Maybe Float }
-setSliderSlider value record =
+setSliderStep : Maybe Float -> { a | step : Maybe Float } -> { a | step : Maybe Float }
+setSliderStep value record =
     { record | step = value }
