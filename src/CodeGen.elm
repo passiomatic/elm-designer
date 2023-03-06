@@ -3,12 +3,13 @@ module CodeGen exposing (emit)
 {-| Generate Elm code for a given tree node.
 -}
 
+--import Pretty
+
 import Document exposing (..)
 import Element exposing (Color)
 import Elm.CodeGen as G exposing (Declaration, Expression)
 import Elm.Pretty
 import Palette
-import Pretty
 import Set exposing (Set)
 import String exposing (trim)
 import Style.Background as Background exposing (Background)
@@ -114,14 +115,13 @@ emit theme _ tree =
             ]
 
         comments =
-            [ emitFontComment tree
-            ]
+            G.emptyFileComment
+                |> G.markdown (emitFontComment tree)
 
         file =
-            G.file module_ imports decls comments
+            G.file module_ imports decls (Just comments)
     in
-    Elm.Pretty.pretty file
-        |> Pretty.pretty 80
+    Elm.Pretty.pretty 80 file
 
 
 emitView : Theme -> Tree Node -> Declaration
