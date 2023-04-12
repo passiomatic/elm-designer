@@ -276,9 +276,9 @@ resolveStyleViews model zipper =
                         , lengthView model node
                         , paddingView model node
                         ]
-                    , sectionView "Text"
-                        [ fontView model zipper
-                        ]
+                    -- , sectionView "Text"
+                    --     [ fontView model zipper
+                    --     ]
                     , bordersView model node
                     , backgroundView model node
                     , shadowView model node

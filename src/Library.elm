@@ -23,6 +23,7 @@ import List.Extra
 import Palette
 import Style.Background as Background exposing (Background(..))
 import Style.Font as Font exposing (..)
+import Style.Border as Border exposing (..)
 import Style.Input as Input exposing (LabelPosition(..))
 import Style.Layout as Layout exposing (..)
 import Style.Theme as Theme exposing (Theme)
@@ -348,7 +349,7 @@ buttonHelper theme name border background =
                 , borderWidth = theme.borderWidth
                 , borderColor = border
                 , borderCorner = theme.borderCorner
-                , background = Solid background
+                , background = Background.solid background
                 , fontColor = Local (Theme.contrastColor background theme.textColor Palette.white)
                 , textAlignment = TextCenter
                 , type_ = ButtonNode { text = "Button Label" }
@@ -436,6 +437,10 @@ slider theme =
                 | name = "Slider"
                 , height = Layout.Px 40
                 , spacing = Layout.spacingXY 0 (Theme.xsmall theme)                
+                , background = Background.solid Palette.gray
+                , borderCorner = Border.corner 8
+                , borderColor = Palette.darkGray
+                , borderWidth = Border.width 1
                 , type_ = SliderNode { min = 0, max = 100, step = Nothing } (labelAbove "Label")
             }
     }

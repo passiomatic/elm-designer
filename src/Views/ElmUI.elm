@@ -454,18 +454,23 @@ renderSlider ctx node selected { min, max, step } label =
         renderer attrs =
             let
                 newAttrs =
-                    -- Create the "track" portion of the slider
-                    E.behindContent
+                    -- Create and style the "track" portion of the slider
+                    [ E.behindContent
                         (E.el
-                            [ E.width E.fill
-                            , E.height (E.px 8)
-                            , E.centerY
-                            , Background.color Palette.darkGray
-                            , Border.rounded 2
-                            ]
+                            ([ E.width E.fill
+                             , E.height (E.px 8)
+                             , E.centerY
+                             ]
+                                |> applyBorderCorner node.borderCorner
+                                |> applyBorderWidth node.borderWidth
+                                |> applyBorderColor node.borderColor
+                                |> applyBorderStyle node.borderStyle
+                                |> applyBackground node.background
+                                |> applyShadow node.shadow
+                            )
                             E.none
                         )
-                        :: attrs
+                    ]
 
                 labelAttrs =
                     applyFontColor label.color []
