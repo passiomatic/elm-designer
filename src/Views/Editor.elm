@@ -624,10 +624,11 @@ emptyDocumentNotice model node =
 
 treeLabel node =
     let
-        position = 
-                Layout.positionName node.position
-                    |> Maybe.map (\value -> Entity.nbsp ++ Entity.middot ++ Entity.nbsp ++ value )
-                    |> Maybe.withDefault ""
+        position =
+            Layout.positionName node.position
+                |> Maybe.map (\value -> Entity.nbsp ++ Entity.middot ++ Entity.nbsp ++ value)
+                |> Maybe.withDefault ""
+
         label =
             (case node.type_ of
                 ParagraphNode data ->
@@ -655,6 +656,9 @@ treeLabel node =
                     data.text
 
                 OptionNode data ->
+                    data.text
+
+                SliderNode _ data ->
                     data.text
 
                 _ ->
