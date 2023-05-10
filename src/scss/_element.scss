@@ -35,6 +35,7 @@
 
 .element--Page {
   border: 2px solid $border-color !important;
+  box-sizing: content-box !important; // Exclude border to computed width
   cursor: move;
   cursor: grab; // Safari
 }

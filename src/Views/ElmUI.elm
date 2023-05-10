@@ -458,9 +458,11 @@ renderSlider ctx node selected { min, max, step } label =
                     [ E.behindContent
                         (E.el
                             ([ E.width E.fill
-                             , E.height (E.px 8)
-                             , E.centerY
+                            , E.height (E.px 8)                          
+                            , E.centerY
                              ]
+                                -- |> applyWidth node.width node.widthMin node.widthMax
+                                -- |> applyHeight node.height node.heightMin node.heightMax
                                 |> applyBorderCorner node.borderCorner
                                 |> applyBorderWidth node.borderWidth
                                 |> applyBorderColor node.borderColor
@@ -938,9 +940,9 @@ wrapElement : Context -> Node -> Bool -> (List (E.Attribute Msg) -> Element Msg)
 wrapElement ctx node selected renderer =
     let
         attrs =
-            [ E.width E.fill
-            , E.height E.fill
-            ]
+            []
+                |> applyWidth node.width node.widthMin node.widthMax
+                |> applyHeight node.height node.heightMin node.heightMax
                 |> applyStyles node
     in
     E.el
