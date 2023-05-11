@@ -453,16 +453,28 @@ renderSlider ctx node selected { min, max, step } label =
     let
         renderer attrs =
             let
-                newAttrs =
+                -- A slider can be made vertical using a fixed width and `height fill`
+                -- or fixed height and width such that height > width
+                vertical =
+                    (isPxValue node.width && isFillValue node.height) || isVertical node
+
+                trackAttrs  = 
+                    if vertical then
+                        [ E.width (E.px 8)
+                        , E.height E.fill                        
+                        , E.centerX
+                        ]
+                    else 
+                        [ E.width E.fill
+                        , E.height (E.px 8)
+                        , E.centerY
+                        ]
+
+                sliderAttrs =
                     -- Create and style the "track" portion of the slider
                     [ E.behindContent
                         (E.el
-                            ([ E.width E.fill
-                            , E.height (E.px 8)                          
-                            , E.centerY
-                             ]
-                                -- |> applyWidth node.width node.widthMin node.widthMax
-                                -- |> applyHeight node.height node.heightMin node.heightMax
+                            (trackAttrs
                                 |> applyBorderCorner node.borderCorner
                                 |> applyBorderWidth node.borderWidth
                                 |> applyBorderColor node.borderColor
@@ -478,7 +490,7 @@ renderSlider ctx node selected { min, max, step } label =
                     applyFontColor label.color []
             in
             Input.slider
-                newAttrs
+                sliderAttrs
                 { onChange = \_ -> NoOp
                 , min = min
                 , max = max
@@ -490,6 +502,27 @@ renderSlider ctx node selected { min, max, step } label =
     in
     wrapElement ctx node selected renderer
         |> RenderedElement node.position
+
+
+isVertical node =
+    let
+        width =
+            case node.width of
+                Px value ->
+                    value
+
+                _ ->
+                    0
+
+        height =
+            case node.height of
+                Px value ->
+                    value
+
+                _ ->
+                    0
+    in
+    height > width
 
 
 
@@ -626,6 +659,26 @@ applyLength fn value min max attrs =
                 |> fn
             )
                 :: attrs
+
+
+isPxValue : Length -> Bool
+isPxValue value =
+    case value of
+        Px _ ->
+            True
+
+        _ ->
+            False
+
+
+isFillValue : Length -> Bool
+isFillValue value =
+    case value of
+        Fill _ ->
+            True
+
+        _ ->
+            False
 
 
 applyMinLength : Maybe Int -> E.Length -> E.Length
