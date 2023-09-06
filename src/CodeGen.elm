@@ -506,26 +506,47 @@ emitOption node { text } =
 emitSlider : Theme -> Node -> SliderData -> LabelData -> Expression
 emitSlider theme node { min, max, step } label =
     let
+        vertical =
+            False
+
+        trackAttrs =
+            if vertical then
+                [ G.apply
+                    [ G.fqFun elementModule "width"
+                    , G.parens (G.apply [ G.fqFun elementModule "px", G.int 8 ])
+                    ]
+                , G.apply
+                    [ G.fqFun elementModule "height"
+                    , G.fqFun elementModule "fill"
+                    ]
+                , G.fqVal elementModule "centerY"
+                ]
+
+            else
+                [ G.apply
+                    [ G.fqFun elementModule "width"
+                    , G.fqFun elementModule "fill"
+                    ]
+                , G.apply
+                    [ G.fqFun elementModule "height"
+                    , G.parens (G.apply [ G.fqFun elementModule "px", G.int 8 ])
+                    ]
+                , G.fqVal elementModule "centerX"
+                ]
+
+        -- Create and style the "track" portion of the slider
         track =
             G.apply
                 [ G.fqFun elementModule "el"
                 , G.list
-                    ([ G.apply
-                        [ G.fqFun elementModule "height"
-                        , G.parens (G.apply [ G.fqFun elementModule "px", G.int 2 ])
-                        ]
-                     , G.fqVal elementModule "centerY"
-                     , G.apply
-                        [ G.fqFun backgroundModule "color"
-                        , G.parens (emitColor Palette.darkGray)
-                        ]
-                     , G.apply
-                        [ G.fqFun borderModule "rounded"
-                        , G.int 2
-                        ]
-                     ]
-                        |> emitWidth node.width Nothing Nothing
+                    (trackAttrs
+                        |> emitBorder node.borderColor node.borderStyle node.borderWidth
+                        |> emitCorner node.borderCorner
+                        |> emitBackground node
+                        |> emitShadow node.shadow
                     )
+
+                -- No children
                 , G.fqFun elementModule "none"
                 ]
 
@@ -542,7 +563,16 @@ emitSlider theme node { min, max, step } label =
         , G.list
             ([ G.apply [ G.fqFun elementModule "behindContent", G.parens track ]
              ]
-                |> emitHeight node.height Nothing Nothing
+                |> emitWidth node.width node.widthMin node.widthMax
+                |> emitHeight node.height node.heightMin node.heightMax
+                |> emitPadding node.padding
+                |> emitSpacing node.spacing
+                |> emitAlignX node.alignmentX
+                |> emitAlignY node.alignmentY
+                |> emitOffsetX node
+                |> emitOffsetY node
+                |> emitRotation node.rotation
+                |> emitScale node.scale
             )
         , G.record
             [ ( "onChange", G.val "SliderChanged" )

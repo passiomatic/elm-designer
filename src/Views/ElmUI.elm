@@ -462,7 +462,7 @@ renderSlider ctx node selected { min, max, step } label =
                     if vertical then
                         [ E.width (E.px 8)
                         , E.height E.fill                        
-                        , E.centerX
+                        --, E.centerX
                         ]
                     else 
                         [ E.width E.fill
