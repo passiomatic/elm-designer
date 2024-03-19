@@ -1,5 +1,7 @@
 # Elm Designer—A code generator for Elm UI
 
+![Elm Designer UI](./assets/screenshot.png)
+
 ## Current status
 
 The application is in early stages of development and [supports a subset][support] of [Elm UI][elmui].
